@@ -77,7 +77,7 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                next_state = AddScheme.capture_users_state,
                                call_base= CALL_SET_SCHEME,
                                call_add_capture = CALL_CAPTURE_GROUP,
-                               call_add_change = CALL_CHANGE_GROUP,
+                               # call_add_change = CALL_CHANGE_GROUP,
                                menu_add = menu_set_scheme,
                                state_main_mess=MESS_CAPTURE_GROUP,
                                but_change_text=TEXT_CHANGE_GROUP,
@@ -93,7 +93,7 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                               next_state=AddScheme.capture_dates_state,
                               call_base=CALL_SET_SCHEME,
                               call_add_capture=CALL_CAPTURE_USER,
-                              call_add_change=CALL_CHANGE_USER,
+                              # call_add_change=CALL_CHANGE_USER,
                               menu_add=menu_set_scheme,
                               state_main_mess=MESS_CAPTURE_USER,
                               but_change_text=TEXT_CHANGE_USER,
@@ -108,7 +108,7 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                               next_state=AddScheme.confirmation_state,
                               call_base=CALL_SET_SCHEME,
                               call_add_capture=CALL_CAPTURE_DATE,
-                              call_add_change=CALL_CHANGE_DATE,
+                              # call_add_change=CALL_CHANGE_DATE,
                               menu_add=menu_set_scheme,
                               state_main_mess=MESS_CAPTURE_DATE,
                               but_change_text=TEXT_CHANGE_DATE,
@@ -127,7 +127,7 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                      call_add_capture= CALL_ADD_ENDING,
                                      menu_add = menu_set_scheme_with_changing,
                                      state_main_mess=MESS_ADD_ENDING,
-                                     call_add_change=TEXT_ADD_ENDING_CONFIRM)
+                                     is_last_state_with_changing_mode=True)
 
     await state.update_data(confirmation_state=confirmation_state)
 
@@ -140,7 +140,8 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
                                       buttons_add_list= first_state.items_kb_list,
                                       buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                      buttons_add_cols=first_state.items_kb_cols, buttons_add_rows=first_state.items_kb_rows,
+                                      buttons_add_cols=first_state.items_kb_cols,
+                                      buttons_add_rows=first_state.items_kb_rows,
                                       is_adding_confirm_button=True)
 
     await call.message.edit_text(message_text, reply_markup=reply_kb)
@@ -210,7 +211,6 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
     if confirm == CALL_CHANGING_WORD:
         capture_words_state: StateParams = await state.get_value('capture_words_state')
-        capture_words_state.change_call_to_changing()
         capture_words_state.next_state = AddScheme.confirmation_state
         await state.update_data(capture_words_state=capture_words_state)
         confirmation_state: StateParams = await state.get_value('confirmation_state')
@@ -224,7 +224,6 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     elif confirm == CALL_CHANGING_USER:
 
         capture_users_state: StateParams = await state.get_value('capture_users_state')
-        capture_users_state.change_call_to_changing()
         capture_users_state.next_state = AddScheme.confirmation_state
         await state.update_data(capture_users_state=capture_users_state)
         print('можно в стейте юзеров сразу использовать ласт стейт либо убрать его из класса')
@@ -240,7 +239,6 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
     elif confirm == CALL_CHANGING_DATE:
         capture_dates_state: StateParams = await state.get_value('capture_dates_state')
-        capture_dates_state.change_call_to_changing()
         capture_dates_state.next_state = AddScheme.confirmation_state
         await state.update_data(capture_dates_state=capture_dates_state)
         confirmation_state: StateParams = await state.get_value('confirmation_state')

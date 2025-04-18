@@ -18,7 +18,7 @@ class StateParams:
                  call_add_capture: str = None,
                  state_main_mess: str = None,
                  but_change_text: str = None,
-                 call_add_change: str = None,
+                 is_last_state_with_changing_mode: bool = None,
                  # необязательные
                  is_can_be_empty: bool = False,
                  next_state: State = None,
@@ -35,7 +35,7 @@ class StateParams:
         self.self_state : State = self_state #
         self.call_base : str = call_base #
         self.call_add_capture : str = call_add_capture #
-        self.call_add_change: str = call_add_change  #
+        self.is_last_state_with_changing_mode: bool = is_last_state_with_changing_mode  #
         self.menu_add : list = menu_add #
         # это тексты основного сообщения при вводе, текст кнопки изменения и текст кнопки подтверждения ввода
         self.state_main_mess: str = state_main_mess #
@@ -54,7 +54,8 @@ class StateParams:
         print('!---------------------------------------------------------------------------сделай нормальный репрезент')
 
     def change_call_to_changing(self):
-        self.call_add_capture = self.call_add_change
+        pass
+        # self.call_add_capture = self.call_add_change
         # return self
 
     def __repr__(self):
@@ -71,8 +72,8 @@ class CaptureWordsStateParams(StateParams):
         self.call_add_change : str = CALL_CHANGE_WORD
         self.state_main_mess : str = MESS_CAPTURE_WORD
         self.but_change_text : str  = TEXT_CHANGE_WORD
-        self.items_kb_cols : str = NUM_CAPTURE_WORD_COLS
-        self.items_kb_rows : str = NUM_CAPTURE_WORD_ROWS
+        self.items_kb_cols : int = NUM_CAPTURE_WORD_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_WORD_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_WORD
 
 
@@ -161,7 +162,8 @@ class FSMCallSet:
                 absolute_next_state = current_state_params
                 # если замена после внеснеия - то меняем добавочный колл - это для случая, если мы находимся в
                 # последнем стейте, и тогда нам нужно не остаться в нем, а перейти в замену элементов
-                if next_state_params.call_add_change == next_state_params.call_add_capture:
+                if current_state_params.is_last_state_with_changing_mode:
+                # if next_state_params.call_add_change == next_state_params.call_add_capture:
                     print('11')
                     absolute_next_state = next_state_params
                 # если следующий стейт имеет клавиатуру вычисляем номер текущей страницы,
