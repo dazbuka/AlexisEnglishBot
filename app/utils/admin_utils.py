@@ -278,9 +278,11 @@ async def get_new_carousel_page_num(call: str, items_kb: list, rows: int, cols: 
 
 
 # получает номер страницы пагинации при выбере слова, чтобы остаться на той же странице
-async def get_current_carousel_page_num(item: str, items_kb: list, rows: int, cols: int):
+async def get_current_carousel_page_num(item: str | int, items_kb: list, rows: int, cols: int):
     # вычисляем страницу выбранного слова, чтобы остаться на ней
     page_num = 0
+    if isinstance(item, int):
+        item = str(item)
     if items_kb:
         for i in range(len(items_kb)):
             if item in items_kb[i]:

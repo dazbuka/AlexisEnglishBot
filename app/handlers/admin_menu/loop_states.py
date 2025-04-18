@@ -92,14 +92,24 @@ class FSMCallSet:
         next_state_params: StateParams = await fsm_state.get_value(next_state)
         # сначала обработчик для колла, заодно проверяем чтобы не было мессаджа
         if fsm_call and not fsm_mess:
-            print('1')
+            print('__call__')
             # вытаксиваем колл и убераем из него базовый и добавочный колл (заменяем на пусто)
             item_call = fsm_call.data.replace(current_state_params.call_base, '')
             item_call = item_call.replace(current_state_params.call_add_capture, '')
+            # самый первый проверочный иф проверяет если текущий стейт - подтверждение всего ввода и будет
+            # переход на изменение элементов, в этом случае следуюзий стейт будет преходом, а не цикличиным
+            # как обыно, при этом номер страницы мы находим исходя из первого добавленного элемента
+            if current_state_params.is_last_state_with_changing_mode:
+                # if next_state_params.call_add_change == next_state_params.call_add_capture:
+                print('1')
+                absolute_next_state = next_state_params
+                last_item = list(absolute_next_state.captured_items_set)[-1]
+                page_num_common = await aut.get_current_carousel_page_num(item=last_item,
+                                                                          items_kb=absolute_next_state.items_kb_list,
+                                                                          rows=absolute_next_state.items_kb_rows,
+                                                                          cols=absolute_next_state.items_kb_cols)
             # если нажата кнопка подтверждения на клавиатуре
-            print(CALL_CONFIRM)
-            print(item_call)
-            if CALL_CONFIRM in item_call:
+            elif CALL_CONFIRM in item_call:
                 print('2')
                 # проверяемя чтобы были выбраны значения и не стоял флаг что их множество может быть нулевым
                 # в этом случае абсолютным следующим стейтом будет переход в следующий стейт по умолчанию
@@ -117,13 +127,13 @@ class FSMCallSet:
                     absolute_next_state = current_state_params
                 page_num_common = 0
                 # проверяем на случай если нажата кнопка карусельки
+            # если работает каруселька по перемещению между страницами, абсолютный некст будет текущим, страница
+            # определяется в зависимости от нажатой карусельки
             elif (item_call.startswith(CALL_NEXT) or item_call.startswith(CALL_LAST) or
                     item_call.startswith(CALL_PREV) or item_call.startswith(CALL_FIRST)):
                 print('5')
-                print('здесь во первый сделать нужно или енум или множестов, может даже класс, в который еще можно'
-                      'и функцию засунуть по листанию')
-                print('и вообще его нужно вынести из этого цикла выше на уровень')
-                # абсолютный некст будет текущим
+                print('здесь нужно сделать енум или множество, в который еще можно и функцию засунуть по листанию')
+                #
                 absolute_next_state = current_state_params
                 page_num_common = await aut.get_new_carousel_page_num(call=item_call,
                                                                       items_kb=absolute_next_state.items_kb_list,
@@ -135,24 +145,27 @@ class FSMCallSet:
                 # убираем чеки из колла, если они вообще заданы
                 if current_state_params.items_kb_check:
                     item_call = item_call.replace(current_state_params.items_kb_check, '')
-                print('здесь можно сделать функцию в зависимости от способа кодировки клавиатуры')
+                print('здесь можно сделать функцию в зависимости от способа кодировки колла клавиатуры')
                 # из получившегося остатка колла"111-слово" оставляем только цифры
                 added_item = item_call.split('-', 1)[0]
                 # добавляем его в множество выбранных слов и записываем в стейт
                 # проверяем может ли быть один - тогда просто симметрично добавляем (это для групп, например)
                 # елси не может быть один - тогда обновляем просто
-                if not current_state_params.is_only_one:
-                    print('7')
-                    # добавляем элементы
-                    current_state_params.captured_items_set = await aut.add_item_in_aim_set_plus_minus(
-                                                            aim_set=current_state_params.captured_items_set,
-                                                            added_item=added_item)
+                if added_item:
+                    if not current_state_params.is_only_one:
+                        print('7')
+                        # добавляем элементы
+                        current_state_params.captured_items_set = await aut.add_item_in_aim_set_plus_minus(
+                                                                aim_set=current_state_params.captured_items_set,
+                                                                added_item=added_item)
+                    else:
+                        print('8')
+                        print('поработай с неу, эту функцию по идее нужно объединить, точнее все три объединить нужно')
+                        current_state_params.captured_items_set = await aut.add_item_in_only_one_aim_set(
+                                                                aim_set=current_state_params.captured_items_set,
+                                                                added_item=added_item)
                 else:
-                    print('8')
-                    print('поработай с неу, эту функцию по идее нужно объединить, точнее все три объединить нужно')
-                    current_state_params.captured_items_set = await aut.add_item_in_only_one_aim_set(
-                                                            aim_set=current_state_params.captured_items_set,
-                                                            added_item=added_item)
+                    print('какая-то проблема с раскодировкой added_item в лупе')
                 # обновляем стейт после добавления элементов
                 await fsm_state.update_data({current_state: current_state_params})
                 # меняем сообщение на добавь еще
@@ -160,15 +173,7 @@ class FSMCallSet:
                 current_state_params.state_main_mess = MESS_MORE_CHOOSING
                 # остаемся в том же стейте
                 absolute_next_state = current_state_params
-                # если замена после внеснеия - то меняем добавочный колл - это для случая, если мы находимся в
-                # последнем стейте, и тогда нам нужно не остаться в нем, а перейти в замену элементов
-                if current_state_params.is_last_state_with_changing_mode:
-                # if next_state_params.call_add_change == next_state_params.call_add_capture:
-                    print('11')
-                    absolute_next_state = next_state_params
-                # если следующий стейт имеет клавиатуру вычисляем номер текущей страницы,
-                # на которой находится слово, чтобы остаться на ней
-
+                # вычисляем номер текущей страницы, на которой находится слово, чтобы остаться на ней
                 page_num_common = await aut.get_current_carousel_page_num(item=added_item,
                                                                           items_kb=absolute_next_state.items_kb_list,
                                                                           rows=absolute_next_state.items_kb_rows,

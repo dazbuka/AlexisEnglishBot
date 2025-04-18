@@ -2,6 +2,7 @@ from aiogram import F, Router
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
+from datetime import datetime, timedelta
 from app.database.requests import get_users_by_filters, get_groups_by_filters
 from app.utils.admin_utils import (message_answer,
                                    add_item_in_aim_set_plus_plus,
@@ -11,11 +12,15 @@ from app.utils.admin_utils import (message_answer,
                                    get_date_list_for_kb,
                                    update_button_with_call_base,
                                    state_text_builder)
+from app.utils.admin_utils import state_text_builder
+import app.database.requests as rq
+import app.keyboards.admin_keyboards as akb
 from app.handlers.admin_menu.loop_states import FSMCallSet, FSMMessageSet, StateParams, CaptureWordsStateParams
 from app.keyboards.keyboard_builder import keyboard_builder
 from app.keyboards.menu_buttons import (button_menu_setting_back, button_main_admin_menu, button_main_menu,
                                         button_change_word, button_change_user, button_change_date)
 from app.handlers.common_settings import *
+import data.admin_messages as amsg
 
 
 setting_scheme_router = Router()
@@ -171,7 +176,6 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
         message_text = text.replace(state_text, '')
         groups_state : StateParams  = await state.get_value('capture_groups_state')
         added_id = groups_state.captured_items_set
-        print('-0-0-0-0-0')
         users_state : StateParams = await state.get_value('capture_users_state')
         new_user_set = set()
         for group_id in added_id:
@@ -209,146 +213,73 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     confirm = call.data.replace(CALL_SET_SCHEME + CALL_ADD_ENDING, '')
     # уходим обратно если нужно что-то изменить
 
-    if confirm == CALL_CHANGING_WORD:
-        capture_words_state: StateParams = await state.get_value('capture_words_state')
-        capture_words_state.next_state = AddScheme.confirmation_state
-        await state.update_data(capture_words_state=capture_words_state)
+    if confirm == CALL_CHANGING_WORD or confirm == CALL_CHANGING_USER or confirm == CALL_CHANGING_DATE:
         confirmation_state: StateParams = await state.get_value('confirmation_state')
-        confirmation_state.next_state = AddScheme.capture_words_state
+
+        if confirm == CALL_CHANGING_WORD:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddScheme.capture_words_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_words_state: StateParams = await state.get_value('capture_words_state')
+            capture_words_state.next_state = AddScheme.confirmation_state
+            await state.update_data(capture_words_state=capture_words_state)
+
+        elif confirm == CALL_CHANGING_USER:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddScheme.capture_users_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_users_state: StateParams = await state.get_value('capture_users_state')
+            capture_users_state.next_state = AddScheme.confirmation_state
+            await state.update_data(capture_users_state=capture_users_state)
+
+        elif confirm == CALL_CHANGING_DATE:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddScheme.capture_dates_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_dates_state: StateParams = await state.get_value('capture_dates_state')
+            capture_dates_state.next_state = AddScheme.confirmation_state
+            await state.update_data(capture_dates_state=capture_dates_state)
+
         await state.update_data(confirmation_state=confirmation_state)
         current_fsm = FSMCallSet()
         await current_fsm.execute(state, call)
-        await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
-        await call.answer()
-
-    elif confirm == CALL_CHANGING_USER:
-
-        capture_users_state: StateParams = await state.get_value('capture_users_state')
-        capture_users_state.next_state = AddScheme.confirmation_state
-        await state.update_data(capture_users_state=capture_users_state)
-        print('можно в стейте юзеров сразу использовать ласт стейт либо убрать его из класса')
-
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
-        confirmation_state.next_state = AddScheme.capture_users_state
-        await state.update_data(confirmation_state=confirmation_state)
-
-        current_fsm = FSMCallSet()
-        await current_fsm.execute(state, call)
-        await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
-        await call.answer()
-
-    elif confirm == CALL_CHANGING_DATE:
-        capture_dates_state: StateParams = await state.get_value('capture_dates_state')
-        capture_dates_state.next_state = AddScheme.confirmation_state
-        await state.update_data(capture_dates_state=capture_dates_state)
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
-        confirmation_state.next_state = AddScheme.capture_dates_state
-        await state.update_data(confirmation_state=confirmation_state)
-        current_fsm = FSMCallSet()
-        await current_fsm.execute(state, call)
-
         await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
         await call.answer()
 
     else:
-        fsm_state_str = await state.get_state()
-        await call.message.edit_text('пока необработанный колл')
-        await call.answer('пока необработанный колл')
+        author_id_state = await state.get_value('author_id')
+        capture_words_state: StateParams = await state.get_value('capture_words_state')
+        capture_users_state: StateParams = await state.get_value('capture_users_state')
+        capture_dates_state: StateParams = await state.get_value('capture_dates_state')
 
+        author_id = author_id_state
+        words_set = capture_words_state.captured_items_set
+        users_set = capture_users_state.captured_items_set
+        dates_set = capture_dates_state.captured_items_set
+        state_text = await state_text_builder(state)
+        message_text = f'Необработано!!!\nавтор {author_id}\nслова {words_set}\nюзвери {users_set}\nдата {dates_set}\nстейт текст:\n{state_text}'
 
-        # # проставляем в клавиатуру чеки
-        # base_kb = await aut.set_check_in_button_list(button_list=base_kb,
-        #                                              aim_set=base_set,
-        #                                              check=base_check)
-        # # формируем клавиатуру, ничего не меняем кропе страницы
-        # reply_kb = await keyboard_builder(menu_pack=base_menu,
-        #                                   buttons_list=base_kb, buttons_call=base_call + base_call_add,
-        #                                   cols=base_cols, rows=base_rows,
-        #                                   add_confirm_button=True,
-        #                                   item_table_number=base_page_num)
-        #
-        # # получаем текст из стейта
-        # state_text = await aut.state_text_builder(state)
-        # # выводим заменой сообщения
-        # message_text = state_text + '\n' + MESS_SET_SCHEME_USER_MORE
-        # await call.message.edit_text(message_text, reply_markup=reply_kb)
-        # await call.answer()
-        # # возвращаемся в тот же стейт добавления слов
-        # await state.set_state(AddScheme.users_state)
+        res = False
+        for word in words_set:
+            medias = await rq.get_medias_by_filters(word_id=word)
+            for media in medias:
+                for date in dates_set:
+                    assign_date = datetime.strptime(date, "%d.%m.%Y") + timedelta(media.study_day - 1)
+                    task_day = datetime.combine(assign_date, datetime.now().time())
+                    for user in users_set:
+                        res = await rq.set_task(user_id=user,
+                                                media_id=media.id,
+                                                task_time=task_day,
+                                                author_id=author_id)
 
-#         st_data = await state.get_data()
-#         words_list = st_data.get("words_kb")
-#         medias_list = st_data.get("medias_kb")
-#         users_list = st_data.get("users_kb")
-#         author = st_data.get("author")
-#         beginning_date = st_data.get("beginning_date")
-#         users = [int(x.split('-', 1)[0]) for x in users_list]
-#
-#         res = False
-#         text = ''
-#
-#         if words_list:
-#             words = [int(x.split('-', 1)[0]) for x in words_list]
-#             for word in words:
-#                 medias = await rq.get_medias_by_filters(word_id=word)
-#                 for media in medias:
-#                     date = datetime.strptime(beginning_date, "%d.%m.%Y") + timedelta(media.study_day - 1)
-#                     study_day = datetime.combine(date, datetime.now().time())
-#                     for user in users:
-#                         res = await rq.set_task(user_id=user, media_id=media.id, task_time=study_day, author_id=author)
-#
-#             text = '\n'.join(map(str, st_data.get("words_kb")))
-#
-#         elif medias_list:
-#             medias = [int(x.split('-', 1)[0]) for x in medias_list]
-#             study_day = datetime.combine(datetime.strptime(beginning_date, "%d.%m.%Y"), datetime.now().time())
-#             for user in users:
-#                 for media in medias:
-#                     res = await rq.set_task(user_id=user, media_id=media, task_time=study_day, author_id=author)
-#             text = '\n'.join(map(str, st_data.get("medias_kb")))
-#
-#         users_text = '\n'.join(map(str, st_data.get("users_kb")))
-#         if res:
-#             message_text = amsg.ADM_ADD_TASK_ADDED_MEDIA.format(text, users_text)
-#         else:
-#             message_text = amsg.ADM_ADD_TASK_ERROR
-#
-#         reply_kb = await akb.admin_adding_menu_kb()
-#         await call.message.edit_text(message_text, reply_markup=reply_kb)
-#         await call.answer()
-#
-#     elif confirm == cmsg.NO:
-#         st_data = await state.get_data()
-#         words_list = st_data.get("words_kb")
-#         medias_list = st_data.get("medias_kb")
-#         await state.clear()
-#         if words_list:
-#             word_list = await aut.get_word_list_for_kb_with_ids()
-#             reply_kb = await akb.admin_adding_task_kb(adding_word_list=word_list)
-#             message_text = amsg.ADM_ADD_TASK_WORD_AGAIN
-#             await state.update_data(words_kb=word_list)
-#             await state.set_state(AddTask.words_kb)
-#
-#         elif medias_list:
-#             media_list = await aut.get_medias_list_for_kb_with_limit(media_only=False)
-#             reply_kb = await akb.admin_adding_task_kb(adding_media_list=media_list)
-#             message_text = amsg.ADM_ADD_TASK_MEDIA_AGAIN
-#             await state.update_data(medias_kb=media_list)
-#             await state.set_state(AddTask.medias_kb)
-#
-#         user = await rq.get_users_by_filters(user_tg_id=call.from_user.id)
-#         await state.update_data(author=user.id)
-#         await call.message.edit_text(message_text, reply_markup=reply_kb)
-#         await call.answer()
-#
-#
+        if res:
+            message_text += amsg.ADM_ADD_TASK_ADDED
+        else:
+            message_text += amsg.ADM_ADD_TASK_ERROR
 
-# @setting_scheme_router.callback_query(F.data, MenuState.set_task_menu)
-# async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
-#     print('hello new baby')
-#     await call.answer('хайло тебе')
-#     fsm_state_str = await state.get_state()
-#     print(fsm_state_str)
+        reply_kb = await akb.admin_adding_menu_kb()
+        await call.message.edit_text(message_text, reply_markup=reply_kb)
+        await call.answer()
 
 
 
