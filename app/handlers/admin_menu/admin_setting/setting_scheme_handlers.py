@@ -179,25 +179,25 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddScheme.capture_words_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_words_state: StateParams = await state.get_value('capture_words_state')
-            capture_words_state.next_state = AddScheme.confirmation_state
-            await state.update_data(capture_words_state=capture_words_state)
+            capture_words: StateParams = await state.get_value('capture_words_state')
+            capture_words.next_state = AddScheme.confirmation_state
+            await state.update_data(capture_words_state=capture_words)
 
         elif confirm == CALL_CHANGING_USER:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddScheme.capture_users_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_users_state: StateParams = await state.get_value('capture_users_state')
-            capture_users_state.next_state = AddScheme.confirmation_state
-            await state.update_data(capture_users_state=capture_users_state)
+            capture_users: StateParams = await state.get_value('capture_users_state')
+            capture_users.next_state = AddScheme.confirmation_state
+            await state.update_data(capture_users_state=capture_users)
 
         elif confirm == CALL_CHANGING_DATE:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddScheme.capture_dates_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_dates_state: StateParams = await state.get_value('capture_dates_state')
-            capture_dates_state.next_state = AddScheme.confirmation_state
-            await state.update_data(capture_dates_state=capture_dates_state)
+            capture_dates: StateParams = await state.get_value('capture_dates_state')
+            capture_dates.next_state = AddScheme.confirmation_state
+            await state.update_data(capture_dates_state=capture_dates)
 
         await state.update_data(confirmation_state=confirmation_state)
         current_fsm = FSMExecutor()
@@ -206,18 +206,18 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         await call.answer()
 
     else:
-        author_id_state = await state.get_value('author_id')
-        capture_words_state: StateParams = await state.get_value('capture_words_state')
-        capture_users_state: StateParams = await state.get_value('capture_users_state')
-        capture_dates_state: StateParams = await state.get_value('capture_dates_state')
+        author_id = await state.get_value('author_id')
+        capture_words: StateParams = await state.get_value('capture_words_state')
+        capture_users: StateParams = await state.get_value('capture_users_state')
+        capture_dates: StateParams = await state.get_value('capture_dates_state')
 
-        author_id = author_id_state
-        words_set = capture_words_state.captured_items_set
-        users_set = capture_users_state.captured_items_set
-        dates_set = capture_dates_state.captured_items_set
+        author_id = author_id
+        words_set = capture_words.captured_items_set
+        users_set = capture_users.captured_items_set
+        dates_set = capture_dates.captured_items_set
         state_text = await state_text_builder(state)
 
-        res = False
+        res = True
         for word in words_set:
             medias = await rq.get_medias_by_filters(word_id=word)
             for media in medias:
@@ -225,10 +225,10 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
                     assign_date = datetime.strptime(date, "%d.%m.%Y") + timedelta(media.study_day - 1)
                     task_day = datetime.combine(assign_date, datetime.now().time())
                     for user in users_set:
-                        res = await rq.set_task(user_id=user,
-                                                media_id=media.id,
-                                                task_time=task_day,
-                                                author_id=author_id)
+                        res = res and await rq.set_task(user_id=user,
+                                                        media_id=media.id,
+                                                        task_time=task_day,
+                                                        author_id=author_id)
 
         message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'
 

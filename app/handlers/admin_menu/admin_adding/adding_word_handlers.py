@@ -11,7 +11,7 @@ from app.utils.admin_utils import (message_answer,
                                    update_button_with_call_base,
                                    state_text_builder)
 from aiogram.fsm.state import State, StatesGroup
-
+import data.admin_messages as amsg
 import app.database.requests as rq
 import app.keyboards.admin_keyboards as akb
 
@@ -138,6 +138,8 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 
 
 @adding_word_router.message(F.text, AddWord.input_word_state)
+@adding_word_router.message(F.text, AddWord.capture_parts_state)
+@adding_word_router.message(F.text, AddWord.capture_levels_state)
 @adding_word_router.message(F.text, AddWord.input_definition_state)
 @adding_word_router.message(F.text, AddWord.input_translation_state)
 async def admin_adding_word_capture_word(message: Message, state: FSMContext):
@@ -183,52 +185,53 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 @adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_ADD_ENDING), AddWord.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_SET_SCHEME + CALL_ADD_ENDING, '')
+    confirm = call.data.replace(CALL_ADD_WORD + CALL_ADD_ENDING, '')
     # уходим обратно если нужно что-то изменить
 
     if (confirm == CALL_CHANGING_WORD or confirm == CALL_CHANGING_PART or confirm == CALL_CHANGING_LEVEL
             or confirm == CALL_CHANGING_DEFINITION or confirm == CALL_CHANGING_TRANSLATION):
         confirmation_state: StateParams = await state.get_value('confirmation_state')
-
+        print(confirm)
+        print('111')
         if confirm == CALL_CHANGING_WORD:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.input_word_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_words_state: StateParams = await state.get_value('input_word_state')
-            capture_words_state.next_state = AddWord.confirmation_state
-            await state.update_data(capture_words_state=capture_words_state)
+            input_word_state: StateParams = await state.get_value('input_word_state')
+            input_word_state.next_state = AddWord.confirmation_state
+            await state.update_data(input_word_state=input_word_state)
 
         elif confirm == CALL_CHANGING_PART:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.capture_parts_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_users_state: StateParams = await state.get_value('capture_parts_state')
-            capture_users_state.next_state = AddWord.confirmation_state
-            await state.update_data(capture_users_state=capture_users_state)
+            capture_parts_state: StateParams = await state.get_value('capture_parts_state')
+            capture_parts_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_parts_state=capture_parts_state)
 
         elif confirm == CALL_CHANGING_LEVEL:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.capture_levels_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_dates_state: StateParams = await state.get_value('capture_levels_state')
-            capture_dates_state.next_state = AddWord.confirmation_state
-            await state.update_data(capture_dates_state=capture_dates_state)
+            capture_levels_state: StateParams = await state.get_value('capture_levels_state')
+            capture_levels_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_levels_state=capture_levels_state)
 
         elif confirm == CALL_CHANGING_DEFINITION:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.input_definition_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_dates_state: StateParams = await state.get_value('input_definition_state')
-            capture_dates_state.next_state = AddWord.confirmation_state
-            await state.update_data(capture_dates_state=capture_dates_state)
+            input_definition_state: StateParams = await state.get_value('input_definition_state')
+            input_definition_state.next_state = AddWord.confirmation_state
+            await state.update_data(input_definition_state=input_definition_state)
 
         elif confirm == CALL_CHANGING_TRANSLATION:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.input_translation_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_dates_state: StateParams = await state.get_value('input_translation_state')
-            capture_dates_state.next_state = AddWord.confirmation_state
-            await state.update_data(capture_dates_state=capture_dates_state)
+            input_translation_state: StateParams = await state.get_value('input_translation_state')
+            input_translation_state.next_state = AddWord.confirmation_state
+            await state.update_data(input_translation_state=input_translation_state)
 
         await state.update_data(confirmation_state=confirmation_state)
         current_fsm = FSMExecutor()
@@ -242,26 +245,45 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         print(author_id)
         print('не обработано')
         state_text = await state_text_builder(state)
-        #
-        # res = False
-        # for word in words_set:
-        #     medias = await rq.get_medias_by_filters(word_id=word)
-        #     for media in medias:
-        #         for date in dates_set:
-        #             assign_date = datetime.strptime(date, "%d.%m.%Y") + timedelta(media.study_day - 1)
-        #             task_day = datetime.combine(assign_date, datetime.now().time())
-        #             for user in users_set:
-        #                 res = await rq.set_task(user_id=user,
-        #                                         media_id=media.id,
-        #                                         task_time=task_day,
-        #                                         author_id=author_id)
+
+        author_id = await state.get_value('author_id')
+
+        input_word: StateParams = await state.get_value('input_word_state')
+        word_item = input_word.input_item
+
+        capture_parts: StateParams = await state.get_value('capture_parts_state')
+        parts_set = capture_parts.captured_items_set
+
+        capture_levels: StateParams = await state.get_value('capture_levels_state')
+        levels_set = capture_levels.captured_items_set
+
+        input_definition: StateParams = await state.get_value('input_definition_state')
+        definition_item = input_definition.input_item
+
+        input_translation: StateParams = await state.get_value('input_translation_state')
+        translation_item = input_translation.input_item
+
+        state_text = await state_text_builder(state)
+
+
+
+
+        res = True
+        for part in parts_set:
+            for level in levels_set:
+                res = res and await rq.add_word_to_db(word=word_item,
+                                                      level=level,
+                                                      part=part,
+                                                      translation=translation_item,
+                                                      definition=definition_item,
+                                                      author_id=author_id)
 
         message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'
 
-        # if res:
-        #     message_text += amsg.ADM_ADD_TASK_ADDED
-        # else:
-        #     message_text += amsg.ADM_ADD_TASK_ERROR
+        if res:
+            message_text += amsg.ADM_ADD_TASK_ADDED
+        else:
+            message_text += amsg.ADM_ADD_TASK_ERROR
 
         reply_kb = await akb.admin_adding_menu_kb()
         await call.message.edit_text(message_text, reply_markup=reply_kb)

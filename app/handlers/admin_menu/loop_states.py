@@ -158,12 +158,15 @@ class FSMExecutor:
                 # if next_state_params.call_add_change == next_state_params.call_add_capture:
                 print('c1', end='-')
                 absolute_next_state = next_state_params
-                last_item = list(absolute_next_state.captured_items_set)[-1]
-                page_num_common = await aut.get_current_carousel_page_num(item=last_item,
-                                                                          items_kb=absolute_next_state.items_kb_list,
-                                                                          rows=absolute_next_state.items_kb_rows,
-                                                                          cols=absolute_next_state.items_kb_cols)
-            # если нажата кнопка подтверждения на клавиатуре
+                if next_state_params.is_input:
+                    page_num_common = 0
+                else:
+                    last_item = list(absolute_next_state.captured_items_set)[-1]
+                    page_num_common = await aut.get_current_carousel_page_num(item=last_item,
+                                                                              items_kb=absolute_next_state.items_kb_list,
+                                                                              rows=absolute_next_state.items_kb_rows,
+                                                                              cols=absolute_next_state.items_kb_cols)
+                # если нажата кнопка подтверждения на клавиатуре
             elif CALL_CONFIRM in item_call:
                 print('c2', end='-')
                 # проверяемя чтобы были выбраны значения и не стоял флаг что их множество может быть нулевым
@@ -298,6 +301,10 @@ class FSMExecutor:
             absolute_next_kb_items_list = None
             page_num_common = 0
 
+        if absolute_next_state.is_input:
+            is_adding_confirm_button = False
+        else:
+            is_adding_confirm_button = True
 
         print('cm end')
         state_text = await aut.state_text_builder(fsm_state)
@@ -307,7 +314,7 @@ class FSMExecutor:
                                                buttons_base_call=absolute_next_state.call_base + absolute_next_state.call_add_capture,
                                                buttons_add_cols=absolute_next_state.items_kb_cols,
                                                buttons_add_rows=absolute_next_state.items_kb_rows,
-                                               is_adding_confirm_button=True,
+                                               is_adding_confirm_button=is_adding_confirm_button,
                                                buttons_add_table_number=page_num_common)
         # возвращаемся в тот же стейт добавления слов
         await fsm_state.set_state(absolute_next_state.self_state)

@@ -215,6 +215,24 @@ async def state_text_builder(state):
         if text:
             message_text += f'Слово:\n<b>{text}</b>\n'
 
+    if 'capture_parts_state' in st_data:
+        dates=(st_data.get("capture_parts_state")).captured_items_set
+        date_list = []
+        for date_values in dates:
+            date_list.append(date_values)
+        text = ', '.join(date_list)
+        if text:
+            message_text += f'Часть речи:\n<b>{text}</b>\n'
+
+    if 'capture_levels_state' in st_data:
+        dates = (st_data.get("capture_levels_state")).captured_items_set
+        date_list = []
+        for date_values in dates:
+            date_list.append(date_values)
+        text = ', '.join(date_list)
+        if text:
+            message_text += f'Уровень:\n<b>{text}</b>\n'
+
     if 'input_definition_state' in st_data:
         word = (st_data.get("input_definition_state")).input_item
         text = word
@@ -266,23 +284,7 @@ async def state_text_builder(state):
         if text:
             message_text += f'Выбраны даты:\n<b>{text}</b>\n'
 
-    if 'capture_parts_state' in st_data:
-        dates=(st_data.get("capture_parts_state")).captured_items_set
-        date_list = []
-        for date_values in dates:
-            date_list.append(date_values)
-        text = ', '.join(date_list)
-        if text:
-            message_text += f'Часть речи:\n<b>{text}</b>\n'
 
-    if 'capture_levels_state' in st_data:
-        dates = (st_data.get("capture_levels_state")).captured_items_set
-        date_list = []
-        for date_values in dates:
-            date_list.append(date_values)
-        text = ', '.join(date_list)
-        if text:
-            message_text += f'Уровень::\n<b>{text}</b>\n'
 
     return message_text
 
