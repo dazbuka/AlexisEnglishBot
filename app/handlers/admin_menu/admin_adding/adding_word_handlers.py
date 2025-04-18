@@ -11,14 +11,20 @@ from app.utils.admin_utils import (message_answer,
                                    update_button_with_call_base,
                                    state_text_builder)
 from aiogram.fsm.state import State, StatesGroup
+
+import app.database.requests as rq
+import app.keyboards.admin_keyboards as akb
+
 # from app.handlers.admin_menu.input_states import AddWord, FSMInputMessageSet, InputStateParams
 
-from app.handlers.admin_menu.loop_states import FSMMessageSet, StateParams, FSMCallSet
+from app.handlers.admin_menu.loop_states import StateParams, FSMExecutor, CaptureLevelsStateParams, \
+    CapturePartsStateParams
 
 from app.keyboards.keyboard_builder import keyboard_builder
 from app.keyboards.menu_buttons import (button_menu_setting_back, button_main_admin_menu, button_main_menu,
                                         button_change_word, button_change_user, button_change_date,
-                                        button_menu_adding_back)
+                                        button_menu_adding_back, button_change_level, button_change_part,
+                                        button_change_translation, button_change_definition)
 from app.handlers.common_settings import *
 
 
@@ -27,11 +33,10 @@ adding_word_router = Router()
 class AddWord(StatesGroup):
     author_id = State() # автор который назначает задание - ид
     input_word_state = State()
-    capture_level_state = State()
-    input_definition = State()
-    author = State()
-    part = State()
-    translation = State()
+    capture_parts_state = State()
+    capture_levels_state = State()
+    input_definition_state = State()
+    input_translation_state = State()
     confirmation_state = State()
 
 
@@ -48,40 +53,78 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 
     menu_add_word_with_changing = [
         [update_button_with_call_base(button_change_word, CALL_ADD_WORD + CALL_ADD_ENDING),
-         update_button_with_call_base(button_change_user, CALL_ADD_WORD + CALL_ADD_ENDING),
-         update_button_with_call_base(button_change_date, CALL_ADD_WORD + CALL_ADD_ENDING)],
+         update_button_with_call_base(button_change_level, CALL_ADD_WORD + CALL_ADD_ENDING),
+         update_button_with_call_base(button_change_part, CALL_ADD_WORD + CALL_ADD_ENDING)],
+        [update_button_with_call_base(button_change_translation, CALL_ADD_WORD + CALL_ADD_ENDING),
+         update_button_with_call_base(button_change_definition, CALL_ADD_WORD + CALL_ADD_ENDING)],
         [button_menu_setting_back, button_main_admin_menu, button_main_menu]
     ]
-
-
 
     # задаем в стейт ид автора
     author = await get_users_by_filters(user_tg_id=call.from_user.id)
     await state.update_data(author_id=author.id)
 
-    # word_state = InputStateParams(self_state = AddWord.input_word_state,
-    #                                base_call = CALL_ADD_WORD,
-    #                                call_add = CALL_INPUT_WORD,
-    #                                menu_add = menu_add_word,
-    #                                state_kb_dict = word_state_dict)
-    # print(word_state)
-    # await state.update_data(word_state=word_state)
-
     word_state = StateParams(self_state = AddWord.input_word_state,
+                             next_state = AddWord.capture_parts_state,
                              call_base= CALL_ADD_WORD,
                              call_add_capture= CALL_INPUT_WORD,
+                             state_main_mess = MESS_INPUT_WORD,
+                             but_change_text = TEXT_CHANGE_WORD,
                              menu_add = menu_add_word,
-                             state_kb_dict=word_state_dict)
+                             is_input=True)
     await state.update_data(input_word_state=word_state)
 
-    levels_state = StateParams(self_state = AddWord.capture_level_state,
-                               call_base= CALL_ADD_WORD,
-                               call_add_capture= CALL_CAPTURE_LEVEL,
-                               menu_add = menu_add_word,
-                               items_kb_list=LEVEL_LIST,
-                               state_kb_dict = levels_state_dict,
-                               is_only_one=True)
-    await state.update_data(capture_level_state=levels_state)
+
+    parts_state = CapturePartsStateParams(self_state=AddWord.capture_parts_state,
+                                           next_state=AddWord.capture_levels_state,
+                                           call_base=CALL_ADD_WORD,
+                                           menu_add=menu_add_word,
+                                           items_kb_list=PART_LIST,
+                                           is_can_be_empty=True,
+                                           is_only_one=True)
+    await state.update_data(capture_parts_state=parts_state)
+
+
+    levels_state = CaptureLevelsStateParams(self_state=AddWord.capture_levels_state,
+                                            next_state=AddWord.input_definition_state,
+                                            call_base=CALL_ADD_WORD,
+                                            menu_add=menu_add_word,
+                                            items_kb_list=LEVEL_LIST,
+                                            is_can_be_empty=True,
+                                            is_only_one=True)
+    await state.update_data(capture_levels_state=levels_state)
+
+    definition_state = StateParams(self_state = AddWord.input_definition_state,
+                                  next_state = AddWord.input_translation_state,
+                                  call_base= CALL_ADD_WORD,
+                                  call_add_capture= CALL_INPUT_DEFINITION,
+                                  state_main_mess = MESS_INPUT_DEFINITION,
+                                  but_change_text = TEXT_CHANGE_DEFINITION,
+                                  menu_add = menu_add_word,
+                                  is_input=True)
+    await state.update_data(input_definition_state=definition_state)
+
+
+
+    translation_state = StateParams(self_state = AddWord.input_translation_state,
+                                  next_state = AddWord.confirmation_state,
+                                  call_base= CALL_ADD_WORD,
+                                  call_add_capture= CALL_INPUT_TRANSLATION,
+                                  state_main_mess = MESS_INPUT_TRANSLATION,
+                                  but_change_text = TEXT_CHANGE_TRANSLATION,
+                                  menu_add = menu_add_word,
+                                  is_input=True)
+    await state.update_data(input_translation_state=translation_state)
+
+
+    confirmation_state = StateParams(self_state = AddWord.confirmation_state,
+                                     call_base = CALL_ADD_WORD,
+                                     call_add_capture= CALL_ADD_ENDING,
+                                     menu_add = menu_add_word_with_changing,
+                                     state_main_mess=MESS_ADD_ENDING,
+                                     is_last_state_with_changing_mode=True)
+    await state.update_data(confirmation_state=confirmation_state)
+
 
     first_state = word_state
 
@@ -93,15 +136,16 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     await call.message.edit_text('vvedite')
     await call.answer()
 
+
 @adding_word_router.message(F.text, AddWord.input_word_state)
+@adding_word_router.message(F.text, AddWord.input_definition_state)
+@adding_word_router.message(F.text, AddWord.input_translation_state)
 async def admin_adding_word_capture_word(message: Message, state: FSMContext):
     # проверяем слово в базе данных
     # создаем экземпляр класса для обработки текущего состояния фсм
-    current_fsm = FSMMessageSet()
+    current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
-    await current_fsm.set(message, state)
-    print('сделай проверку на наличие слова в базе')
-    print('убери пустое слово в том числе при нажатии старт')
+    await current_fsm.execute(fsm_state=state, fsm_mess=message)
     await message_answer(source=message, message_text=current_fsm.message_text, reply_markup=current_fsm.reply_kb)
 
     # если оно там есть - пусть пробует снова
@@ -123,13 +167,103 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
     #     await state.set_state(AddWord.level)
 
 
-@adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_CAPTURE_LEVEL), AddWord.capture_level_state)
+@adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_CAPTURE_PART), AddWord.capture_parts_state)
+@adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_CAPTURE_LEVEL), AddWord.capture_levels_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
     # создаем экземпляр класса для обработки текущего состояния фсм
-    current_fsm = FSMCallSet()
+    current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
-    await current_fsm.execute(call, state)
-
+    await current_fsm.execute(fsm_state=state, fsm_call=call)
     # отвечаем заменой сообщения
     await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
     await call.answer()
+
+
+# конечный обработчик всего стейта
+@adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_ADD_ENDING), AddWord.confirmation_state)
+async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
+    # вытаскиваем из колбека уровень
+    confirm = call.data.replace(CALL_SET_SCHEME + CALL_ADD_ENDING, '')
+    # уходим обратно если нужно что-то изменить
+
+    if (confirm == CALL_CHANGING_WORD or confirm == CALL_CHANGING_PART or confirm == CALL_CHANGING_LEVEL
+            or confirm == CALL_CHANGING_DEFINITION or confirm == CALL_CHANGING_TRANSLATION):
+        confirmation_state: StateParams = await state.get_value('confirmation_state')
+
+        if confirm == CALL_CHANGING_WORD:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddWord.input_word_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_words_state: StateParams = await state.get_value('input_word_state')
+            capture_words_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_words_state=capture_words_state)
+
+        elif confirm == CALL_CHANGING_PART:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddWord.capture_parts_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_users_state: StateParams = await state.get_value('capture_parts_state')
+            capture_users_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_users_state=capture_users_state)
+
+        elif confirm == CALL_CHANGING_LEVEL:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddWord.capture_levels_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_dates_state: StateParams = await state.get_value('capture_levels_state')
+            capture_dates_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_dates_state=capture_dates_state)
+
+        elif confirm == CALL_CHANGING_DEFINITION:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddWord.input_definition_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_dates_state: StateParams = await state.get_value('input_definition_state')
+            capture_dates_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_dates_state=capture_dates_state)
+
+        elif confirm == CALL_CHANGING_TRANSLATION:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddWord.input_translation_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_dates_state: StateParams = await state.get_value('input_translation_state')
+            capture_dates_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_dates_state=capture_dates_state)
+
+        await state.update_data(confirmation_state=confirmation_state)
+        current_fsm = FSMExecutor()
+        await current_fsm.execute(state, call)
+        await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+        await call.answer()
+
+    else:
+        author_id_state = await state.get_value('author_id')
+        author_id = author_id_state
+        print(author_id)
+        print('не обработано')
+        state_text = await state_text_builder(state)
+        #
+        # res = False
+        # for word in words_set:
+        #     medias = await rq.get_medias_by_filters(word_id=word)
+        #     for media in medias:
+        #         for date in dates_set:
+        #             assign_date = datetime.strptime(date, "%d.%m.%Y") + timedelta(media.study_day - 1)
+        #             task_day = datetime.combine(assign_date, datetime.now().time())
+        #             for user in users_set:
+        #                 res = await rq.set_task(user_id=user,
+        #                                         media_id=media.id,
+        #                                         task_time=task_day,
+        #                                         author_id=author_id)
+
+        message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'
+
+        # if res:
+        #     message_text += amsg.ADM_ADD_TASK_ADDED
+        # else:
+        #     message_text += amsg.ADM_ADD_TASK_ERROR
+
+        reply_kb = await akb.admin_adding_menu_kb()
+        await call.message.edit_text(message_text, reply_markup=reply_kb)
+        await call.answer()
+

@@ -32,6 +32,10 @@ button_main_menu = InlineKeyboardButton(text=ADMIN_BUTTON_MAIN_MENU,
 button_change_word = InlineKeyboardButton(text=TEXT_CHANGE_WORD, callback_data=CALL_CHANGING_WORD)
 button_change_user = InlineKeyboardButton(text=TEXT_CHANGE_USER, callback_data=CALL_CHANGING_USER)
 button_change_date = InlineKeyboardButton(text=TEXT_CHANGE_DATE, callback_data=CALL_CHANGING_DATE)
+button_change_part = InlineKeyboardButton(text=TEXT_CHANGE_PART, callback_data=CALL_CHANGING_PART)
+button_change_level = InlineKeyboardButton(text=TEXT_CHANGE_LEVEL, callback_data=CALL_CHANGING_LEVEL)
+button_change_translation = InlineKeyboardButton(text=TEXT_CHANGE_TRANSLATION, callback_data=CALL_CHANGING_TRANSLATION)
+button_change_definition = InlineKeyboardButton(text=TEXT_CHANGE_DEFINITION, callback_data=CALL_CHANGING_DEFINITION)
 
 button_set_scheme_confirm = InlineKeyboardButton(text=TEXT_BUTTON_CONFIRM, callback_data=CALL_CONFIRM)
 

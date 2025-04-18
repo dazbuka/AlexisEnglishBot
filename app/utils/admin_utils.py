@@ -208,16 +208,25 @@ async def state_text_builder(state):
         text = author.ident_name
         if text:
             message_text += f'Автор:\n<b>{text}</b>\n'
+
     if 'input_word_state' in st_data:
         word = (st_data.get("input_word_state")).input_item
-        # word_list = []
-        # for word_id in words:
-        #     word = (await rq.get_words_by_filters(id=word_id)).word
-        #     word_list.append(word)
-        # text = ', '.join(word_list)
         text = word
         if text:
-            message_text += f'Выбраны слова:\n<b>{text}</b>\n'
+            message_text += f'Слово:\n<b>{text}</b>\n'
+
+    if 'input_definition_state' in st_data:
+        word = (st_data.get("input_definition_state")).input_item
+        text = word
+        if text:
+            message_text += f'Определение:\n<b>{text}</b>\n'
+
+    if 'input_translation_state' in st_data:
+        word = (st_data.get("input_translation_state")).input_item
+        text = word
+        if text:
+            message_text += f'Перевод:\n<b>{text}</b>\n'
+
     if 'capture_words_state' in st_data:
         words=(st_data.get("capture_words_state")).captured_items_set
         word_list = []
@@ -227,6 +236,7 @@ async def state_text_builder(state):
         text = ', '.join(word_list)
         if text:
             message_text += f'Выбраны слова:\n<b>{text}</b>\n'
+
     if 'capture_groups_state' in st_data:
         groups = (st_data.get("capture_groups_state")).captured_items_set
         group_list = []
@@ -236,6 +246,7 @@ async def state_text_builder(state):
         text = ', '.join(group_list)
         if text:
             message_text += f'Выбраны группы:\n<b>{text}</b>\n'
+
     if 'capture_users_state' in st_data:
         users=(st_data.get("capture_users_state")).captured_items_set
         user_list = []
@@ -245,6 +256,7 @@ async def state_text_builder(state):
         text = ', '.join(user_list)
         if text:
             message_text += f'Выбраны пользователи:\n<b>{text}</b>\n'
+
     if 'capture_dates_state' in st_data:
         dates=(st_data.get("capture_dates_state")).captured_items_set
         date_list = []
@@ -253,6 +265,25 @@ async def state_text_builder(state):
         text = ', '.join(date_list)
         if text:
             message_text += f'Выбраны даты:\n<b>{text}</b>\n'
+
+    if 'capture_parts_state' in st_data:
+        dates=(st_data.get("capture_parts_state")).captured_items_set
+        date_list = []
+        for date_values in dates:
+            date_list.append(date_values)
+        text = ', '.join(date_list)
+        if text:
+            message_text += f'Часть речи:\n<b>{text}</b>\n'
+
+    if 'capture_levels_state' in st_data:
+        dates = (st_data.get("capture_levels_state")).captured_items_set
+        date_list = []
+        for date_values in dates:
+            date_list.append(date_values)
+        text = ', '.join(date_list)
+        if text:
+            message_text += f'Уровень::\n<b>{text}</b>\n'
+
     return message_text
 
 # получает номер страницы пагинации при управлении в карусельке вперед назад

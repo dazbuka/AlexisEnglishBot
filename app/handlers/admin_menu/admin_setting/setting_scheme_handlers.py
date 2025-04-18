@@ -15,7 +15,7 @@ from app.utils.admin_utils import (message_answer,
 from app.utils.admin_utils import state_text_builder
 import app.database.requests as rq
 import app.keyboards.admin_keyboards as akb
-from app.handlers.admin_menu.loop_states import (FSMCallSet, FSMMessageSet, StateParams, CaptureWordsStateParams,
+from app.handlers.admin_menu.loop_states import (FSMExecutor, StateParams, CaptureWordsStateParams,
                                                  CaptureGroupsStateParams, CaptureUsersStateParams,
                                                  CaptureDatesStateParams)
 from app.keyboards.keyboard_builder import keyboard_builder
@@ -98,7 +98,6 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                      menu_add = menu_set_scheme_with_changing,
                                      state_main_mess=MESS_ADD_ENDING,
                                      is_last_state_with_changing_mode=True)
-
     await state.update_data(confirmation_state=confirmation_state)
 
     first_state = words_state
@@ -120,19 +119,15 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
 
 
 # цикличные хендлеры захвата слов, пользователей и др.
-# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_WORD), AddScheme.capture_words_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_WORD), AddScheme.capture_words_state)
-# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_GROUP), AddScheme.capture_groups_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_GROUP), AddScheme.capture_groups_state)
-# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_USER), AddScheme.capture_users_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_USER), AddScheme.capture_users_state)
-# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_DATE), AddScheme.capture_dates_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_DATE), AddScheme.capture_dates_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
     # создаем экземпляр класса для обработки текущего состояния фсм
-    current_fsm = FSMCallSet()
+    current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
-    await current_fsm.execute(state, call)
+    await current_fsm.execute(fsm_state=state, fsm_call=call)
 
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
     if CALL_CAPTURE_GROUP in call.data:
@@ -147,12 +142,11 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
             added_items = (await get_groups_by_filters(group_id=group_id)).users
 
             new_user_set = await add_item_in_aim_set_plus_plus(aim_set=new_user_set, added_item=added_items)
-        print(new_user_set)
         users_state.captured_items_set = new_user_set
         await state.update_data(capture_users_state=users_state)
         state_text = await state_text_builder(state)
         current_fsm.message_text = state_text + '\n' + message_text
-        print('добавь обратный обрабочик чтобы группы тоже показывались при объединении ползователей, а может и не надо')
+
 
     # отвечаем заменой сообщения
     await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
@@ -165,9 +159,9 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 @setting_scheme_router.message(F.text, AddScheme.capture_users_state)
 @setting_scheme_router.message(F.text, AddScheme.capture_dates_state)
 async def set_scheme_capture_words_from_message(message: Message, state: FSMContext):
-    current_fsm = FSMMessageSet()
+    current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш ввод и выдает сообщение и клавиатуру
-    await current_fsm.set(message, state)
+    await current_fsm.execute(fsm_state=state, fsm_mess=message)
     await message_answer(source=message, message_text=current_fsm.message_text, reply_markup=current_fsm.reply_kb)
 
 
@@ -206,7 +200,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             await state.update_data(capture_dates_state=capture_dates_state)
 
         await state.update_data(confirmation_state=confirmation_state)
-        current_fsm = FSMCallSet()
+        current_fsm = FSMExecutor()
         await current_fsm.execute(state, call)
         await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
         await call.answer()

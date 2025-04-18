@@ -25,7 +25,8 @@ class StateParams:
                  items_kb_cols : int = None,
                  items_kb_rows : int = None,
                  items_kb_check : str = None,
-                 is_only_one : bool = False
+                 is_only_one : bool = False,
+                 is_input: bool = False
                  ):
 
         # это вводимые значения - либо элемент либо множество для кнопок выбора, изначально - пусто
@@ -50,7 +51,9 @@ class StateParams:
         self.items_kb_rows : int = items_kb_rows
         self.items_kb_check : str = items_kb_check
         self.is_only_one : bool = is_only_one # выбор только одного элемента
-        print('!---------------------------------------------------------------------------сделай нормальный репрезент')
+        self.is_input : bool = is_input
+
+
 
     def change_call_to_changing(self):
         pass
@@ -58,6 +61,7 @@ class StateParams:
         # return self
 
     def __repr__(self):
+
         repr = f'$$$$$$$ набор элементов - {self.captured_items_set} - $$$$$$$ - {self.call_add_capture}- $$$$$$$ - {self.self_state.state}'
 
         return repr
@@ -65,7 +69,7 @@ class StateParams:
 
 class CaptureWordsStateParams(StateParams):
     def __init__(self, **kwargs):
-        print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
+
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_WORD
         self.state_main_mess : str = MESS_CAPTURE_WORD
@@ -76,7 +80,6 @@ class CaptureWordsStateParams(StateParams):
 
 class CaptureGroupsStateParams(StateParams):
     def __init__(self, **kwargs):
-        print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_GROUP
         self.state_main_mess : str = MESS_CAPTURE_GROUP
@@ -87,7 +90,6 @@ class CaptureGroupsStateParams(StateParams):
 
 class CaptureUsersStateParams(StateParams):
     def __init__(self, **kwargs):
-        print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_USER
         self.state_main_mess : str = MESS_CAPTURE_USER
@@ -98,7 +100,6 @@ class CaptureUsersStateParams(StateParams):
 
 class CaptureDatesStateParams(StateParams):
     def __init__(self, **kwargs):
-        print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_DATE
         self.state_main_mess : str = MESS_CAPTURE_DATE
@@ -107,23 +108,46 @@ class CaptureDatesStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_DATE_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_DATE
 
+class CapturePartsStateParams(StateParams):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_PART
+        self.state_main_mess : str = MESS_CAPTURE_PART
+        self.but_change_text : str  = TEXT_CHANGE_PART
+        self.items_kb_cols : int = NUM_CAPTURE_PART_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_PART_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_PART
 
-class FSMCallSet:
+class CaptureLevelsStateParams(StateParams):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_LEVEL
+        self.state_main_mess : str = MESS_CAPTURE_LEVEL
+        self.but_change_text : str  = TEXT_CHANGE_LEVEL
+        self.items_kb_cols : int = NUM_CAPTURE_LEVEL_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_LEVEL_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_LEVEL
+
+
+class FSMExecutor:
     def __init__(self):
         self.message_text = None
         self.reply_kb = None
 
-    async def execute(self, fsm_state: FSMContext, fsm_call: CallbackQuery, fsm_mess: Message = None):
+    async def execute(self, fsm_state: FSMContext, fsm_call: CallbackQuery = None, fsm_mess: Message = None):
         fsm_state_str = await fsm_state.get_state()
         current_state = fsm_state_str.split(':', 1)[1]
         current_state_params: StateParams = await fsm_state.get_value(current_state)
-
+        print(fsm_state_str)
         next_state_str = current_state_params.next_state.state
         next_state = next_state_str.split(':', 1)[1]
         next_state_params: StateParams = await fsm_state.get_value(next_state)
+        print(next_state_str)
+        # print('params')
+        # print(current_state_params)
+
         # сначала обработчик для колла, заодно проверяем чтобы не было мессаджа
         if fsm_call and not fsm_mess:
-            print('__call__')
             # вытаксиваем колл и убераем из него базовый и добавочный колл (заменяем на пусто)
             item_call = fsm_call.data.replace(current_state_params.call_base, '')
             item_call = item_call.replace(current_state_params.call_add_capture, '')
@@ -132,7 +156,7 @@ class FSMCallSet:
             # как обыно, при этом номер страницы мы находим исходя из первого добавленного элемента
             if current_state_params.is_last_state_with_changing_mode:
                 # if next_state_params.call_add_change == next_state_params.call_add_capture:
-                print('1')
+                print('c1', end='-')
                 absolute_next_state = next_state_params
                 last_item = list(absolute_next_state.captured_items_set)[-1]
                 page_num_common = await aut.get_current_carousel_page_num(item=last_item,
@@ -141,17 +165,20 @@ class FSMCallSet:
                                                                           cols=absolute_next_state.items_kb_cols)
             # если нажата кнопка подтверждения на клавиатуре
             elif CALL_CONFIRM in item_call:
-                print('2')
+                print('c2', end='-')
                 # проверяемя чтобы были выбраны значения и не стоял флаг что их множество может быть нулевым
                 # в этом случае абсолютным следующим стейтом будет переход в следующий стейт по умолчанию
-                if current_state_params.captured_items_set or current_state_params.is_can_be_empty:
+                if next_state_params.is_input:
+                    print('c2(1)', end='-')
+                    absolute_next_state = next_state_params
+                elif current_state_params.captured_items_set or current_state_params.is_can_be_empty:
                     # проставляем чеки для случая если
-                    print('3')
+                    print('c3', end='-')
                     absolute_next_state = next_state_params
                 # если список элементов пустой и дальше пропускать нельзя - зацикливаемся в этом же стейте выбора
                 # элементов, при этом сообщение меняем на ничего не выбрано туда - обратно
                 else:
-                    print('4')
+                    print('c4', end='-')
                     # выводим сообщение, чередуем, чтобы не было ошибки "невозможно редактировать"
                     if current_state_params.state_main_mess in fsm_call.message.text:
                         current_state_params.state_main_mess = MESS_NULL_CHOOSING
@@ -162,8 +189,8 @@ class FSMCallSet:
             # определяется в зависимости от нажатой карусельки
             elif (item_call.startswith(CALL_NEXT) or item_call.startswith(CALL_LAST) or
                     item_call.startswith(CALL_PREV) or item_call.startswith(CALL_FIRST)):
-                print('5')
-                print('здесь нужно сделать енум или множество, в который еще можно и функцию засунуть по листанию')
+                print('c5', end='-')
+
                 #
                 absolute_next_state = current_state_params
                 page_num_common = await aut.get_new_carousel_page_num(call=item_call,
@@ -172,11 +199,11 @@ class FSMCallSet:
                                                                       cols=absolute_next_state.items_kb_cols)
             # если не было подтверждения, а была нажата кнопка элемента на клавиатуре не конфирм и не каруселька
             else:
-                print('6')
+                print('c6', end='-')
                 # убираем чеки из колла, если они вообще заданы
                 if current_state_params.items_kb_check:
                     item_call = item_call.replace(current_state_params.items_kb_check, '')
-                print('здесь можно сделать функцию в зависимости от способа кодировки колла клавиатуры')
+
                 # из получившегося остатка колла"111-слово" оставляем только цифры
                 added_item = item_call.split('-', 1)[0]
                 # добавляем его в множество выбранных слов и записываем в стейт
@@ -184,14 +211,14 @@ class FSMCallSet:
                 # елси не может быть один - тогда обновляем просто
                 if added_item:
                     if not current_state_params.is_only_one:
-                        print('7')
+                        print('с7', end='-')
                         # добавляем элементы
                         current_state_params.captured_items_set = await aut.add_item_in_aim_set_plus_minus(
                                                                 aim_set=current_state_params.captured_items_set,
                                                                 added_item=added_item)
                     else:
-                        print('8')
-                        print('поработай с неу, эту функцию по идее нужно объединить, точнее все три объединить нужно')
+                        print('с8', end='-')
+
                         current_state_params.captured_items_set = await aut.add_item_in_only_one_aim_set(
                                                                 aim_set=current_state_params.captured_items_set,
                                                                 added_item=added_item)
@@ -200,7 +227,6 @@ class FSMCallSet:
                 # обновляем стейт после добавления элементов
                 await fsm_state.update_data({current_state: current_state_params})
                 # меняем сообщение на добавь еще
-                print('предлагаю это сообщение на добавь еще внести в стейт')
                 current_state_params.state_main_mess = MESS_MORE_CHOOSING
                 # остаемся в том же стейте
                 absolute_next_state = current_state_params
@@ -209,12 +235,71 @@ class FSMCallSet:
                                                                           items_kb=absolute_next_state.items_kb_list,
                                                                           rows=absolute_next_state.items_kb_rows,
                                                                           cols=absolute_next_state.items_kb_cols)
-                # проставляем чеки в следующую клавиатуру
+            if not absolute_next_state.is_input:
+                absolute_next_kb_items_list = await aut.set_check_in_button_list(
+                    button_list=absolute_next_state.items_kb_list,
+                    aim_set=absolute_next_state.captured_items_set,
+                    check=absolute_next_state.items_kb_check)
+            else:
+                absolute_next_kb_items_list = []
 
-        absolute_next_kb_items_list = await aut.set_check_in_button_list(button_list=absolute_next_state.items_kb_list,
-                                                                         aim_set=absolute_next_state.captured_items_set,
-                                                                         check=absolute_next_state.items_kb_check)
-        print('16')
+
+        elif fsm_mess and not fsm_call:
+            fsm_state_str = await fsm_state.get_state()
+            print('m1', end='-')
+
+            if current_state_params.is_input:
+                print('m2', end='-')
+                print('сделай проверку на наличие слова в базе')
+                print('дорабатывай прием текста')
+                # при нажатии на старт - пока не обнуляется стейт и принимает пустое слово
+                if fsm_mess.text != '/start':
+                    print('убери проверку на команду старт, настрой роутеры')
+                    absolute_next_state = next_state_params
+
+                    added_item = fsm_mess.text.lower()
+                    current_state_params.input_item = added_item
+                    await fsm_state.update_data({current_state: current_state_params})
+                else:
+                    print('не переходит дальше, ждет ввода')
+                    absolute_next_state = current_state_params
+                # print(absolute_next_state)
+                new_absolute_next_kb_items_list = absolute_next_state.items_kb_list
+                # print(new_absolute_next_kb_items_list)
+
+            # это если мы используем мессаж для поиска среди клавиатуры и остаемся в том же стейте
+            elif not current_state_params.is_input and current_state_params.items_kb_list:
+                print('m3', end='-')
+                absolute_next_state = current_state_params
+                new_absolute_next_kb_items_list = []
+                for item in absolute_next_state.items_kb_list:
+                    if fsm_mess.text.lower() in item.lower():
+                        new_absolute_next_kb_items_list.append(item)
+
+            else:
+                print('ЕРРОР m4')
+                absolute_next_state = next_state_params
+                new_absolute_next_kb_items_list = absolute_next_state.items_kb_list
+
+                added_item = fsm_mess.text.lower()
+                current_state_params.input_item = added_item
+                await fsm_state.update_data({current_state: current_state_params})
+
+            absolute_next_kb_items_list = await aut.set_check_in_button_list(
+                button_list=new_absolute_next_kb_items_list,
+                aim_set=absolute_next_state.captured_items_set,
+                check=absolute_next_state.items_kb_check)
+            page_num_common = 0
+
+
+        else:
+            print('ERROR!!! стейтпарамс обработчик')
+            absolute_next_state = None
+            absolute_next_kb_items_list = None
+            page_num_common = 0
+
+
+        print('cm end')
         state_text = await aut.state_text_builder(fsm_state)
         self.message_text = state_text + '\n' + absolute_next_state.state_main_mess
         self.reply_kb = await keyboard_builder(menu_pack=absolute_next_state.menu_add,
@@ -226,59 +311,6 @@ class FSMCallSet:
                                                buttons_add_table_number=page_num_common)
         # возвращаемся в тот же стейт добавления слов
         await fsm_state.set_state(absolute_next_state.self_state)
-
-
-# класс для обработки текстового сообщения
-class FSMMessageSet:
-    def __init__(self):
-        self.message_text = None
-        self.reply_kb = None
-
-    async def set(self, fsm_mess: Message, fsm_state: FSMContext):
-        fsm_state_str = await fsm_state.get_state()
-        # is_next_loop = True
-        print(f'- - - - - - - {fsm_state_str} - - - - - - -')
-        current_state_params : StateParams = await fsm_state.get_value('words_state')
-        next_state_params: StateParams = await fsm_state.get_value('words_state')
-
-        if current_state_params.items_kb_list and next_state_params.items_kb_list:
-            items_kb_new = []
-            for item in next_state_params.items_kb_list:
-                if fsm_mess.text.lower() in item.lower():
-                    items_kb_new.append(item)
-        else:
-            items_kb_new = next_state_params.items_kb_list
-            added_item = fsm_mess.text.lower()
-            current_state_params.input_item = added_item
-            # это заработает, убери коммент
-            # это заработает, убери коммент
-            # это заработает, убери коммент
-            # это заработает, убери коммент
-            # это заработает, убери коммент
-            # await fsm_state.update_data({current_state: current_state_params})
-            # это заработает, убери коммент
-
-
-
-            # await fsm_state.update_data({current_state_params.state_name: current_state_params}) - работало
-            # await fsm_state.update_data({current_state_params.self_state.state: current_state_params})
-
-        # проставляем чеки в список кнопок
-        items_kb_new = await aut.set_check_in_button_list(button_list=items_kb_new,
-                                                          aim_set=next_state_params.captured_items_set,
-                                                          check=next_state_params.items_kb_check)
-        # выводим заменой сообщения
-        state_text = await aut.state_text_builder(fsm_state)
-        self.message_text = state_text + '\n' + next_state_params.state_main_mess
-        self.reply_kb = await keyboard_builder(menu_pack=next_state_params.menu_add,
-                                               buttons_add_list=items_kb_new,
-                                               buttons_base_call=next_state_params.call_base + next_state_params.call_add_capture,
-                                               buttons_add_cols=next_state_params.items_kb_cols,
-                                               buttons_add_rows= next_state_params.items_kb_rows,
-                                               is_adding_confirm_button=True,
-                                               buttons_add_table_number=0)
-        await fsm_state.set_state(next_state_params.self_state)
-
 
 
 

@@ -23,9 +23,10 @@ NUM_CAPTURE_USER_COLS = 2
 NUM_CAPTURE_USER_ROWS = 10
 CHECK_CAPTURE_USER= '🟣'
 
+
 CALL_CAPTURE_DATE = "capture_date_"
 MESS_CAPTURE_DATE = 'Выберите слово или введите с клавиатуры и отправьте боту часть слова'
-TEXT_CHANGE_DATE = "Изменить слово"
+TEXT_CHANGE_DATE = "Изменить дату"
 NUM_CAPTURE_DATE_COLS = 4
 NUM_CAPTURE_DATE_ROWS = 5
 CHECK_CAPTURE_DATE= '🟣'
@@ -36,7 +37,10 @@ MESS_ADD_ENDING = 'Поверьте все и подтвердите'
 CALL_CHANGING_WORD = "changing_word_"
 CALL_CHANGING_USER = "changing_user_"
 CALL_CHANGING_DATE = "changing_date_"
-
+CALL_CHANGING_PART = "changing_part_"
+CALL_CHANGING_LEVEL = "changing_level_"
+CALL_CHANGING_DEFINITION = "changing_definition_"
+CALL_CHANGING_TRANSLATION = "changing_translation_"
 
 
 M_ADM_MENU = "Welcome to main admin menu"
@@ -79,16 +83,27 @@ C_ADM_SET_COLL = "c_adm_set_coll"
 
 
 CALL_INPUT_WORD = "input_word_"
+MESS_INPUT_WORD = "Введите слово для словаря"
 
 
 
 
+CALL_INPUT_DEFINITION = "input_definition_"
+MESS_INPUT_DEFINITION = "Введите определение на английском языке"
+TEXT_CHANGE_DEFINITION = "Изменить определение"
 
+CALL_INPUT_TRANSLATION = "input_translation_"
+MESS_INPUT_TRANSLATION = "Введите русский перевод"
+TEXT_CHANGE_TRANSLATION = "Изменить определение"
 
-MESS_INPUT_WORD = "Vvedite slovo"
-
-
-
+CALL_CAPTURE_PART = "capture_part_"
+PART_LIST = ['noun','verb','adjective','adverb','pronoun','numerals','idiom','phrasal verb','new2']
+CALL_CHANGE_PART = "change_part_"
+NUM_CAPTURE_PART_COLS = 3
+NUM_CAPTURE_PART_ROWS = 10
+CHECK_CAPTURE_PART= '🟣'
+TEXT_CHANGE_PART = "Изменить часть речи"
+MESS_CAPTURE_PART = 'Выберите часть речи или введите с клавиатуры и отправьте боту часть названия'
 
 
 CALL_CAPTURE_LEVEL = "capture_level_"
@@ -99,17 +114,12 @@ NUM_CAPTURE_LEVEL_ROWS = 10
 CHECK_CAPTURE_LEVEL= '🟣'
 TEXT_CHANGE_LEVEL = "Изменить уровень"
 MESS_CAPTURE_LEVEL = 'Выберите уровень или введите с клавиатуры и отправьте боту часть названия'
-MESS_CAPT_LEVEL_CONFIRM= "✅LCONFIRM✅"
 
-levels_state_dict = {
-    'state_name': 'capture_level_state',
-    'state_kb_check': CHECK_CAPTURE_LEVEL,
-    'state_kb_cols': NUM_CAPTURE_LEVEL_COLS,
-    'state_kb_rows': NUM_CAPTURE_LEVEL_ROWS,
-    'state_main_message': MESS_CAPTURE_LEVEL,
-    'state_change_but_text': TEXT_CHANGE_LEVEL,
-    'state_confirm_but_text': MESS_CAPT_LEVEL_CONFIRM,
-}
+
+
+
+
+
 
 
 
@@ -145,16 +155,6 @@ CHECK_SET_SCHEME_DATE= '🟣'
 
 
 
-
-word_state_dict = {
-    'state_name': 'input_word_state',
-    'state_kb_check': None,
-    'state_kb_cols': None,
-    'state_kb_rows': None,
-    'state_main_message': MESS_CAPTURE_WORD,
-    'state_change_but_text': TEXT_CHANGE_WORD,
-    'state_confirm_but_text': TEXT_BUTTON_CONFIRM
-}
 
 
 
