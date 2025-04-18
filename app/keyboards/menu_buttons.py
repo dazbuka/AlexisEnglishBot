@@ -8,13 +8,8 @@ import data.common_messages as cmsg
 
 from app.handlers.common_settings import (CALL_CONFIRM)
 
-from app.handlers.common_settings import (TEXT_CHANGE_WORD,
-                                                                                          CALL_CHANGE_WORD,
-                                                                                          MESS_CAPT_WORD_CONFIRM,
-                                                                                          TEXT_CHANGE_USER,
-                                                                                          TEXT_CHANGE_DATE,
-                                                                                          CALL_CHANGE_USER,
-                                                                                          CALL_CHANGE_DATE)
+from app.handlers.common_settings import (TEXT_CHANGE_WORD, TEXT_BUTTON_CONFIRM, TEXT_CHANGE_USER,
+                                          TEXT_CHANGE_DATE)
 
 new_menu_button = InlineKeyboardButton(text='new_menu_button', callback_data='new_menu_button')
 
@@ -38,7 +33,7 @@ button_change_word = InlineKeyboardButton(text=TEXT_CHANGE_WORD, callback_data=C
 button_change_user = InlineKeyboardButton(text=TEXT_CHANGE_USER, callback_data=CALL_CHANGING_USER)
 button_change_date = InlineKeyboardButton(text=TEXT_CHANGE_DATE, callback_data=CALL_CHANGING_DATE)
 
-button_set_scheme_confirm = InlineKeyboardButton(text=MESS_CAPT_WORD_CONFIRM, callback_data=CALL_CONFIRM)
+button_set_scheme_confirm = InlineKeyboardButton(text=TEXT_BUTTON_CONFIRM, callback_data=CALL_CONFIRM)
 
 
 

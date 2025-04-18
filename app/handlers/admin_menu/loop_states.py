@@ -4,11 +4,10 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 import app.utils.admin_utils as aut
 from app.keyboards.keyboard_builder import keyboard_builder
-from app.handlers.common_settings import (CALL_CHANGE_WORD, CALL_CHANGE_USER, CALL_CHANGE_DATE,
-                                          CALL_CONFIRM, MESS_MORE_CHOOSING, MESS_NULL_CHOOSING, CALL_CHANGE_LEVEL)
+# from app.handlers.common_settings import (CALL_CHANGE_WORD, CALL_CHANGE_USER, CALL_CHANGE_DATE,
+#                                           CALL_CONFIRM, MESS_MORE_CHOOSING, MESS_NULL_CHOOSING, CALL_CHANGE_LEVEL)
 
 from data.admin_messages import  (CALL_NEXT, CALL_LAST, CALL_PREV, CALL_FIRST)
-# from app.handlers.common_settings import *
 from app.handlers.common_settings import *
 
 class StateParams:
@@ -69,12 +68,44 @@ class CaptureWordsStateParams(StateParams):
         print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_WORD
-        self.call_add_change : str = CALL_CHANGE_WORD
         self.state_main_mess : str = MESS_CAPTURE_WORD
         self.but_change_text : str  = TEXT_CHANGE_WORD
         self.items_kb_cols : int = NUM_CAPTURE_WORD_COLS
         self.items_kb_rows : int = NUM_CAPTURE_WORD_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_WORD
+
+class CaptureGroupsStateParams(StateParams):
+    def __init__(self, **kwargs):
+        print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_GROUP
+        self.state_main_mess : str = MESS_CAPTURE_GROUP
+        self.but_change_text : str  = TEXT_CHANGE_GROUP
+        self.items_kb_cols : int = NUM_CAPTURE_GROUP_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_GROUP_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_GROUP
+
+class CaptureUsersStateParams(StateParams):
+    def __init__(self, **kwargs):
+        print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_USER
+        self.state_main_mess : str = MESS_CAPTURE_USER
+        self.but_change_text : str  = TEXT_CHANGE_USER
+        self.items_kb_cols : int = NUM_CAPTURE_USER_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_USER_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_USER
+
+class CaptureDatesStateParams(StateParams):
+    def __init__(self, **kwargs):
+        print('-----------------------------------------------------------------------сделай проверку наличия кваргсов')
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_DATE
+        self.state_main_mess : str = MESS_CAPTURE_DATE
+        self.but_change_text : str  = TEXT_CHANGE_DATE
+        self.items_kb_cols : int = NUM_CAPTURE_DATE_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_DATE_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_DATE
 
 
 class FSMCallSet:

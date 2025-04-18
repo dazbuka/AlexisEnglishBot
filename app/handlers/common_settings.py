@@ -1,42 +1,31 @@
 
 CALL_SET_SCHEME= 'c_set_scheme_'
-
-
+TEXT_BUTTON_CONFIRM= "✅CONFIRM✅"
 
 CALL_CAPTURE_WORD = "capture_word_"
-CALL_CHANGE_WORD = "change_word_"
-MESS_CAPTURE_WORD = 'Выберите слово или введите с клавиатуры и отправьте боту часть слова'
+MESS_CAPTURE_WORD = 'Выберите слово или введите с клавиатуры и отправьте боту часть этого слова (его номер)'
 TEXT_CHANGE_WORD = "Изменить слово"
-MESS_CAPT_WORD_CONFIRM= "✅CONFIRM1✅"
 NUM_CAPTURE_WORD_COLS = 2
 NUM_CAPTURE_WORD_ROWS = 10
 CHECK_CAPTURE_WORD= '🟣'
 
-CALL_CAPTURE_GROUP = "add_group_"
-CALL_CHANGE_GROUP = "change_group_"
-MESS_CAPTURE_GROUP = 'Выберите слово или введите с клавиатуры и отправьте боту часть слова'
+CALL_CAPTURE_GROUP = "capture_group_"
+MESS_CAPTURE_GROUP = 'Выберите группу или введите с клавиатуры и отправьте боту часть названия группы (ее номер)'
 TEXT_CHANGE_GROUP = "Изменить группу"
-MESS_CAPT_GROUP_CONFIRM= "✅CONFIRM2✅"
 NUM_CAPTURE_GROUP_COLS = 1
 NUM_CAPTURE_GROUP_ROWS = 10
 CHECK_CAPTURE_GROUP= '🟣'
 
-
-CALL_CAPTURE_USER = "add_user_"
-CALL_CHANGE_USER = "change_user_"
-MESS_CAPTURE_USER = 'Выберите слово или введите с клавиатуры и отправьте боту часть слова'
+CALL_CAPTURE_USER = "capture_user_"
+MESS_CAPTURE_USER = 'Выберите пользователя или введите с клавиатуры и отправьте боту часть его имени (или номер)'
 TEXT_CHANGE_USER = "Изменить юзеров"
-MESS_CAPT_USER_CONFIRM= "✅CONFIRM3✅"
 NUM_CAPTURE_USER_COLS = 2
 NUM_CAPTURE_USER_ROWS = 10
 CHECK_CAPTURE_USER= '🟣'
 
-
-CALL_CAPTURE_DATE = "add_date_"
-CALL_CHANGE_DATE = "change_date_"
+CALL_CAPTURE_DATE = "capture_date_"
 MESS_CAPTURE_DATE = 'Выберите слово или введите с клавиатуры и отправьте боту часть слова'
 TEXT_CHANGE_DATE = "Изменить слово"
-MESS_CAPT_DATE_CONFIRM= "✅CONFIRM4✅"
 NUM_CAPTURE_DATE_COLS = 4
 NUM_CAPTURE_DATE_ROWS = 5
 CHECK_CAPTURE_DATE= '🟣'
@@ -44,14 +33,9 @@ CHECK_CAPTURE_DATE= '🟣'
 
 CALL_ADD_ENDING = "add_ending_"
 MESS_ADD_ENDING = 'Поверьте все и подтвердите'
-TEXT_ADD_ENDING_CONFIRM= "✅CONFIRM4✅"
 CALL_CHANGING_WORD = "changing_word_"
 CALL_CHANGING_USER = "changing_user_"
 CALL_CHANGING_DATE = "changing_date_"
-
-
-
-
 
 
 
@@ -169,7 +153,7 @@ word_state_dict = {
     'state_kb_rows': None,
     'state_main_message': MESS_CAPTURE_WORD,
     'state_change_but_text': TEXT_CHANGE_WORD,
-    'state_confirm_but_text': MESS_CAPT_WORD_CONFIRM
+    'state_confirm_but_text': TEXT_BUTTON_CONFIRM
 }
 
 

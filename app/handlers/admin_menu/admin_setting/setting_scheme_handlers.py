@@ -15,7 +15,9 @@ from app.utils.admin_utils import (message_answer,
 from app.utils.admin_utils import state_text_builder
 import app.database.requests as rq
 import app.keyboards.admin_keyboards as akb
-from app.handlers.admin_menu.loop_states import FSMCallSet, FSMMessageSet, StateParams, CaptureWordsStateParams
+from app.handlers.admin_menu.loop_states import (FSMCallSet, FSMMessageSet, StateParams, CaptureWordsStateParams,
+                                                 CaptureGroupsStateParams, CaptureUsersStateParams,
+                                                 CaptureDatesStateParams)
 from app.keyboards.keyboard_builder import keyboard_builder
 from app.keyboards.menu_buttons import (button_menu_setting_back, button_main_admin_menu, button_main_menu,
                                         button_change_word, button_change_user, button_change_date)
@@ -54,80 +56,43 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     author = await get_users_by_filters(user_tg_id=call.from_user.id)
     await state.update_data(author_id=author.id)
 
-    # words_state = StateParams(self_state = AddScheme.capture_words_state,
-    #                           next_state = AddScheme.capture_groups_state,
-    #                           call_base= CALL_SET_SCHEME,
-    #                           call_add_capture= CALL_CAPTURE_WORD,
-    #                           call_add_change=CALL_CHANGE_WORD,
-    #                           menu_add = menu_set_scheme,
-    #                           state_main_mess=MESS_CAPTURE_WORD,
-    #                           but_change_text=TEXT_CHANGE_WORD,
-    #                           items_kb_list=(await get_word_list_for_kb_with_ids())[::-1],
-    #                           items_kb_cols=NUM_CAPTURE_WORD_COLS,
-    #                           items_kb_rows=NUM_CAPTURE_WORD_ROWS,
-    #                           items_kb_check=CHECK_CAPTURE_WORD)
-
     words_state = CaptureWordsStateParams(self_state = AddScheme.capture_words_state,
                                           next_state = AddScheme.capture_groups_state,
                                           call_base= CALL_SET_SCHEME,
                                           menu_add = menu_set_scheme,
                                           items_kb_list=(await get_word_list_for_kb_with_ids())[::-1])
 
-    print(words_state)
-
     await state.update_data(capture_words_state=words_state)
 
     # здесь добавлен парамент из кэн би эмпти - можно проходить дальше если пустой
-    groups_state = StateParams(self_state = AddScheme.capture_groups_state,
-                               next_state = AddScheme.capture_users_state,
-                               call_base= CALL_SET_SCHEME,
-                               call_add_capture = CALL_CAPTURE_GROUP,
-                               # call_add_change = CALL_CHANGE_GROUP,
-                               menu_add = menu_set_scheme,
-                               state_main_mess=MESS_CAPTURE_GROUP,
-                               but_change_text=TEXT_CHANGE_GROUP,
-                               is_can_be_empty=True,
-                               items_kb_list=await get_group_list_for_kb_with_ids(),
-                               items_kb_cols=NUM_CAPTURE_GROUP_COLS,
-                               items_kb_rows=NUM_CAPTURE_GROUP_ROWS,
-                               items_kb_check=CHECK_CAPTURE_GROUP)
+
+    groups_state = CaptureGroupsStateParams(self_state=AddScheme.capture_groups_state,
+                                            next_state=AddScheme.capture_users_state,
+                                            call_base=CALL_SET_SCHEME,
+                                            menu_add=menu_set_scheme,
+                                            items_kb_list=await get_group_list_for_kb_with_ids(),
+                                            is_can_be_empty=True)
 
     await state.update_data(capture_groups_state=groups_state)
 
-    users_state = StateParams(self_state=AddScheme.capture_users_state,
-                              next_state=AddScheme.capture_dates_state,
-                              call_base=CALL_SET_SCHEME,
-                              call_add_capture=CALL_CAPTURE_USER,
-                              # call_add_change=CALL_CHANGE_USER,
-                              menu_add=menu_set_scheme,
-                              state_main_mess=MESS_CAPTURE_USER,
-                              but_change_text=TEXT_CHANGE_USER,
-                              items_kb_list=await get_user_list_for_kb_with_ids(),
-                              items_kb_cols=NUM_CAPTURE_USER_COLS,
-                              items_kb_rows=NUM_CAPTURE_USER_ROWS,
-                              items_kb_check=CHECK_CAPTURE_USER)
+    users_state = CaptureUsersStateParams(self_state=AddScheme.capture_users_state,
+                                          next_state=AddScheme.capture_dates_state,
+                                          call_base=CALL_SET_SCHEME,
+                                          menu_add=menu_set_scheme,
+                                          items_kb_list=await get_user_list_for_kb_with_ids())
 
     await state.update_data(capture_users_state=users_state)
 
-    dates_state = StateParams(self_state=AddScheme.capture_dates_state,
-                              next_state=AddScheme.confirmation_state,
-                              call_base=CALL_SET_SCHEME,
-                              call_add_capture=CALL_CAPTURE_DATE,
-                              # call_add_change=CALL_CHANGE_DATE,
-                              menu_add=menu_set_scheme,
-                              state_main_mess=MESS_CAPTURE_DATE,
-                              but_change_text=TEXT_CHANGE_DATE,
-                              items_kb_list=await get_date_list_for_kb(),
-                              items_kb_cols=NUM_CAPTURE_DATE_COLS,
-                              items_kb_rows=NUM_CAPTURE_DATE_ROWS,
-                              items_kb_check=CHECK_CAPTURE_DATE,
-                              is_only_one = True)
+    dates_state = CaptureDatesStateParams(self_state=AddScheme.capture_dates_state,
+                                          next_state=AddScheme.confirmation_state,
+                                          call_base=CALL_SET_SCHEME,
+                                          menu_add=menu_set_scheme,
+                                          items_kb_list=await get_date_list_for_kb(),
+                                          is_only_one = True)
 
-    #
     await state.update_data(capture_dates_state=dates_state)
 
     confirmation_state = StateParams(self_state = AddScheme.confirmation_state,
-                                     # next_state=AddScheme.confirmation_state,
                                      call_base = CALL_SET_SCHEME,
                                      call_add_capture= CALL_ADD_ENDING,
                                      menu_add = menu_set_scheme_with_changing,
@@ -155,13 +120,13 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
 
 
 # цикличные хендлеры захвата слов, пользователей и др.
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_WORD), AddScheme.capture_words_state)
+# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_WORD), AddScheme.capture_words_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_WORD), AddScheme.capture_words_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_GROUP), AddScheme.capture_groups_state)
+# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_GROUP), AddScheme.capture_groups_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_GROUP), AddScheme.capture_groups_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_USER), AddScheme.capture_users_state)
+# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_USER), AddScheme.capture_users_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_USER), AddScheme.capture_users_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_DATE), AddScheme.capture_dates_state)
+# @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CHANGE_DATE), AddScheme.capture_dates_state)
 @setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_DATE), AddScheme.capture_dates_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
     # создаем экземпляр класса для обработки текущего состояния фсм
@@ -257,7 +222,6 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         users_set = capture_users_state.captured_items_set
         dates_set = capture_dates_state.captured_items_set
         state_text = await state_text_builder(state)
-        message_text = f'Необработано!!!\nавтор {author_id}\nслова {words_set}\nюзвери {users_set}\nдата {dates_set}\nстейт текст:\n{state_text}'
 
         res = False
         for word in words_set:
@@ -271,6 +235,8 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
                                                 media_id=media.id,
                                                 task_time=task_day,
                                                 author_id=author_id)
+
+        message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'
 
         if res:
             message_text += amsg.ADM_ADD_TASK_ADDED
