@@ -30,8 +30,11 @@ class StateParams:
                  ):
 
         # это вводимые значения - либо элемент либо множество для кнопок выбора, изначально - пусто
-        self.input_item : Any = None
+        self.input_text : Any = None
         self.captured_items_set = set()
+        self.media_id = None
+        self.media_type = None
+        self.is_input: bool = is_input
         self.self_state : State = self_state #
         self.call_base : str = call_base #
         self.call_add_capture : str = call_add_capture #
@@ -73,7 +76,7 @@ class CaptureWordsStateParams(StateParams):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_WORD
         self.state_main_mess : str = MESS_CAPTURE_WORD
-        self.but_change_text : str  = TEXT_CHANGE_WORD
+        self.but_change_text : str  = TEXT_CHANGE_WORDS
         self.items_kb_cols : int = NUM_CAPTURE_WORD_COLS
         self.items_kb_rows : int = NUM_CAPTURE_WORD_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_WORD
@@ -133,6 +136,8 @@ class FSMExecutor:
     def __init__(self):
         self.message_text = None
         self.reply_kb = None
+        self.media_type = None
+        self.media_id = None
 
     async def execute(self, fsm_state: FSMContext, fsm_call: CallbackQuery = None, fsm_mess: Message = None):
         fsm_state_str = await fsm_state.get_state()
@@ -148,7 +153,7 @@ class FSMExecutor:
 
         # сначала обработчик для колла, заодно проверяем чтобы не было мессаджа
         if fsm_call and not fsm_mess:
-            # вытаксиваем колл и убераем из него базовый и добавочный колл (заменяем на пусто)
+            # вытаскиваем колл и убираем из него базовый и добавочный колл (заменяем на пусто)
             item_call = fsm_call.data.replace(current_state_params.call_base, '')
             item_call = item_call.replace(current_state_params.call_add_capture, '')
             # самый первый проверочный иф проверяет если текущий стейт - подтверждение всего ввода и будет
@@ -260,9 +265,11 @@ class FSMExecutor:
                     print('убери проверку на команду старт, настрой роутеры')
                     absolute_next_state = next_state_params
 
-                    added_item = fsm_mess.text.lower()
-                    current_state_params.input_item = added_item
+                    current_state_params = aut.update_state_params_with_input_message(message=fsm_mess,
+                                                                                      state_params=current_state_params)
+
                     await fsm_state.update_data({current_state: current_state_params})
+
                 else:
                     print('не переходит дальше, ждет ввода')
                     absolute_next_state = current_state_params
@@ -285,7 +292,7 @@ class FSMExecutor:
                 new_absolute_next_kb_items_list = absolute_next_state.items_kb_list
 
                 added_item = fsm_mess.text.lower()
-                current_state_params.input_item = added_item
+                current_state_params.input_text = added_item
                 await fsm_state.update_data({current_state: current_state_params})
 
             absolute_next_kb_items_list = await aut.set_check_in_button_list(
@@ -308,6 +315,10 @@ class FSMExecutor:
 
         print('cm end')
         state_text = await aut.state_text_builder(fsm_state)
+
+        self.media_type = absolute_next_state.media_type
+        self.media_id = absolute_next_state.media_id
+
         self.message_text = state_text + '\n' + absolute_next_state.state_main_mess
         self.reply_kb = await keyboard_builder(menu_pack=absolute_next_state.menu_add,
                                                buttons_add_list=absolute_next_kb_items_list,

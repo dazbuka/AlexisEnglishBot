@@ -9,18 +9,16 @@ from app.utils.admin_utils import (message_answer,
                                    get_word_list_for_kb_with_ids,
                                    get_group_list_for_kb_with_ids,
                                    get_user_list_for_kb_with_ids,
-                                   get_date_list_for_kb,
-                                   update_button_with_call_base,
-                                   state_text_builder)
+                                   get_date_list_for_kb)
 from app.utils.admin_utils import state_text_builder
 import app.database.requests as rq
 import app.keyboards.admin_keyboards as akb
-from app.handlers.admin_menu.loop_states import (FSMExecutor, StateParams, CaptureWordsStateParams,
-                                                 CaptureGroupsStateParams, CaptureUsersStateParams,
-                                                 CaptureDatesStateParams)
-from app.keyboards.keyboard_builder import keyboard_builder
-from app.keyboards.menu_buttons import (button_menu_setting_back, button_main_admin_menu, button_main_menu,
-                                        button_change_word, button_change_user, button_change_date)
+from app.handlers.admin_menu.states.input_states import (FSMExecutor, StateParams, CaptureWordsStateParams,
+                                                         CaptureGroupsStateParams, CaptureUsersStateParams,
+                                                         CaptureDatesStateParams)
+from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
+from app.keyboards.menu_buttons import (button_menu_setting_back, button_change_words, button_change_user, button_change_dates,
+                                        button_new_main_menu, button_new_admin_menu)
 from app.handlers.common_settings import *
 import data.admin_messages as amsg
 
@@ -42,14 +40,14 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     # очистка стейта
     await state.clear()
     menu_set_scheme = [
-        [button_menu_setting_back, button_main_admin_menu, button_main_menu]
+        [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
     ]
 
     menu_set_scheme_with_changing = [
-        [update_button_with_call_base(button_change_word, CALL_SET_SCHEME + CALL_ADD_ENDING),
+        [update_button_with_call_base(button_change_words, CALL_SET_SCHEME + CALL_ADD_ENDING),
          update_button_with_call_base(button_change_user, CALL_SET_SCHEME + CALL_ADD_ENDING),
-         update_button_with_call_base(button_change_date, CALL_SET_SCHEME + CALL_ADD_ENDING)],
-        [button_menu_setting_back, button_main_admin_menu, button_main_menu]
+         update_button_with_call_base(button_change_dates, CALL_SET_SCHEME + CALL_ADD_ENDING)],
+        [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
     ]
 
     # задаем в стейт ид автора
@@ -105,7 +103,6 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     # переход в первый стейт
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
-    message_text = first_state.state_main_mess
     reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
                                       buttons_add_list= first_state.items_kb_list,
                                       buttons_base_call=first_state.call_base + first_state.call_add_capture,
@@ -113,7 +110,8 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_add_rows=first_state.items_kb_rows,
                                       is_adding_confirm_button=True)
 
-    await call.message.edit_text(message_text, reply_markup=reply_kb)
+    await call.message.edit_text(text=first_state.state_main_mess, reply_markup=reply_kb)
+    # await call.message.edit_text(message_text, reply_markup=reply_kb)
     await call.answer()
 
 
@@ -205,16 +203,19 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
         await call.answer()
 
-    else:
+    elif confirm == CALL_CONFIRM:
+        # основной обработчик, запись в бд
         author_id = await state.get_value('author_id')
-        capture_words: StateParams = await state.get_value('capture_words_state')
-        capture_users: StateParams = await state.get_value('capture_users_state')
-        capture_dates: StateParams = await state.get_value('capture_dates_state')
 
-        author_id = author_id
+        capture_words: StateParams = await state.get_value('capture_words_state')
         words_set = capture_words.captured_items_set
+
+        capture_users: StateParams = await state.get_value('capture_users_state')
         users_set = capture_users.captured_items_set
+
+        capture_dates: StateParams = await state.get_value('capture_dates_state')
         dates_set = capture_dates.captured_items_set
+
         state_text = await state_text_builder(state)
 
         res = True

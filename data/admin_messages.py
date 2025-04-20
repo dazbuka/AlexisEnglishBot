@@ -21,7 +21,9 @@ MESS_ADD_CHANGE_DATE = "change_date_"
 ADMIN_BUTTON_MAIN_MENU="⬆️Main menu⬆️"
 ADMIN_BUTTON_MAIN_ADMIN_MENU='🛠️Admin menu🛠️'
 ADMIN_BUTTON_BACK_TO_MAIN_ADMIN_MENU='⬆️Admin menu⬆️'
-ADMIN_MENU_BUTTON_TEXT='🛠️Admin menu new!!!!!!🛠️'
+
+
+
 
 # admin invitings
 ADMIN_INVITE_PRESS_ANY_BUTTON= "🕹Press any button👇"

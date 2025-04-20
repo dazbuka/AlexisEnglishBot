@@ -1,14 +1,8 @@
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
-from app.database.requests import get_users_by_filters, get_groups_by_filters
+from app.database.requests import get_users_by_filters
 from app.utils.admin_utils import (message_answer,
-                                   add_item_in_aim_set_plus_plus,
-                                   get_word_list_for_kb_with_ids,
-                                   get_group_list_for_kb_with_ids,
-                                   get_user_list_for_kb_with_ids,
-                                   get_date_list_for_kb,
-                                   update_button_with_call_base,
                                    state_text_builder)
 from aiogram.fsm.state import State, StatesGroup
 import data.admin_messages as amsg
@@ -17,14 +11,13 @@ import app.keyboards.admin_keyboards as akb
 
 # from app.handlers.admin_menu.input_states import AddWord, FSMInputMessageSet, InputStateParams
 
-from app.handlers.admin_menu.loop_states import StateParams, FSMExecutor, CaptureLevelsStateParams, \
+from app.handlers.admin_menu.states.input_states import StateParams, FSMExecutor, CaptureLevelsStateParams, \
     CapturePartsStateParams
 
-from app.keyboards.keyboard_builder import keyboard_builder
-from app.keyboards.menu_buttons import (button_menu_setting_back, button_main_admin_menu, button_main_menu,
-                                        button_change_word, button_change_user, button_change_date,
-                                        button_menu_adding_back, button_change_level, button_change_part,
-                                        button_change_translation, button_change_definition)
+from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
+from app.keyboards.menu_buttons import (button_menu_setting_back, button_new_main_menu, button_change_words,
+                                        button_menu_adding_back, button_change_levels, button_change_parts,
+                                        button_change_translation, button_change_definition, button_new_admin_menu)
 from app.handlers.common_settings import *
 
 
@@ -44,20 +37,19 @@ class AddWord(StatesGroup):
 @adding_word_router.callback_query(F.data == C_ADM_ADD_WORD)
 async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     # очистка стейта
-    print('here in adding word')
     await state.clear()
 
     menu_add_word = [
-        [button_menu_adding_back, button_main_admin_menu, button_main_menu]
+        [button_menu_adding_back, button_new_admin_menu, button_new_main_menu]
     ]
 
     menu_add_word_with_changing = [
-        [update_button_with_call_base(button_change_word, CALL_ADD_WORD + CALL_ADD_ENDING),
-         update_button_with_call_base(button_change_level, CALL_ADD_WORD + CALL_ADD_ENDING),
-         update_button_with_call_base(button_change_part, CALL_ADD_WORD + CALL_ADD_ENDING)],
+        [update_button_with_call_base(button_change_words, CALL_ADD_WORD + CALL_ADD_ENDING),
+         update_button_with_call_base(button_change_levels, CALL_ADD_WORD + CALL_ADD_ENDING),
+         update_button_with_call_base(button_change_parts, CALL_ADD_WORD + CALL_ADD_ENDING)],
         [update_button_with_call_base(button_change_translation, CALL_ADD_WORD + CALL_ADD_ENDING),
          update_button_with_call_base(button_change_definition, CALL_ADD_WORD + CALL_ADD_ENDING)],
-        [button_menu_setting_back, button_main_admin_menu, button_main_menu]
+        [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
     ]
 
     # задаем в стейт ид автора
@@ -69,7 +61,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                              call_base= CALL_ADD_WORD,
                              call_add_capture= CALL_INPUT_WORD,
                              state_main_mess = MESS_INPUT_WORD,
-                             but_change_text = TEXT_CHANGE_WORD,
+                             but_change_text = TEXT_CHANGE_WORDS,
                              menu_add = menu_add_word,
                              is_input=True)
     await state.update_data(input_word_state=word_state)
@@ -133,7 +125,15 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 
     # формируем сообщение, меню, клавиатуру и выводим их
 
-    await call.message.edit_text('vvedite')
+    reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
+                                      buttons_add_list= first_state.items_kb_list,
+                                      buttons_base_call=first_state.call_base + first_state.call_add_capture,
+                                      buttons_add_cols=first_state.items_kb_cols,
+                                      buttons_add_rows=first_state.items_kb_rows,
+                                      is_adding_confirm_button=False)
+
+    await call.message.edit_text(text=first_state.state_main_mess, reply_markup=reply_kb)
+
     await call.answer()
 
 
@@ -190,9 +190,9 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
     if (confirm == CALL_CHANGING_WORD or confirm == CALL_CHANGING_PART or confirm == CALL_CHANGING_LEVEL
             or confirm == CALL_CHANGING_DEFINITION or confirm == CALL_CHANGING_TRANSLATION):
+
         confirmation_state: StateParams = await state.get_value('confirmation_state')
-        print(confirm)
-        print('111')
+
         if confirm == CALL_CHANGING_WORD:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.input_word_state
@@ -239,17 +239,14 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
         await call.answer()
 
-    else:
-        author_id_state = await state.get_value('author_id')
-        author_id = author_id_state
-        print(author_id)
-        print('не обработано')
-        state_text = await state_text_builder(state)
 
+    elif confirm == CALL_CONFIRM:
+
+        # основной обработчик, запись в бд
         author_id = await state.get_value('author_id')
 
         input_word: StateParams = await state.get_value('input_word_state')
-        word_item = input_word.input_item
+        word_item = input_word.input_text
 
         capture_parts: StateParams = await state.get_value('capture_parts_state')
         parts_set = capture_parts.captured_items_set
@@ -258,15 +255,12 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         levels_set = capture_levels.captured_items_set
 
         input_definition: StateParams = await state.get_value('input_definition_state')
-        definition_item = input_definition.input_item
+        definition_item = input_definition.input_text
 
         input_translation: StateParams = await state.get_value('input_translation_state')
-        translation_item = input_translation.input_item
+        translation_item = input_translation.input_text
 
         state_text = await state_text_builder(state)
-
-
-
 
         res = True
         for part in parts_set:

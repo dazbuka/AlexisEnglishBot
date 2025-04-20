@@ -7,7 +7,11 @@ from aiogram.types import (
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from app.keyboards.menu_buttons import button_set_scheme_confirm
 from data.admin_messages import *
-from app.utils.admin_utils import update_button_with_call_base
+
+def update_button_with_call_base(button : InlineKeyboardButton, call_base : str):
+    button_with_call_base = InlineKeyboardButton(text=button.text,
+                                                 callback_data=call_base + button.callback_data)
+    return button_with_call_base
 
 # inline keyboard adding task by schema
 async def keyboard_builder(menu_pack : list,

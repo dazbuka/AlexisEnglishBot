@@ -1,13 +1,84 @@
+from enum import Enum
+
+class MediaType(Enum):
+    TEXT = "text"
+    PHOTO = "photo"
+    VIDEO = "video"
+    AUDIO = "audio"
+    FILE = "file"
+    LOCATION = "location"
+    CONTACT = "contact"
+    STICKER = "sticker"
+    ANIMATION = "animation"
+
+
+
+CALL_MAIN_MENU= '@m_main_menu️'
+BTEXT_MAIN_MENU= '-Main menu-️'
+MESS_MAIN_MENU = "Im Alexis English Bot! Welcome to main menu"
+TEXT_MAIN_MENU_BACK = "Exit to main menu"
+
+
+CALL_ADMIN_MENU= '@m_admin_menu️'
+BTEXT_ADMIN_MENU= '🛠️---Admin menu NEW---🛠️'
+MESS_ADMIN_MENU = "!Welcome to main admin menu"
+TEXT_ADMIN_MENU_BACK = "Exit to main admin menu"
+
+
+TEXT_MENU_ADDING = "-Add word, media etc-"
+TEXT_MENU_ADDING_BACK = "-Exit to ADDING menu-"
+CALL_ADDING_MENU = "c_adm_menu_add"
+
+
+MESS_SETTING_MENU = "Choose what do you want to set or assign"
+T_ADM_MENU_SETTING = "📌Set task to user📌"
+T_ADM_MENU_SETTING_BACK = "-Set task menu-"
+CALL_SETTING_MENU = "c_adm_menu_set"
+
+
+T_ADM_MENU_EDITING = "Editing"
+T_ADM_MENU_EDITING_BACK = "-Edit menu-"
+C_ADM_MENU_EDITING = "c_adm_menu_edit"
+
+
 
 CALL_SET_SCHEME= 'c_set_scheme_'
+
+
+MESS_MORE_CHOOSING = 'Можете выбрать еще или нажмите подтверждение'
+MESS_NULL_CHOOSING = 'Нельзя продолжить пока ничего не выбрано'
+
+CALL_CONFIRM= "@confirm_"
 TEXT_BUTTON_CONFIRM= "✅CONFIRM✅"
 
+
 CALL_CAPTURE_WORD = "capture_word_"
+
 MESS_CAPTURE_WORD = 'Выберите слово или введите с клавиатуры и отправьте боту часть этого слова (его номер)'
-TEXT_CHANGE_WORD = "Изменить слово"
+TEXT_CHANGE_WORDS = "Изменить слово"
 NUM_CAPTURE_WORD_COLS = 2
 NUM_CAPTURE_WORD_ROWS = 10
 CHECK_CAPTURE_WORD= '🟣'
+
+
+CALL_CAPTURE_PART = "capture_part_"
+
+MESS_CAPTURE_PART = 'Выберите часть речи или введите с клавиатуры и отправьте боту часть названия'
+TEXT_CHANGE_PART = "Изменить часть речи"
+NUM_CAPTURE_PART_COLS = 3
+NUM_CAPTURE_PART_ROWS = 10
+CHECK_CAPTURE_PART= '🟣'
+PART_LIST = ['noun','verb','adjective','adverb','pronoun','numerals','idiom','phrasal verb','new2']
+
+
+CALL_CAPTURE_LEVEL = "capture_level_"
+MESS_CAPTURE_LEVEL = 'Выберите уровень или введите с клавиатуры и отправьте боту часть названия'
+TEXT_CHANGE_LEVEL = "Изменить уровень"
+NUM_CAPTURE_LEVEL_COLS = 3
+NUM_CAPTURE_LEVEL_ROWS = 10
+CHECK_CAPTURE_LEVEL= '🟣'
+LEVEL_LIST = ['A1','A2','B1','B2','C1','C2']
+
 
 CALL_CAPTURE_GROUP = "capture_group_"
 MESS_CAPTURE_GROUP = 'Выберите группу или введите с клавиатуры и отправьте боту часть названия группы (ее номер)'
@@ -15,6 +86,7 @@ TEXT_CHANGE_GROUP = "Изменить группу"
 NUM_CAPTURE_GROUP_COLS = 1
 NUM_CAPTURE_GROUP_ROWS = 10
 CHECK_CAPTURE_GROUP= '🟣'
+
 
 CALL_CAPTURE_USER = "capture_user_"
 MESS_CAPTURE_USER = 'Выберите пользователя или введите с клавиатуры и отправьте боту часть его имени (или номер)'
@@ -32,8 +104,10 @@ NUM_CAPTURE_DATE_ROWS = 5
 CHECK_CAPTURE_DATE= '🟣'
 
 
-CALL_ADD_ENDING = "add_ending_"
+
 MESS_ADD_ENDING = 'Поверьте все и подтвердите'
+CALL_ADD_ENDING = "add_ending_"
+CALL_CHANGING_COLL = "changing_coll_"
 CALL_CHANGING_WORD = "changing_word_"
 CALL_CHANGING_USER = "changing_user_"
 CALL_CHANGING_DATE = "changing_date_"
@@ -41,52 +115,19 @@ CALL_CHANGING_PART = "changing_part_"
 CALL_CHANGING_LEVEL = "changing_level_"
 CALL_CHANGING_DEFINITION = "changing_definition_"
 CALL_CHANGING_TRANSLATION = "changing_translation_"
-
-
-M_ADM_MENU = "Welcome to main admin menu"
-
-T_ADM_MENU_ADDING = "📌📌Add word, media etc📌📌"
-T_ADM_MENU_ADDING_BACK = "-Add menu-"
-C_ADM_MENU_ADDING = "c_adm_menu_add"
-
-T_ADM_MENU_SETTING = "📌Set task to user📌"
-T_ADM_MENU_SETTING_BACK = "-Set task menu-"
-C_ADM_MENU_SETTING = "c_adm_menu_set"
-
-T_ADM_MENU_EDITING = "Editing"
-T_ADM_MENU_EDITING_BACK = "-Edit menu-"
-C_ADM_MENU_EDITING = "c_adm_menu_edit"
-
-CALL_CONFIRM= "@confirm_"
-
-MESS_MORE_CHOOSING = 'Можете выбрать еще или нажмите подтверждение'
-MESS_NULL_CHOOSING = 'Нельзя продолжить пока ничего не выбрано'
-MESS_NULL_CHOOSING2 = 'Ну вообще никак нельзя продолжить пока ничего не выбрано'
-
-
-
-M_ADM_SETTING = "Choose what do you want to set or assign"
-
-M_ADM_ADDING = "Choose what do you want to add"
-
-
-T_ADM_ADD_WORD = "📌Add word📌"
-C_ADM_ADD_WORD = "c_adm_add_word"
-
-
-T_ADM_SET_SCHEME = "📌Set task by scheme📌"
-C_ADM_SET_SCHEME = "c_adm_set_scheme"
-
-T_ADM_SET_COLL = "Set task with some media or collocation"
-C_ADM_SET_COLL = "c_adm_set_coll"
-
-
+CALL_CHANGING_MEDIA = "changing_media_"
 
 CALL_INPUT_WORD = "input_word_"
 MESS_INPUT_WORD = "Введите слово для словаря"
+TEXT_CHANGE_WORD = "Изменить слово"
 
+CALL_INPUT_COLL = "input_coll_"
+MESS_INPUT_COLL = "Введите коллокацию для изучаемого слова"
+TEXT_CHANGE_COLL = "Изменить коллокацию"
 
-
+CALL_INPUT_MEDIA = "input_media_"
+MESS_INPUT_MEDIA = "Добавьте медиа: введите текст, отправьте картинку или видео"
+TEXT_CHANGE_MEDIA = "Изменить медиа"
 
 CALL_INPUT_DEFINITION = "input_definition_"
 MESS_INPUT_DEFINITION = "Введите определение на английском языке"
@@ -96,42 +137,44 @@ CALL_INPUT_TRANSLATION = "input_translation_"
 MESS_INPUT_TRANSLATION = "Введите русский перевод"
 TEXT_CHANGE_TRANSLATION = "Изменить определение"
 
-CALL_CAPTURE_PART = "capture_part_"
-PART_LIST = ['noun','verb','adjective','adverb','pronoun','numerals','idiom','phrasal verb','new2']
-CALL_CHANGE_PART = "change_part_"
-NUM_CAPTURE_PART_COLS = 3
-NUM_CAPTURE_PART_ROWS = 10
-CHECK_CAPTURE_PART= '🟣'
-TEXT_CHANGE_PART = "Изменить часть речи"
-MESS_CAPTURE_PART = 'Выберите часть речи или введите с клавиатуры и отправьте боту часть названия'
-
-
-CALL_CAPTURE_LEVEL = "capture_level_"
-LEVEL_LIST = ['A1','A2','B1','B2','C1','C2']
-CALL_CHANGE_LEVEL = "change_level_"
-NUM_CAPTURE_LEVEL_COLS = 3
-NUM_CAPTURE_LEVEL_ROWS = 10
-CHECK_CAPTURE_LEVEL= '🟣'
-TEXT_CHANGE_LEVEL = "Изменить уровень"
-MESS_CAPTURE_LEVEL = 'Выберите уровень или введите с клавиатуры и отправьте боту часть названия'
-
-
-
-
-
-
-
-
-
-
-
 
 MESS_SET_SCHEME = "Choose word or write letters"
 
 
 
 
+
+
+
+
+
+
+
+
+MESS_ADDING_MENU = "Choose what do you want to add"
+
+
+T_ADM_ADD_WORD = "📌Add word📌"
+C_ADM_ADD_WORD = "c_adm_add_word"
+
+T_ADM_ADD_COLL = "📌Add collocation📌"
+C_ADM_ADD_COLL = "c_adm_add_coll"
+
+T_ADM_SET_SCHEME = "📌Set task by scheme📌"
+C_ADM_SET_SCHEME = "c_adm_set_scheme"
+
+T_ADM_SET_COLL = "Set task with some media or collocation"
+C_ADM_SET_COLL = "c_adm_set_coll"
+
+
+
+
+
+
+
 CALL_ADD_WORD= 'c_add_word_'
+CALL_ADD_COLL= 'c_add_coll_'
+
 CALL_ADD_GROUP = "add_group_"
 CALL_ADD_USER = "add_user_"
 CALL_ADD_DATE = "add_date_"

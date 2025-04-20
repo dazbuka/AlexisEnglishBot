@@ -1,14 +1,18 @@
 from aiogram.types import InlineKeyboardButton
 from aiogram import Bot
+from sqlalchemy.testing import is_none
+
 import app.database.requests as rq
 from app.database.models import UserStatus
 from data.admin_messages import *
 from config import logger
 
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ContentType
 import re
-from datetime import datetime, date, timedelta
 
+from app.handlers.common_settings import MediaType
+from datetime import datetime, date, timedelta
+from app.handlers.admin_menu.states.input_states import StateParams
 
 def logger_decorator(func):
     async def wrapper(*args, **kwargs):
@@ -28,6 +32,33 @@ async def message_answer(source: Message | CallbackQuery, message_text, *args, *
         logger.info(f'function *message_answer* have no source{source}')
         bot_mess_num = 1
 
+    await rq.update_user_last_message_id(user_tg_id=source.from_user.id, message_id=bot_mess_num)
+    return bot_mess_num
+
+@logger_decorator
+async def mess_answer(source: Message | CallbackQuery, media_type: str, media_id: str, message_text: str, reply_markup, *args, **kwargs):
+    if isinstance(source, CallbackQuery):
+        common_source = source.message
+    elif isinstance(source, Message):
+        common_source = source
+    else:
+        logger.info(f'function *message_answer* have no source{source}')
+        common_source = source
+
+    if media_type == MediaType.TEXT.value:
+        print('-1-')
+        mess = await common_source.answer(text=message_text, reply_markup=reply_markup, *args, **kwargs)
+    elif media_type == MediaType.PHOTO.value:
+        print('-2-')
+        mess = await common_source.answer_photo(photo=media_id, caption=message_text, reply_markup=reply_markup, *args, **kwargs)
+    elif media_type == MediaType.VIDEO.value:
+        print('-3-')
+        mess = await common_source.answer_video(video=media_id, caption=message_text, reply_markup=reply_markup, *args, **kwargs)
+    else:
+        print('-4-')
+        mess = await common_source.answer(text=message_text, reply_markup=reply_markup, *args, **kwargs)
+
+    bot_mess_num = mess.message_id
     await rq.update_user_last_message_id(user_tg_id=source.from_user.id, message_id=bot_mess_num)
     return bot_mess_num
 
@@ -210,7 +241,7 @@ async def state_text_builder(state):
             message_text += f'Автор:\n<b>{text}</b>\n'
 
     if 'input_word_state' in st_data:
-        word = (st_data.get("input_word_state")).input_item
+        word = (st_data.get("input_word_state")).input_text
         text = word
         if text:
             message_text += f'Слово:\n<b>{text}</b>\n'
@@ -234,13 +265,13 @@ async def state_text_builder(state):
             message_text += f'Уровень:\n<b>{text}</b>\n'
 
     if 'input_definition_state' in st_data:
-        word = (st_data.get("input_definition_state")).input_item
+        word = (st_data.get("input_definition_state")).input_text
         text = word
         if text:
             message_text += f'Определение:\n<b>{text}</b>\n'
 
     if 'input_translation_state' in st_data:
-        word = (st_data.get("input_translation_state")).input_item
+        word = (st_data.get("input_translation_state")).input_text
         text = word
         if text:
             message_text += f'Перевод:\n<b>{text}</b>\n'
@@ -442,9 +473,7 @@ async def get_medias_list_for_kb_with_limit(medias = None, limit: int = 20, offs
     return media_list
 
 
-def update_button_with_call_base(button : InlineKeyboardButton, call_base : str):
-    button_with_call_base = InlineKeyboardButton(text=button.text, callback_data=call_base + button.callback_data)
-    return button_with_call_base
+
 
 
 async def get_users_list_for_kb_with_limit(users = None, limit: int = 21):
@@ -549,6 +578,27 @@ async def add_item_in_aim_set_plus_plus(aim_set: set, added_item: int | str) -> 
         number_set = {int(num.strip()) for num in number_list if num.isdigit()}
         aim_set = aim_set | number_set
     return aim_set
+
+
+# 030425 функция добавления в множество нажатых с кнопок значений
+def update_state_params_with_input_message(message: Message, state_params: StateParams):
+    # если число (как правило номер ид слова юзера и др)
+
+    if message.content_type == ContentType.TEXT:
+        added_item = message.text.lower()
+        state_params.media_type = MediaType.TEXT.value
+        state_params.input_text = added_item
+    elif message.content_type == ContentType.PHOTO:
+        state_params.media_type = MediaType.PHOTO.value
+        state_params.media_id = message.photo[-1].file_id
+        state_params.input_text = message.caption
+    elif message.content_type == ContentType.VIDEO:
+        state_params.media_type = MediaType.VIDEO.value
+        state_params.media_id = message.video.file_id
+        state_params.input_text = message.caption
+
+    return state_params
+
 
 
 # 030425 функция установки чеков в список кнопок
