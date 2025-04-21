@@ -225,14 +225,7 @@ async def state_text_builder(state):
         if text:
             message_text += f'Часть речи:\n<b>{text}</b>\n'
 
-    if 'capture_levels_state' in st_data:
-        dates = (st_data.get("capture_levels_state")).captured_items_set
-        date_list = []
-        for date_values in dates:
-            date_list.append(date_values)
-        text = ', '.join(date_list)
-        if text:
-            message_text += f'Уровень:\n<b>{text}</b>\n'
+
 
     if 'input_definition_state' in st_data:
         word = (st_data.get("input_definition_state")).input_text
@@ -261,6 +254,15 @@ async def state_text_builder(state):
         text = word
         if text:
             message_text += f'Коллокация:\n<b>{text}</b>\n'
+
+    if 'capture_levels_state' in st_data:
+        dates = (st_data.get("capture_levels_state")).captured_items_set
+        date_list = []
+        for date_values in dates:
+            date_list.append(date_values)
+        text = ', '.join(date_list)
+        if text:
+            message_text += f'Уровень:\n<b>{text}</b>\n'
 
     if 'capture_groups_state' in st_data:
         groups = (st_data.get("capture_groups_state")).captured_items_set
@@ -308,11 +310,11 @@ async def state_text_builder(state):
             message_text += f'Тип медиа:\n<b>{media_type}</b>\n'
         if media_id:
             message_text += f'Номер медиа:\n<b>{media_id}</b>\n'
-        if media_caption:
-            if 'input_caption_state' in st_data:
-                caption = (st_data.get("input_caption_state")).input_text
-                if not caption:
-                    message_text += f'Текст медиа:\n<b>{media_caption}</b>\n'
+        # if media_caption:
+        #     if 'input_caption_state' in st_data:
+        #         caption = (st_data.get("input_caption_state")).input_text
+        #         if not caption:
+        #             message_text += f'Текст медиа:\n<b>{media_caption}</b>\n'
 
     if 'input_caption_state' in st_data:
         caption = (st_data.get("input_caption_state")).input_text

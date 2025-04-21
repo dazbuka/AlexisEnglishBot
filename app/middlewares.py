@@ -38,6 +38,8 @@ class DeletingAndLoggingMessagesMiddleware(BaseMiddleware):
                         f'from "{text}" ({message_id})')
         # если пользователь отправил сообщение
         elif isinstance(event, Message):
+            print(f'----------------------------------{event.text}--------------------------------------')
+            print(f'----------------------------------{event.caption}--------------------------------------')
             message_id = event.message_id
             # записываем номер сообщения в базу данных
             await rq.update_user_last_message_id(user_tg_id=user_id, message_id=message_id)

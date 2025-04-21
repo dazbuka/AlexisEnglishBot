@@ -11,7 +11,6 @@ from app.handlers.common_settings import *
 from app.database.requests import get_users_by_filters, add_media_to_db, get_medias_by_filters
 from app.utils.admin_utils import (state_text_builder, mess_answer,
                                    get_word_list_for_kb_with_ids,
-                                   send_any_media_to_user_with_kb,
                                    get_day_list_for_kb,
                                    get_shema_text_by_word_id)
 
@@ -56,8 +55,6 @@ menu_add_coll_with_changing = [
 async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     # очистка стейта
     await state.clear()
-
-
 
     # задаем в стейт ид автора
     author = await get_users_by_filters(user_tg_id=call.from_user.id)
@@ -109,7 +106,6 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                             call_base=CALL_ADD_COLL,
                                             menu_add=menu_add_coll,
                                             items_kb_list=LEVEL_LIST,
-                                            is_can_be_empty=True,
                                             is_only_one=True)
     await state.update_data(capture_levels_state=levels_state)
 
@@ -145,9 +141,11 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_base_call=first_state.call_base + first_state.call_add_capture,
                                       buttons_add_cols=first_state.items_kb_cols,
                                       buttons_add_rows=first_state.items_kb_rows,
-                                      is_adding_confirm_button=False)
+                                      is_adding_confirm_button=not first_state.is_input)
 
-    await call.message.edit_text(text=first_state.state_main_mess, reply_markup=reply_kb)
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + first_state.state_main_mess
+    await call.message.edit_text(text=message_text, reply_markup=reply_kb)
 
     await call.answer()
 
@@ -158,26 +156,17 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 @adding_coll_router.message(F.text, AddColl.capture_levels_state)
 @adding_coll_router.message(F.text, AddColl.capture_days_state)
 async def admin_adding_word_capture_word(message: Message, state: FSMContext):
-
-    # взимообмен кэпшен стейт и медиа стейт, в котором есть переменная кэпшн
-    media_state: StateParams = await state.get_value('input_media_state')
-
-
+    fsm_state_str = await state.get_state()
     # проверяем слово в базе данных
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_mess=message)
 
+    # взимообмен кэпшен стейт и медиа стейт, в котором есть переменная кэпшн
 
 
-    await mess_answer(source=message,
-                      media_type=media_state.media_type,
-                      media_id=media_state.media_id,
-                      message_text=current_fsm.message_text,
-                      reply_markup=current_fsm.reply_kb)
-
-    fsm_state_str = await state.get_state()
+    media_state: StateParams = await state.get_value('input_media_state')
 
     if fsm_state_str == AddColl.input_media_state.state:
         caption = media_state.input_text
@@ -185,6 +174,13 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
         input_caption_state.input_text = caption
         await state.update_data(input_caption_state=input_caption_state)
 
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + current_fsm.message_text
+    await mess_answer(source=message,
+                      media_type=media_state.media_type,
+                      media_id=media_state.media_id,
+                      message_text=message_text,
+                      reply_markup=current_fsm.reply_kb)
 
 
 
@@ -199,40 +195,26 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
     await current_fsm.execute(fsm_state=state, fsm_call=call)
     # отвечаем заменой сообщения
 
-
-
-
-
     fsm_state_str = await state.get_state()
 
     media_state: StateParams = await state.get_value('input_media_state')
+
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + current_fsm.message_text
 
     if fsm_state_str == AddColl.capture_days_state.state:
         word_state: StateParams = await state.get_value('capture_words_state')
         word_id = list(word_state.captured_items_set)[0]
         scheme = await get_shema_text_by_word_id(word_id=word_id)
-        await mess_answer(source=call,
-                          media_type=media_state.media_type,
-                          media_id=media_state.media_id,
-                          message_text=current_fsm.message_text + '\n\n' + scheme,
-                          reply_markup=current_fsm.reply_kb)
-    else:
-        await mess_answer(source=call,
-                          media_type=media_state.media_type,
-                          media_id=media_state.media_id,
-                          message_text=current_fsm.message_text,
-                          reply_markup=current_fsm.reply_kb)
+        message_text += '\n\n' + scheme
 
-            # await message_answer(source=call, message_text=current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+    await mess_answer(source=call,
+                      media_type=media_state.media_type,
+                      media_id=media_state.media_id,
+                      message_text=message_text,
+                      reply_markup=current_fsm.reply_kb)
     await call.answer()
 
-    input_media: StateParams = await state.get_value('input_media_state')
-    media_caption = input_media.input_text
-    print(f'--------------------before adding media capt - {media_caption}')
-
-    input_caption: StateParams = await state.get_value('input_caption_state')
-    caption = input_caption.input_text
-    print(f'--------------------before adding capt - {caption}')
 
 # конечный обработчик всего стейта
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_ADD_ENDING), AddColl.confirmation_state)
@@ -302,16 +284,18 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
         media_state: StateParams = await state.get_value('input_media_state')
 
+        state_text = await state_text_builder(state)
+        message_text = state_text + '\n' + current_fsm.message_text
+
         await mess_answer(source=call,
                           media_type=media_state.media_type,
                           media_id=media_state.media_id,
-                          message_text=current_fsm.message_text,
+                          message_text=message_text,
                           reply_markup=current_fsm.reply_kb)
         await call.answer()
 
 
     elif confirm == CALL_CONFIRM:
-
         # основной обработчик, запись в бд
         author_id = await state.get_value('author_id')
 
@@ -325,7 +309,6 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         # media_caption = input_media.input_text
         media_type = input_media.media_type
         media_tg_id = input_media.media_id
-
         input_caption: StateParams = await state.get_value('input_caption_state')
         caption = input_caption.input_text
 
@@ -349,7 +332,6 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
                                                         study_day=study_day,
                                                         author_id=author_id,
                                                         level=level)
-
         message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'
         if res:
             message_text += MESS_ADDED_TO_DB
@@ -365,11 +347,11 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
                 if not os.path.exists(os.path.join(media_dir, path_name)):
                     os.makedirs(os.path.join(media_dir, path_name))
                    # Даем название и путь этому файлу
-                    for word in words_set:
-                        filename = f"{media_id}-{media_type}-{word}{os.path.splitext(file.file_path)[1]}"
-                        dest_path = os.path.join(media_dir, path_name, filename)
-                        # Скачиваем файл
-                        await bot.download_file(file.file_path, dest_path)
+                for word in words_set:
+                    filename = f"{media_id}-{media_type}-{word}{os.path.splitext(file.file_path)[1]}"
+                    dest_path = os.path.join(media_dir, path_name, filename)
+                    # Скачиваем файл
+                    await bot.download_file(file.file_path, dest_path)
         else:
             message_text += MESS_ERROR_ADDED_TO_DB
 

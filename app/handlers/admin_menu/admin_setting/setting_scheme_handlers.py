@@ -110,7 +110,10 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_add_rows=first_state.items_kb_rows,
                                       is_adding_confirm_button=True)
 
-    await call.message.edit_text(text=first_state.state_main_mess, reply_markup=reply_kb)
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + first_state.state_main_mess
+    await call.message.edit_text(text=message_text, reply_markup=reply_kb)
+
     # await call.message.edit_text(message_text, reply_markup=reply_kb)
     await call.answer()
 
@@ -129,9 +132,6 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
     if CALL_CAPTURE_GROUP in call.data:
-        text = current_fsm.message_text
-        state_text = await state_text_builder(state)
-        message_text = text.replace(state_text, '')
         groups_state : StateParams  = await state.get_value('capture_groups_state')
         added_id = groups_state.captured_items_set
         users_state : StateParams = await state.get_value('capture_users_state')
@@ -142,12 +142,12 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
             new_user_set = await add_item_in_aim_set_plus_plus(aim_set=new_user_set, added_item=added_items)
         users_state.captured_items_set = new_user_set
         await state.update_data(capture_users_state=users_state)
-        state_text = await state_text_builder(state)
-        current_fsm.message_text = state_text + '\n' + message_text
 
 
     # отвечаем заменой сообщения
-    await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + current_fsm.message_text
+    await call.message.edit_text(message_text, reply_markup=current_fsm.reply_kb)
     await call.answer()
 
 
@@ -160,7 +160,9 @@ async def set_scheme_capture_words_from_message(message: Message, state: FSMCont
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш ввод и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_mess=message)
-    await message_answer(source=message, message_text=current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + current_fsm.message_text
+    await message_answer(source=message, message_text=message_text, reply_markup=current_fsm.reply_kb)
 
 
 # конечный обработчик всего стейта
@@ -200,7 +202,9 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         await state.update_data(confirmation_state=confirmation_state)
         current_fsm = FSMExecutor()
         await current_fsm.execute(state, call)
-        await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+        state_text = await state_text_builder(state)
+        message_text = state_text + '\n' + current_fsm.message_text
+        await call.message.edit_text(message_text, reply_markup=current_fsm.reply_kb)
         await call.answer()
 
     elif confirm == CALL_CONFIRM:

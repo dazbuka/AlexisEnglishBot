@@ -185,23 +185,26 @@ class FSMExecutor:
                 # если нажата кнопка подтверждения на клавиатуре
             elif CALL_CONFIRM in item_call:
                 print('c2', end='-')
-                # проверяемя чтобы были выбраны значения и не стоял флаг что их множество может быть нулевым
-                # в этом случае абсолютным следующим стейтом будет переход в следующий стейт по умолчанию
-                if next_state_params.is_input:
-                    print('c2(1)', end='-')
-                    absolute_next_state = next_state_params
-                elif current_state_params.captured_items_set or current_state_params.is_can_be_empty:
-                    # проставляем чеки для случая если
-                    print('c3', end='-')
-                    absolute_next_state = next_state_params
+
                 # если список элементов пустой и дальше пропускать нельзя - зацикливаемся в этом же стейте выбора
                 # элементов, при этом сообщение меняем на ничего не выбрано туда - обратно
-                else:
-                    print('c4', end='-')
+                if not current_state_params.captured_items_set and not current_state_params.is_can_be_empty:
+                    print('c3', end='-')
                     # выводим сообщение, чередуем, чтобы не было ошибки "невозможно редактировать"
-                    if current_state_params.state_main_mess in fsm_call.message.text:
+                    print(fsm_call.message.caption)
+                    print(fsm_call.message.text)
+                    if fsm_call.message.caption:
+                        common_mess = fsm_call.message.caption
+                    else:
+                        common_mess = fsm_call.message.text
+
+                    if current_state_params.state_main_mess in common_mess:
                         current_state_params.state_main_mess = MESS_NULL_CHOOSING
                     absolute_next_state = current_state_params
+                # во всех остальных случаях переходим в следущюий стейт
+                else:
+                    print('c4', end='-')
+                    absolute_next_state = next_state_params
                 page_num_common = 0
                 # проверяем на случай если нажата кнопка карусельки
             # если работает каруселька по перемещению между страницами, абсолютный некст будет текущим, страница
@@ -320,12 +323,11 @@ class FSMExecutor:
 
 
         print('cm end')
-        state_text = await aut.state_text_builder(fsm_state)
 
         self.media_type = absolute_next_state.media_type
         self.media_id = absolute_next_state.media_id
 
-        self.message_text = state_text + '\n' + absolute_next_state.state_main_mess
+        self.message_text = absolute_next_state.state_main_mess
         self.reply_kb = await keyboard_builder(menu_pack=absolute_next_state.menu_add,
                                                buttons_add_list=absolute_next_kb_items_list,
                                                buttons_base_call=absolute_next_state.call_base + absolute_next_state.call_add_capture,

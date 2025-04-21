@@ -62,7 +62,6 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                            call_base=CALL_ADD_WORD,
                                            menu_add=menu_add_word,
                                            items_kb_list=PART_LIST,
-                                           is_can_be_empty=True,
                                            is_only_one=True)
     await state.update_data(capture_parts_state=parts_state)
 
@@ -71,7 +70,6 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                             call_base=CALL_ADD_WORD,
                                             menu_add=menu_add_word,
                                             items_kb_list=LEVEL_LIST,
-                                            is_can_be_empty=True,
                                             is_only_one=True)
     await state.update_data(capture_levels_state=levels_state)
 
@@ -113,7 +111,10 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_add_cols=first_state.items_kb_cols,
                                       buttons_add_rows=first_state.items_kb_rows,
                                       is_adding_confirm_button=not first_state.is_input)
-    await call.message.edit_text(text=first_state.state_main_mess, reply_markup=reply_kb)
+
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + first_state.state_main_mess
+    await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
 
 
@@ -128,7 +129,10 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_mess=message)
-    await message_answer(source=message, message_text=current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + current_fsm.message_text
+    await message_answer(source=message, message_text=message_text, reply_markup=current_fsm.reply_kb)
 
     # если оно там есть - пусть пробует снова
     # if await rq.get_words_by_filters(word=message.text.lower().strip()):
@@ -157,7 +161,10 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_call=call)
     # отвечаем заменой сообщения
-    await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+
+    state_text = await state_text_builder(state)
+    message_text = state_text + '\n' + current_fsm.message_text
+    await call.message.edit_text(message_text, reply_markup=current_fsm.reply_kb)
     await call.answer()
 
 
@@ -216,7 +223,9 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         await state.update_data(confirmation_state=confirmation_state)
         current_fsm = FSMExecutor()
         await current_fsm.execute(state, call)
-        await call.message.edit_text(current_fsm.message_text, reply_markup=current_fsm.reply_kb)
+        state_text = await state_text_builder(state)
+        message_text = state_text + '\n' + current_fsm.message_text
+        await call.message.edit_text(message_text, reply_markup=current_fsm.reply_kb)
         await call.answer()
 
     # обрабатываем ввод, если все ок и нажато подтверждение
