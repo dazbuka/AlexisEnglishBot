@@ -60,6 +60,7 @@ button_change_coll = InlineKeyboardButton(text=TEXT_CHANGE_WORD, callback_data=C
 
 button_change_user = InlineKeyboardButton(text=TEXT_CHANGE_USER, callback_data=CALL_CHANGING_USER)
 button_change_dates = InlineKeyboardButton(text=TEXT_CHANGE_DATE, callback_data=CALL_CHANGING_DATE)
+button_change_days = InlineKeyboardButton(text=TEXT_CHANGE_DAY, callback_data=CALL_CHANGING_DAY)
 button_change_parts = InlineKeyboardButton(text=TEXT_CHANGE_PART, callback_data=CALL_CHANGING_PART)
 button_change_levels = InlineKeyboardButton(text=TEXT_CHANGE_LEVEL, callback_data=CALL_CHANGING_LEVEL)
 
@@ -67,7 +68,8 @@ button_change_collocation = InlineKeyboardButton(text=TEXT_CHANGE_COLL, callback
 button_change_translation = InlineKeyboardButton(text=TEXT_CHANGE_TRANSLATION, callback_data=CALL_CHANGING_TRANSLATION)
 
 button_change_media = InlineKeyboardButton(text=TEXT_CHANGE_MEDIA, callback_data=CALL_CHANGING_MEDIA)
-
+button_change_media = InlineKeyboardButton(text=TEXT_CHANGE_MEDIA, callback_data=CALL_CHANGING_MEDIA)
+button_change_caption = InlineKeyboardButton(text=TEXT_CHANGE_CAPTION, callback_data=CALL_CHANGING_CAPTION)
 
 button_change_definition = InlineKeyboardButton(text=TEXT_CHANGE_DEFINITION, callback_data=CALL_CHANGING_DEFINITION)
 

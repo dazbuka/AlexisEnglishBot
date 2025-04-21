@@ -46,16 +46,12 @@ async def mess_answer(source: Message | CallbackQuery, media_type: str, media_id
         common_source = source
 
     if media_type == MediaType.TEXT.value:
-        print('-1-')
         mess = await common_source.answer(text=message_text, reply_markup=reply_markup, *args, **kwargs)
     elif media_type == MediaType.PHOTO.value:
-        print('-2-')
         mess = await common_source.answer_photo(photo=media_id, caption=message_text, reply_markup=reply_markup, *args, **kwargs)
     elif media_type == MediaType.VIDEO.value:
-        print('-3-')
         mess = await common_source.answer_video(video=media_id, caption=message_text, reply_markup=reply_markup, *args, **kwargs)
     else:
-        print('-4-')
         mess = await common_source.answer(text=message_text, reply_markup=reply_markup, *args, **kwargs)
 
     bot_mess_num = mess.message_id
@@ -130,32 +126,6 @@ async def count_user_tasks_by_tg_id(user_tg_id):
     # возвращаем дикт
     return count_tasks
 
-
-async def get_text_from_word_adding_state(state):
-    st_data = await state.get_data()
-
-    word = st_data.get("word")
-    word_text = f'Введено слово: {word}\n' if word else ''
-
-    author = st_data.get("author")
-    author_text = f'ID aвторa: {author}\n' if author else ''
-
-    level = st_data.get("level")
-    level_text = f'Уровень: {level}\n' if level else ''
-
-    part = st_data.get("part")
-    part_text = f'Часть речи: {part}\n' if part else ''
-
-    definition = st_data.get("definition")
-    definition_text  = f'Определение: {definition}\n' if definition else ''
-
-    translation = st_data.get("translation")
-    translation_text = f'Перевод: {translation}\n' if translation else ''
-
-    message_text = (word_text + author_text + level_text +
-                    part_text + definition_text + translation_text)
-
-    return message_text
 
 
 async def get_text_from_media_adding_state(state):
@@ -277,7 +247,7 @@ async def state_text_builder(state):
             message_text += f'Перевод:\n<b>{text}</b>\n'
 
     if 'capture_words_state' in st_data:
-        words=(st_data.get("capture_words_state")).captured_items_set
+        words = (st_data.get("capture_words_state")).captured_items_set
         word_list = []
         for word_id in words:
             word = (await rq.get_words_by_filters(id=word_id)).word
@@ -285,6 +255,12 @@ async def state_text_builder(state):
         text = ', '.join(word_list)
         if text:
             message_text += f'Выбраны слова:\n<b>{text}</b>\n'
+
+    if 'input_coll_state' in st_data:
+        word = (st_data.get("input_coll_state")).input_text
+        text = word
+        if text:
+            message_text += f'Коллокация:\n<b>{text}</b>\n'
 
     if 'capture_groups_state' in st_data:
         groups = (st_data.get("capture_groups_state")).captured_items_set
@@ -315,7 +291,33 @@ async def state_text_builder(state):
         if text:
             message_text += f'Выбраны даты:\n<b>{text}</b>\n'
 
+    if 'capture_days_state' in st_data:
+        days = (st_data.get("capture_days_state")).captured_items_set
+        day_list = []
+        for day_values in days:
+            day_list.append(str(day_values))
+        text = ', '.join(day_list)
+        if text:
+            message_text += f'Выбраны дни:\n<b>{text}</b>\n'
 
+    if 'input_media_state' in st_data:
+        media_type = (st_data.get("input_media_state")).media_type
+        media_id = (st_data.get("input_media_state")).media_id
+        media_caption = (st_data.get("input_media_state")).input_text
+        if media_type:
+            message_text += f'Тип медиа:\n<b>{media_type}</b>\n'
+        if media_id:
+            message_text += f'Номер медиа:\n<b>{media_id}</b>\n'
+        if media_caption:
+            if 'input_caption_state' in st_data:
+                caption = (st_data.get("input_caption_state")).input_text
+                if not caption:
+                    message_text += f'Текст медиа:\n<b>{media_caption}</b>\n'
+
+    if 'input_caption_state' in st_data:
+        caption = (st_data.get("input_caption_state")).input_text
+        if caption:
+            message_text += f'Текст медиа:\n<b>{caption}</b>\n'
 
     return message_text
 
@@ -350,7 +352,9 @@ async def get_current_carousel_page_num(item: str | int, items_kb: list, rows: i
     if items_kb:
         for i in range(len(items_kb)):
             if item in items_kb[i]:
-                page_num = i // (rows * cols)
+                current_kb_item = items_kb[i]
+                if item == current_kb_item.split('-', 1)[0]:
+                    page_num = i // (rows * cols)
     return page_num
 
 
@@ -463,6 +467,14 @@ async def get_date_list_for_kb():
         date_item = (date.today() + timedelta(days=i)).strftime("%d.%m.%Y")
         date_list.append(date_item)
     return date_list
+
+async def get_day_list_for_kb():
+    day_list = []
+    # 150 дней выводим в список
+    for i in range(150):
+        day_item = i
+        day_list.append(f'{i}-day {day_item}')
+    return day_list
 
 async def get_medias_list_for_kb_with_limit(medias = None, limit: int = 20, offset: int = 0, media_only: bool = True):
     if not medias:

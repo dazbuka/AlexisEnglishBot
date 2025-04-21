@@ -30,10 +30,10 @@ class StateParams:
                  ):
 
         # это вводимые значения - либо элемент либо множество для кнопок выбора, изначально - пусто
-        self.input_text : Any = None
+        self.input_text : str | None = None
         self.captured_items_set = set()
-        self.media_id = None
-        self.media_type = None
+        self.media_id : str | None = None
+        self.media_type : str | None = None
         self.is_input: bool = is_input
         self.self_state : State = self_state #
         self.call_base : str = call_base #
@@ -56,18 +56,19 @@ class StateParams:
         self.is_only_one : bool = is_only_one # выбор только одного элемента
         self.is_input : bool = is_input
 
-
-
     def change_call_to_changing(self):
         pass
         # self.call_add_capture = self.call_add_change
         # return self
 
     def __repr__(self):
+        presentation = (f'$$$$$$$\n'
+                f'текущий стейт - - {self.self_state}\n'
+                f'выбранный элемент - {self.input_text}\n'
+                f'набор элементов - {self.captured_items_set}\n'
+                f'$$$$$$$')
 
-        repr = f'$$$$$$$ набор элементов - {self.captured_items_set} - $$$$$$$ - {self.call_add_capture}- $$$$$$$ - {self.self_state.state}'
-
-        return repr
+        return presentation
 
 
 class CaptureWordsStateParams(StateParams):
@@ -111,6 +112,16 @@ class CaptureDatesStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_DATE_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_DATE
 
+class CaptureDaysStateParams(StateParams):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_DAY
+        self.state_main_mess : str = MESS_CAPTURE_DAY
+        self.but_change_text : str  = TEXT_CHANGE_DAY
+        self.items_kb_cols : int = NUM_CAPTURE_DAY_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_DAY_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_DAY
+
 class CapturePartsStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -143,7 +154,7 @@ class FSMExecutor:
         fsm_state_str = await fsm_state.get_state()
         current_state = fsm_state_str.split(':', 1)[1]
         current_state_params: StateParams = await fsm_state.get_value(current_state)
-        print(fsm_state_str)
+        print(fsm_state_str, end=' -> ')
         next_state_str = current_state_params.next_state.state
         next_state = next_state_str.split(':', 1)[1]
         next_state_params: StateParams = await fsm_state.get_value(next_state)
@@ -211,7 +222,6 @@ class FSMExecutor:
                 # убираем чеки из колла, если они вообще заданы
                 if current_state_params.items_kb_check:
                     item_call = item_call.replace(current_state_params.items_kb_check, '')
-
                 # из получившегося остатка колла"111-слово" оставляем только цифры
                 added_item = item_call.split('-', 1)[0]
                 # добавляем его в множество выбранных слов и записываем в стейт
@@ -258,11 +268,10 @@ class FSMExecutor:
 
             if current_state_params.is_input:
                 print('m2', end='-')
-                print('сделай проверку на наличие слова в базе')
-                print('дорабатывай прием текста')
+
                 # при нажатии на старт - пока не обнуляется стейт и принимает пустое слово
                 if fsm_mess.text != '/start':
-                    print('убери проверку на команду старт, настрой роутеры')
+
                     absolute_next_state = next_state_params
 
                     current_state_params = aut.update_state_params_with_input_message(message=fsm_mess,
@@ -308,10 +317,7 @@ class FSMExecutor:
             absolute_next_kb_items_list = None
             page_num_common = 0
 
-        if absolute_next_state.is_input:
-            is_adding_confirm_button = False
-        else:
-            is_adding_confirm_button = True
+
 
         print('cm end')
         state_text = await aut.state_text_builder(fsm_state)
@@ -325,7 +331,7 @@ class FSMExecutor:
                                                buttons_base_call=absolute_next_state.call_base + absolute_next_state.call_add_capture,
                                                buttons_add_cols=absolute_next_state.items_kb_cols,
                                                buttons_add_rows=absolute_next_state.items_kb_rows,
-                                               is_adding_confirm_button=is_adding_confirm_button,
+                                               is_adding_confirm_button=not absolute_next_state.is_input,
                                                buttons_add_table_number=page_num_common)
         # возвращаемся в тот же стейт добавления слов
         await fsm_state.set_state(absolute_next_state.self_state)

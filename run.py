@@ -2,9 +2,6 @@ import asyncio
 import logging
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
-from aiogram import types
-
-from app.handlers.admin_menu.admin_menu_handlers import admin_menu_router
 from config import bot, dp, logger, DEVELOPER_ID
 from app.database.models import async_main
 from app.scheduler import check_reminders
@@ -18,11 +15,9 @@ from app.scheduler import check_reminders
 from app.handlers.common_handler import common_router
 from app.handlers.admin_handlers import admin_router
 
-from app.handlers.admin_adding_word_handlers import admin_adding_word_router
 from app.handlers.admin_adding_media_handlers import admin_adding_media_router
 from app.handlers.admin_adding_test_handlers import admin_adding_test_router
 from app.handlers.admin_adding_task_handlers import admin_adding_task_router
-from app.handlers.admin_adding_task_shema2 import admin_adding_task_by_shema_router
 from app.handlers.admin_adding_homework_handlers import admin_adding_homework_router
 from app.handlers.admin_adding_groups_handlers import admin_adding_group_router
 from app.handlers.user_handlers import user_router
@@ -78,11 +73,9 @@ async def main():
                        user_settings_router,
                        user_homework_router,
                        user_router,
-                       admin_adding_word_router,
                        admin_adding_media_router,
                        admin_adding_test_router,
                        admin_adding_task_router,
-                       admin_adding_task_by_shema_router,
                        admin_adding_homework_router,
                        admin_adding_group_router,
                        admin_router,

@@ -1,8 +1,12 @@
 from aiogram import F, Router
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
 from datetime import datetime, timedelta
+
+from app.keyboards.menu_buttons import *
+from app.handlers.common_settings import *
+
 from app.database.requests import get_users_by_filters, get_groups_by_filters
 from app.utils.admin_utils import (message_answer,
                                    add_item_in_aim_set_plus_plus,
@@ -11,16 +15,12 @@ from app.utils.admin_utils import (message_answer,
                                    get_user_list_for_kb_with_ids,
                                    get_date_list_for_kb)
 from app.utils.admin_utils import state_text_builder
-import app.database.requests as rq
-import app.keyboards.admin_keyboards as akb
+from app.database.requests import get_medias_by_filters, set_task
 from app.handlers.admin_menu.states.input_states import (FSMExecutor, StateParams, CaptureWordsStateParams,
                                                          CaptureGroupsStateParams, CaptureUsersStateParams,
                                                          CaptureDatesStateParams)
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
-from app.keyboards.menu_buttons import (button_menu_setting_back, button_change_words, button_change_user, button_change_dates,
-                                        button_new_main_menu, button_new_admin_menu)
-from app.handlers.common_settings import *
-import data.admin_messages as amsg
+
 
 
 setting_scheme_router = Router()
@@ -33,22 +33,22 @@ class AddScheme(StatesGroup):
     capture_dates_state = State()
     confirmation_state = State() # стейт обрабатывающий конечное подтверждение ввода
 
+menu_set_scheme = [
+    [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
+]
+
+menu_set_scheme_with_changing = [
+    [update_button_with_call_base(button_change_words, CALL_SET_SCHEME + CALL_ADD_ENDING),
+     update_button_with_call_base(button_change_user, CALL_SET_SCHEME + CALL_ADD_ENDING),
+     update_button_with_call_base(button_change_dates, CALL_SET_SCHEME + CALL_ADD_ENDING)],
+    [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
+]
 
 # переход в меню добавления задания по схеме
 @setting_scheme_router.callback_query(F.data == C_ADM_SET_SCHEME)
 async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     # очистка стейта
     await state.clear()
-    menu_set_scheme = [
-        [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
-    ]
-
-    menu_set_scheme_with_changing = [
-        [update_button_with_call_base(button_change_words, CALL_SET_SCHEME + CALL_ADD_ENDING),
-         update_button_with_call_base(button_change_user, CALL_SET_SCHEME + CALL_ADD_ENDING),
-         update_button_with_call_base(button_change_dates, CALL_SET_SCHEME + CALL_ADD_ENDING)],
-        [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
-    ]
 
     # задаем в стейт ид автора
     author = await get_users_by_filters(user_tg_id=call.from_user.id)
@@ -220,13 +220,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
         res = True
         for word in words_set:
-            medias = await rq.get_medias_by_filters(word_id=word)
+            medias = await get_medias_by_filters(word_id=word)
             for media in medias:
                 for date in dates_set:
                     assign_date = datetime.strptime(date, "%d.%m.%Y") + timedelta(media.study_day - 1)
                     task_day = datetime.combine(assign_date, datetime.now().time())
                     for user in users_set:
-                        res = res and await rq.set_task(user_id=user,
+                        res = res and await set_task(user_id=user,
                                                         media_id=media.id,
                                                         task_time=task_day,
                                                         author_id=author_id)
@@ -234,14 +234,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'
 
         if res:
-            message_text += amsg.ADM_ADD_TASK_ADDED
+            message_text += MESS_ADDED_TO_DB
         else:
-            message_text += amsg.ADM_ADD_TASK_ERROR
+            message_text += MESS_ERROR_ADDED_TO_DB
 
-        reply_kb = await akb.admin_adding_menu_kb()
+        reply_kb = await keyboard_builder(menu_pack=menu_set_scheme, buttons_base_call="")
+
         await call.message.edit_text(message_text, reply_markup=reply_kb)
         await call.answer()
-
-
 
 
