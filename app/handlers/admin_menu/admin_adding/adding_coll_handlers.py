@@ -37,7 +37,7 @@ class AddColl(StatesGroup):
 
 
 menu_add_coll = [
-    [button_menu_adding_back, button_new_admin_menu, button_new_main_menu]
+    [button_adding_menu_back, button_admin_menu, button_main_menu]
 ]
 
 menu_add_coll_with_changing = [
@@ -47,11 +47,11 @@ menu_add_coll_with_changing = [
     [update_button_with_call_base(button_change_media, CALL_ADD_COLL + CALL_ADD_ENDING),
      update_button_with_call_base(button_change_caption, CALL_ADD_COLL + CALL_ADD_ENDING),
      update_button_with_call_base(button_change_days, CALL_ADD_COLL + CALL_ADD_ENDING)],
-    [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu]
 ]
 
 # переход в меню добавления задания по схеме
-@adding_coll_router.callback_query(F.data == C_ADM_ADD_COLL)
+@adding_coll_router.callback_query(F.data == CALL_ADD_COLL)
 async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     # очистка стейта
     await state.clear()
@@ -74,20 +74,20 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                         call_base= CALL_ADD_COLL,
                                         call_add_capture= CALL_INPUT_COLL,
                                         state_main_mess = MESS_INPUT_COLL,
-                                        but_change_text = TEXT_CHANGE_COLL,
+                                        but_change_text = BTEXT_CHANGE_COLL,
                                         menu_add = menu_add_coll,
                                         is_input=True)
     await state.update_data(input_coll_state=input_coll_text_state)
 
 
     input_media_state = StateParams(self_state=AddColl.input_media_state,
-                                       next_state=AddColl.capture_levels_state,
-                                       call_base=CALL_ADD_COLL,
-                                       call_add_capture=CALL_INPUT_MEDIA,
-                                       state_main_mess=MESS_INPUT_MEDIA,
-                                       but_change_text=TEXT_CHANGE_MEDIA,
-                                       menu_add=menu_add_coll,
-                                       is_input=True)
+                                    next_state=AddColl.capture_levels_state,
+                                    call_base=CALL_ADD_COLL,
+                                    call_add_capture=CALL_INPUT_MEDIA,
+                                    state_main_mess=MESS_INPUT_MEDIA,
+                                    but_change_text=BTEXT_CHANGE_MEDIA,
+                                    menu_add=menu_add_coll,
+                                    is_input=True)
     await state.update_data(input_media_state=input_media_state)
 
     input_caption_text_state = StateParams(self_state=AddColl.input_caption_state,
@@ -95,7 +95,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                            call_base=CALL_ADD_COLL,
                                            call_add_capture=CALL_INPUT_CAPTION,
                                            state_main_mess=MESS_INPUT_CAPTION,
-                                           but_change_text=TEXT_CHANGE_CAPTION,
+                                           but_change_text=BTEXT_CHANGE_CAPTION,
                                            menu_add=menu_add_coll,
                                            is_input=True)
     await state.update_data(input_caption_state=input_caption_text_state)
@@ -105,7 +105,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                             next_state=AddColl.capture_days_state,
                                             call_base=CALL_ADD_COLL,
                                             menu_add=menu_add_coll,
-                                            items_kb_list=LEVEL_LIST,
+                                            items_kb_list=LEVELS_LIST,
                                             is_only_one=True)
     await state.update_data(capture_levels_state=levels_state)
 
@@ -184,9 +184,9 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
 
 
 
-@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_WORD), AddColl.capture_words_state)
-@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_LEVEL), AddColl.capture_levels_state)
-@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_DAY), AddColl.capture_days_state)
+@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_WORDS), AddColl.capture_words_state)
+@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_LEVELS), AddColl.capture_levels_state)
+@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_DAYS), AddColl.capture_days_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
 
     # создаем экземпляр класса для обработки текущего состояния фсм
@@ -225,12 +225,12 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
 
 
-    if (confirm == CALL_CHANGING_WORD or confirm == CALL_CHANGING_COLL or confirm == CALL_CHANGING_LEVEL
-            or confirm == CALL_CHANGING_CAPTION or confirm == CALL_CHANGING_MEDIA or confirm == CALL_CHANGING_DAY):
+    if (confirm == CALL_CHANGING_WORDS or confirm == CALL_CHANGING_COLL or confirm == CALL_CHANGING_LEVELS
+            or confirm == CALL_CHANGING_CAPTION or confirm == CALL_CHANGING_MEDIA or confirm == CALL_CHANGING_DAYS):
 
         confirmation_state: StateParams = await state.get_value('confirmation_state')
 
-        if confirm == CALL_CHANGING_WORD:
+        if confirm == CALL_CHANGING_WORDS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.capture_words_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
@@ -246,7 +246,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             input_coll_state.next_state = AddColl.confirmation_state
             await state.update_data(input_coll_state=input_coll_state)
 
-        elif confirm == CALL_CHANGING_LEVEL:
+        elif confirm == CALL_CHANGING_LEVELS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.capture_levels_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
@@ -270,7 +270,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             input_caption_state.next_state = AddColl.confirmation_state
             await state.update_data(input_caption_state=input_caption_state)
 
-        elif confirm == CALL_CHANGING_DAY:
+        elif confirm == CALL_CHANGING_DAYS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.capture_days_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим

@@ -27,6 +27,7 @@ async def command_start(message: Message, state: FSMContext):
     print('сделай проверку на наличие слова в базе')
     print('доработай прием текста')
     print('убери проверку на команду старт, настрой роутеры')
+    print('закрой доступ к админке')
     await state.clear()
     # проверяем пользователя и регистрируем при необходимости
     # await rq.set_user(message)

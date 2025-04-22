@@ -34,18 +34,18 @@ class AddScheme(StatesGroup):
     confirmation_state = State() # стейт обрабатывающий конечное подтверждение ввода
 
 menu_set_scheme = [
-    [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu]
 ]
 
 menu_set_scheme_with_changing = [
     [update_button_with_call_base(button_change_words, CALL_SET_SCHEME + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_user, CALL_SET_SCHEME + CALL_ADD_ENDING),
+     update_button_with_call_base(button_change_users, CALL_SET_SCHEME + CALL_ADD_ENDING),
      update_button_with_call_base(button_change_dates, CALL_SET_SCHEME + CALL_ADD_ENDING)],
-    [button_menu_setting_back, button_new_admin_menu, button_new_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu]
 ]
 
 # переход в меню добавления задания по схеме
-@setting_scheme_router.callback_query(F.data == C_ADM_SET_SCHEME)
+@setting_scheme_router.callback_query(F.data == CALL_SET_SCHEME)
 async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     # очистка стейта
     await state.clear()
@@ -59,7 +59,6 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                           call_base= CALL_SET_SCHEME,
                                           menu_add = menu_set_scheme,
                                           items_kb_list=(await get_word_list_for_kb_with_ids())[::-1])
-
     await state.update_data(capture_words_state=words_state)
 
     # здесь добавлен парамент из кэн би эмпти - можно проходить дальше если пустой
@@ -70,7 +69,6 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                             menu_add=menu_set_scheme,
                                             items_kb_list=await get_group_list_for_kb_with_ids(),
                                             is_can_be_empty=True)
-
     await state.update_data(capture_groups_state=groups_state)
 
     users_state = CaptureUsersStateParams(self_state=AddScheme.capture_users_state,
@@ -78,7 +76,6 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                           call_base=CALL_SET_SCHEME,
                                           menu_add=menu_set_scheme,
                                           items_kb_list=await get_user_list_for_kb_with_ids())
-
     await state.update_data(capture_users_state=users_state)
 
     dates_state = CaptureDatesStateParams(self_state=AddScheme.capture_dates_state,
@@ -87,7 +84,6 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                           menu_add=menu_set_scheme,
                                           items_kb_list=await get_date_list_for_kb(),
                                           is_only_one = True)
-
     await state.update_data(capture_dates_state=dates_state)
 
     confirmation_state = StateParams(self_state = AddScheme.confirmation_state,
@@ -120,10 +116,10 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
 
 
 # цикличные хендлеры захвата слов, пользователей и др.
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_WORD), AddScheme.capture_words_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_GROUP), AddScheme.capture_groups_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_USER), AddScheme.capture_users_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_DATE), AddScheme.capture_dates_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_WORDS), AddScheme.capture_words_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_GROUPS), AddScheme.capture_groups_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_USERS), AddScheme.capture_users_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_DATES), AddScheme.capture_dates_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
@@ -131,7 +127,7 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
     await current_fsm.execute(fsm_state=state, fsm_call=call)
 
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
-    if CALL_CAPTURE_GROUP in call.data:
+    if CALL_CAPTURE_GROUPS in call.data:
         groups_state : StateParams  = await state.get_value('capture_groups_state')
         added_id = groups_state.captured_items_set
         users_state : StateParams = await state.get_value('capture_users_state')
@@ -172,10 +168,10 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     confirm = call.data.replace(CALL_SET_SCHEME + CALL_ADD_ENDING, '')
     # уходим обратно если нужно что-то изменить
 
-    if confirm == CALL_CHANGING_WORD or confirm == CALL_CHANGING_USER or confirm == CALL_CHANGING_DATE:
+    if confirm == CALL_CHANGING_WORDS or confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_DATES:
         confirmation_state: StateParams = await state.get_value('confirmation_state')
 
-        if confirm == CALL_CHANGING_WORD:
+        if confirm == CALL_CHANGING_WORDS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddScheme.capture_words_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
@@ -183,7 +179,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             capture_words.next_state = AddScheme.confirmation_state
             await state.update_data(capture_words_state=capture_words)
 
-        elif confirm == CALL_CHANGING_USER:
+        elif confirm == CALL_CHANGING_USERS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddScheme.capture_users_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
@@ -191,7 +187,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             capture_users.next_state = AddScheme.confirmation_state
             await state.update_data(capture_users_state=capture_users)
 
-        elif confirm == CALL_CHANGING_DATE:
+        elif confirm == CALL_CHANGING_DATES:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddScheme.capture_dates_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим

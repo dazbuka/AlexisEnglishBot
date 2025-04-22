@@ -5,7 +5,7 @@ from aiogram.types import (
     InlineKeyboardButton
 )
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
-from app.keyboards.menu_buttons import button_set_scheme_confirm
+from app.keyboards.menu_buttons import button_confirm
 from data.admin_messages import *
 
 def update_button_with_call_base(button : InlineKeyboardButton, call_base : str):
@@ -58,7 +58,7 @@ async def keyboard_builder(menu_pack : list,
 
     # если нужно добавить кнопку подтверждения ввода
     if is_adding_confirm_button:
-        but = update_button_with_call_base(button_set_scheme_confirm, buttons_base_call)
+        but = update_button_with_call_base(button_confirm, buttons_base_call)
         builder.add(but)
         adjusting.append(1)
 

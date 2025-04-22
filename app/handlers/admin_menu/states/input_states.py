@@ -75,72 +75,72 @@ class CaptureWordsStateParams(StateParams):
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_WORD
-        self.state_main_mess : str = MESS_CAPTURE_WORD
-        self.but_change_text : str  = TEXT_CHANGE_WORDS
-        self.items_kb_cols : int = NUM_CAPTURE_WORD_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_WORD_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_WORD
+        self.call_add_capture : str = CALL_CAPTURE_WORDS
+        self.state_main_mess : str = MESS_CAPTURE_WORDS
+        self.but_change_text : str  = BTEXT_CHANGE_WORDS
+        self.items_kb_cols : int = NUM_CAPTURE_WORDS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_WORDS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_WORDS
 
 class CaptureGroupsStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_GROUP
-        self.state_main_mess : str = MESS_CAPTURE_GROUP
-        self.but_change_text : str  = TEXT_CHANGE_GROUP
-        self.items_kb_cols : int = NUM_CAPTURE_GROUP_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_GROUP_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_GROUP
+        self.call_add_capture : str = CALL_CAPTURE_GROUPS
+        self.state_main_mess : str = MESS_CAPTURE_GROUPS
+        self.but_change_text : str  = BTEXT_CHANGE_GROUPS
+        self.items_kb_cols : int = NUM_CAPTURE_GROUPS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_GROUPS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_GROUPS
 
 class CaptureUsersStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_USER
-        self.state_main_mess : str = MESS_CAPTURE_USER
-        self.but_change_text : str  = TEXT_CHANGE_USER
-        self.items_kb_cols : int = NUM_CAPTURE_USER_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_USER_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_USER
+        self.call_add_capture : str = CALL_CAPTURE_USERS
+        self.state_main_mess : str = MESS_CAPTURE_USERS
+        self.but_change_text : str  = BTEXT_CHANGE_USERS
+        self.items_kb_cols : int = NUM_CAPTURE_USERS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_USERS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_USERS
 
 class CaptureDatesStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_DATE
-        self.state_main_mess : str = MESS_CAPTURE_DATE
-        self.but_change_text : str  = TEXT_CHANGE_DATE
-        self.items_kb_cols : int = NUM_CAPTURE_DATE_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_DATE_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_DATE
+        self.call_add_capture : str = CALL_CAPTURE_DATES
+        self.state_main_mess : str = MESS_CAPTURE_DATES
+        self.but_change_text : str  = BTEXT_CHANGE_DATES
+        self.items_kb_cols : int = NUM_CAPTURE_DATES_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_DATES_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_DATES
 
 class CaptureDaysStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_DAY
-        self.state_main_mess : str = MESS_CAPTURE_DAY
-        self.but_change_text : str  = TEXT_CHANGE_DAY
-        self.items_kb_cols : int = NUM_CAPTURE_DAY_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_DAY_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_DAY
+        self.call_add_capture : str = CALL_CAPTURE_DAYS
+        self.state_main_mess : str = MESS_CAPTURE_DAYS
+        self.but_change_text : str  = BTEXT_CHANGE_DAYS
+        self.items_kb_cols : int = NUM_CAPTURE_DAYS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_DAYS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_DAYS
 
 class CapturePartsStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_PART
-        self.state_main_mess : str = MESS_CAPTURE_PART
-        self.but_change_text : str  = TEXT_CHANGE_PART
-        self.items_kb_cols : int = NUM_CAPTURE_PART_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_PART_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_PART
+        self.call_add_capture : str = CALL_CAPTURE_PARTS
+        self.state_main_mess : str = MESS_CAPTURE_PARTS
+        self.but_change_text : str  = BTEXT_CHANGE_PARTS
+        self.items_kb_cols : int = NUM_CAPTURE_PARTS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_PARTS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_PARTS
 
 class CaptureLevelsStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_LEVEL
-        self.state_main_mess : str = MESS_CAPTURE_LEVEL
-        self.but_change_text : str  = TEXT_CHANGE_LEVEL
-        self.items_kb_cols : int = NUM_CAPTURE_LEVEL_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_LEVEL_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_LEVEL
+        self.call_add_capture : str = CALL_CAPTURE_LEVELS
+        self.state_main_mess : str = MESS_CAPTURE_LEVELS
+        self.but_change_text : str  = BTEXT_CHANGE_LEVELS
+        self.items_kb_cols : int = NUM_CAPTURE_LEVELS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_LEVELS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_LEVELS
 
 
 class FSMExecutor:

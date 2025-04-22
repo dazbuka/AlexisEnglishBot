@@ -13,13 +13,18 @@ from app.handlers.admin_menu.states.menu_states import MenuStateParams
 from app.handlers.admin_menu.admin_setting.setting_scheme_handlers import setting_scheme_router
 from app.handlers.admin_menu.admin_adding.adding_word_handlers import adding_word_router
 from app.handlers.admin_menu.admin_adding.adding_coll_handlers import adding_coll_router
+from app.handlers.admin_menu.admin_adding.adding_group_handlers import adding_group_router
+from app.handlers.admin_menu.admin_adding.adding_homework_handlers import adding_homework_router
 
 from app.handlers.common_settings import *
 
 admin_menu_router = Router()
 admin_menu_router.include_router(adding_word_router)
 admin_menu_router.include_router(adding_coll_router)
+admin_menu_router.include_router(adding_group_router)
+admin_menu_router.include_router(adding_homework_router)
 admin_menu_router.include_router(setting_scheme_router)
+
 
 from app.keyboards.menu_buttons import *
 
@@ -29,27 +34,39 @@ class MenuState(StatesGroup):
     current_menu_params = State()
 
 main_menu_params = MenuStateParams(curr_call=CALL_MAIN_MENU,
-                                   curr_menu=[[button_new_admin_menu]],
+                                   curr_menu=[[button_study_menu],
+                                              [button_revision_menu],
+                                              [button_config_menu],
+                                              [button_admin_menu]],
                                    curr_main_mess=MESS_MAIN_MENU)
 
-admin_menu_params = MenuStateParams(curr_call=CALL_ADMIN_MENU,
-                                    curr_menu=[[button_adm_menu_adding],
-                                               [button_adm_menu_setting],
+study_menu_params = MenuStateParams(curr_call=CALL_STUDY_MENU,
+                                    curr_menu=[[button_adding_menu],
+                                               [button_setting_menu],
                                                [button_adm_menu_editing],
-                                               [button_new_main_menu]],
+                                               [button_main_menu]],
+                                    curr_main_mess=MESS_ADMIN_MENU)
+
+admin_menu_params = MenuStateParams(curr_call=CALL_ADMIN_MENU,
+                                    curr_menu=[[button_adding_menu],
+                                               [button_setting_menu],
+                                               [button_adm_menu_editing],
+                                               [button_main_menu]],
                                     curr_main_mess=MESS_ADMIN_MENU)
 
 setting_menu_params = MenuStateParams(curr_call=CALL_SETTING_MENU,
-                                      curr_menu=[[button_adm_set_scheme],
-                                                 [button_adm_set_coll],
-                                                 [button_new_admin_menu, button_new_main_menu]],
+                                      curr_menu=[[button_set_scheme],
+                                                 [button_set_coll],
+                                                 [button_admin_menu, button_main_menu]],
                                       curr_main_mess=MESS_SETTING_MENU)
 
 
 adding_menu_params = MenuStateParams(curr_call=CALL_ADDING_MENU,
-                                     curr_menu=[[button_adm_add_word],
-                                                [button_adm_add_coll],
-                                                [button_new_admin_menu, button_new_main_menu]],
+                                     curr_menu=[[button_add_word],
+                                                [button_add_coll],
+                                                [button_add_group],
+                                                [button_add_homework],
+                                                [button_admin_menu, button_main_menu]],
                                      curr_main_mess=MESS_ADDING_MENU)
 
 @admin_menu_router.message(CommandStart())

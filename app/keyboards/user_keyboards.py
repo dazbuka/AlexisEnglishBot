@@ -6,7 +6,7 @@ from aiogram.types import (
     ReplyKeyboardRemove
 )
 
-from app.keyboards.menu_buttons import button_new_admin_menu
+from app.keyboards.menu_buttons import button_admin_menu
 
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from config import ADMIN_IDS
@@ -48,7 +48,7 @@ async def common_main_kb(user_tg_id):
                               callback_data=amsg.ADMIN_BUTTON_MAIN_ADMIN_MENU)]
     ]
     # админская добавка
-    admin_menu_keyboard = [[button_new_admin_menu]]
+    admin_menu_keyboard = [[button_admin_menu]]
     # админка, если телеграм ИД находится в списке админов
     if user_tg_id in ADMIN_IDS:
         inline_keyboard.extend(inline_keyboard_admin)

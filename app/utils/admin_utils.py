@@ -216,6 +216,12 @@ async def state_text_builder(state):
         if text:
             message_text += f'Слово:\n<b>{text}</b>\n'
 
+    if 'input_group_state' in st_data:
+        word = (st_data.get("input_group_state")).input_text
+        text = word
+        if text:
+            message_text += f'Группа:\n<b>{text}</b>\n'
+
     if 'capture_parts_state' in st_data:
         dates=(st_data.get("capture_parts_state")).captured_items_set
         date_list = []
@@ -320,6 +326,12 @@ async def state_text_builder(state):
         caption = (st_data.get("input_caption_state")).input_text
         if caption:
             message_text += f'Текст медиа:\n<b>{caption}</b>\n'
+
+    if 'input_homework_state' in st_data:
+        word = (st_data.get("input_homework_state")).input_text
+        text = word
+        if text:
+            message_text += f'Домашнее задание:\n<b>{text}</b>\n'
 
     return message_text
 
