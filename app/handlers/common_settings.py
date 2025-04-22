@@ -38,6 +38,11 @@ BTEXT_REVISION_MENU= '---Revision menu NEW---'
 MESS_REVISION_MENU = "Welcome to revision menu!"
 BTEXT_REVISION_MENU_BACK = "Exit to revision menu"
 
+CALL_HOMEWORK_MENU= '@m_homework_menu️'
+BTEXT_HOMEWORK_MENU= '---Homework menu NEW---'
+MESS_HOMEWORK_MENU = "Welcome to homework menu!"
+BTEXT_HOMEWORK_MENU_BACK = "Exit to homework menu"
+
 CALL_CONFIG_MENU= '@m_config_menu️'
 BTEXT_CONFIG_MENU= '---Config menu NEW---'
 MESS_CONFIG_MENU = "Welcome to config menu!"

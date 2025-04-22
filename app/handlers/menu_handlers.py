@@ -36,6 +36,7 @@ class MenuState(StatesGroup):
 main_menu_params = MenuStateParams(curr_call=CALL_MAIN_MENU,
                                    curr_menu=[[button_study_menu],
                                               [button_revision_menu],
+                                              [button_homework_menu],
                                               [button_config_menu],
                                               [button_admin_menu]],
                                    curr_main_mess=MESS_MAIN_MENU)
