@@ -35,6 +35,7 @@ async def message_answer(source: Message | CallbackQuery, message_text, *args, *
     await rq.update_user_last_message_id(user_tg_id=source.from_user.id, message_id=bot_mess_num)
     return bot_mess_num
 
+
 @logger_decorator
 async def mess_answer(source: Message | CallbackQuery, media_type: str, media_id: str, message_text: str, reply_markup, *args, **kwargs):
     if isinstance(source, CallbackQuery):

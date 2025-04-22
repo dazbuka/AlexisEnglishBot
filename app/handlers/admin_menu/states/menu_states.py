@@ -2,7 +2,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 
-
 class MenuStateParams:
     def __init__(self,
                  curr_call : str,

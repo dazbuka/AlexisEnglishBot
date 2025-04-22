@@ -70,7 +70,6 @@ class StateParams:
 
         return presentation
 
-
 class CaptureWordsStateParams(StateParams):
     def __init__(self, **kwargs):
 

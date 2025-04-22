@@ -27,7 +27,6 @@ button_admin_menu = InlineKeyboardButton(text=BTEXT_ADMIN_MENU, callback_data=CA
 button_admin_menu_back = InlineKeyboardButton(text=BTEXT_ADMIN_MENU, callback_data=CALL_ADMIN_MENU)
 
 
-
 button_adding_menu = InlineKeyboardButton(text=BTEXT_ADDING_MENU, callback_data=CALL_ADDING_MENU)
 button_adding_menu_back = InlineKeyboardButton(text=BTEXT_ADDING_MENU_BACK, callback_data=CALL_ADDING_MENU)
 
@@ -35,7 +34,6 @@ button_add_word = InlineKeyboardButton(text=BTEXT_ADD_WORD, callback_data=CALL_A
 button_add_coll = InlineKeyboardButton(text=BTEXT_ADD_COLL, callback_data=CALL_ADD_COLL)
 button_add_group = InlineKeyboardButton(text=BTEXT_ADD_GROUP, callback_data=CALL_ADD_GROUP)
 button_add_homework = InlineKeyboardButton(text=BTEXT_ADD_HOMEWORK, callback_data=CALL_ADD_HOMEWORK)
-
 
 
 button_setting_menu = InlineKeyboardButton(text=BTEXT_SETTING_MENU, callback_data=CALL_SETTING_MENU)

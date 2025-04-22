@@ -37,7 +37,6 @@ menu_add_homework_with_changing = [
     [button_adding_menu_back, button_admin_menu, button_main_menu]
 ]
 
-
 # переход в меню добавления задания по схеме
 @adding_homework_router.callback_query(F.data == CALL_ADD_HOMEWORK)
 async def adding_first_state(call: CallbackQuery, state: FSMContext):

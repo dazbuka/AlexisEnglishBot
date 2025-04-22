@@ -21,8 +21,6 @@ from app.handlers.admin_menu.states.input_states import (FSMExecutor, StateParam
                                                          CaptureDatesStateParams)
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 
-
-
 setting_scheme_router = Router()
 
 class AddScheme(StatesGroup):

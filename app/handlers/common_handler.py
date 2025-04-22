@@ -10,7 +10,6 @@ import app.database.requests as rq
 from config import bot, logger
 from app.utils.admin_utils import message_answer
 
-
 common_router = Router()
 
 # стартовая кнопка с зависимостью от админ или юзер

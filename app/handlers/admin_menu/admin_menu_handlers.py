@@ -88,7 +88,6 @@ async def command_start(message: Message, state: FSMContext):
     reply_kb = await keyboard_builder(menu_pack=main_menu_params.curr_menu, buttons_base_call="")
     await message_answer(source=message, message_text=message_text, reply_markup=reply_kb)
 
-
 @admin_menu_router.callback_query(F.data == CALL_MAIN_MENU)
 @admin_menu_router.callback_query(F.data == CALL_ADMIN_MENU)
 @admin_menu_router.callback_query(F.data == CALL_ADDING_MENU)

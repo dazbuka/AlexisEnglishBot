@@ -23,7 +23,6 @@ STUDYING_DAY_LIST = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 28, 35]
 TEST_TYPES = ['test4','test7']
 
 
-
 CALL_MAIN_MENU= '@m_main_menu️'
 BTEXT_MAIN_MENU= '-Main menu-️'
 MESS_MAIN_MENU = "Im Alexis English Bot! Welcome to main menu"

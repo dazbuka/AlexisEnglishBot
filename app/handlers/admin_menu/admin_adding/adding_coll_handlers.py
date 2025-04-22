@@ -16,12 +16,10 @@ from app.utils.admin_utils import (state_text_builder, mess_answer,
 
 import app.keyboards.admin_keyboards as akb
 from config import bot, media_dir
-
 from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor, CaptureLevelsStateParams,
                                                          CaptureDaysStateParams, CaptureWordsStateParams)
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
-
 
 adding_coll_router = Router()
 
