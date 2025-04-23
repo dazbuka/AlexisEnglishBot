@@ -2,6 +2,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from app.handlers.common_settings import *
 from config import logger
 from app.utils.admin_utils import count_user_tasks_by_tg_id, message_answer
 import app.utils.user_utils as uut
@@ -11,11 +12,12 @@ import app.handlers.callback_messages as callmsg
 import data.user_messages as umsg
 import data.common_messages as cmsg
 
+
 user_revision_router = Router()
 
 
 # хендлер перехода в меню ревижн - пункт главного меню
-@user_revision_router.callback_query(F.data == cmsg.COMMON_BUTTON_REVISION)
+@user_revision_router.callback_query(F.data == CALL_REVISION_MENU)
 async def check_user_tasks(call : CallbackQuery, state: FSMContext):
     # сообщение логгеру
     logger.info(f'{call.from_user.username} ({call.from_user.first_name})'

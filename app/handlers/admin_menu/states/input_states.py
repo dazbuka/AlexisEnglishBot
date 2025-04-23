@@ -81,6 +81,18 @@ class CaptureWordsStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_WORDS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_WORDS
 
+
+class CaptureCollsStateParams(StateParams):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_COLLS
+        self.state_main_mess : str = MESS_CAPTURE_COLLS
+        self.but_change_text : str  = BTEXT_CHANGE_COLLS
+        self.items_kb_cols : int = NUM_CAPTURE_COLLS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_COLLS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_COLLS
+
+
 class CaptureGroupsStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

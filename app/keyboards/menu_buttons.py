@@ -61,6 +61,7 @@ button_change_words = InlineKeyboardButton(text=BTEXT_CHANGE_WORDS, callback_dat
 button_change_groups = InlineKeyboardButton(text=BTEXT_CHANGE_GROUPS, callback_data=CALL_CHANGING_GROUPS)
 button_change_collocations = InlineKeyboardButton(text=BTEXT_CHANGE_COLLS, callback_data=CALL_CHANGING_COLLS)
 button_change_users = InlineKeyboardButton(text=BTEXT_CHANGE_USERS, callback_data=CALL_CHANGING_USERS)
+button_change_colls = InlineKeyboardButton(text=BTEXT_CHANGE_COLLS, callback_data=CALL_CHANGING_COLLS)
 button_change_dates = InlineKeyboardButton(text=BTEXT_CHANGE_DATES, callback_data=CALL_CHANGING_DATES)
 button_change_days = InlineKeyboardButton(text=BTEXT_CHANGE_DAYS, callback_data=CALL_CHANGING_DAYS)
 button_change_parts = InlineKeyboardButton(text=BTEXT_CHANGE_PARTS, callback_data=CALL_CHANGING_PARTS)

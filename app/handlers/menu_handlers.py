@@ -11,10 +11,12 @@ from aiogram.types import CallbackQuery
 from app.utils.admin_utils import message_answer
 from app.handlers.admin_menu.states.menu_states import MenuStateParams
 from app.handlers.admin_menu.admin_setting.setting_scheme_handlers import setting_scheme_router
+from app.handlers.admin_menu.admin_setting.setting_coll_handlers import setting_colls_router
 from app.handlers.admin_menu.admin_adding.adding_word_handlers import adding_word_router
 from app.handlers.admin_menu.admin_adding.adding_coll_handlers import adding_coll_router
 from app.handlers.admin_menu.admin_adding.adding_group_handlers import adding_group_router
 from app.handlers.admin_menu.admin_adding.adding_homework_handlers import adding_homework_router
+
 
 from app.handlers.common_settings import *
 
@@ -24,7 +26,7 @@ admin_menu_router.include_router(adding_coll_router)
 admin_menu_router.include_router(adding_group_router)
 admin_menu_router.include_router(adding_homework_router)
 admin_menu_router.include_router(setting_scheme_router)
-
+admin_menu_router.include_router(setting_colls_router)
 
 from app.keyboards.menu_buttons import *
 

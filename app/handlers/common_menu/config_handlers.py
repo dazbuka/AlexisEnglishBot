@@ -2,6 +2,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
+
+from app.handlers.common_settings import *
 from config import logger
 import app.utils.admin_utils as aut
 import app.database.requests as rq
@@ -18,7 +20,7 @@ class AddInterval(StatesGroup):
 
 
 # хендлер перехода в меню settings - пункт главного меню
-@user_settings_router.callback_query(F.data == cmsg.COMMON_BUTTON_SETTINGS)
+@user_settings_router.callback_query(F.data == CALL_CONFIG_MENU)
 async def show_settings_menu(call : CallbackQuery, state: FSMContext):
     # сообщение логгеру
     logger.info(f'{call.from_user.username} ({call.from_user.first_name})'

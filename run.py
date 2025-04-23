@@ -12,10 +12,10 @@ from app.handlers.admin_handlers import admin_router
 from app.handlers.admin_adding_test_handlers import admin_adding_test_router
 from app.handlers.admin_adding_task_handlers import admin_adding_task_router
 from app.handlers.user_handlers import user_router
-from app.handlers.user_studing_handlers import user_studying_router
-from app.handlers.user_revision_handlers import user_revision_router
-from app.handlers.show_homework_handlers import user_homework_router
-from app.handlers.user_settings_handlers import user_settings_router
+from app.handlers.common_menu.studing_handlers import user_studying_router
+from app.handlers.common_menu.revision_handlers import user_revision_router
+from app.handlers.common_menu.show_homework_handlers import user_homework_router
+from app.handlers.common_menu.config_handlers import user_settings_router
 
 from app.handlers.menu_handlers import admin_menu_router
 

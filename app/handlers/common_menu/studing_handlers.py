@@ -2,6 +2,8 @@ import random
 from aiogram import F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+
+from app.handlers.common_settings import *
 from config import logger
 from app.utils.admin_utils import count_user_tasks_by_tg_id
 import app.utils.user_utils as uut
@@ -17,7 +19,7 @@ user_studying_router = Router()
 
 
 # хендлер перехода в режим изучения - первый пункт главного меню
-@user_studying_router.callback_query(F.data.startswith(cmsg.COMMON_BUTTON_CHECK_TASKS))
+@user_studying_router.callback_query(F.data.startswith(CALL_STUDY_MENU))
 async def check_user_tasks(call: CallbackQuery, state: FSMContext):
     # сообщение логгеру
     logger.info(f'{call.from_user.username} ({call.from_user.first_name})'

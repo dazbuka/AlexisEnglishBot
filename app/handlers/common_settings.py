@@ -118,7 +118,7 @@ CALL_CAPTURE_COLLS = "capture_colls_"
 CALL_CHANGING_COLLS = "changing_colls_"
 MESS_CAPTURE_COLLS = 'Выберите коллокацию или введите с клавиатуры и отправьте боту ее часть'
 BTEXT_CHANGE_COLLS = "Изменить коллокации"
-NUM_CAPTURE_COLLS_COLS = 1
+NUM_CAPTURE_COLLS_COLS = 2
 NUM_CAPTURE_COLLS_ROWS = 10
 CHECK_CAPTURE_COLLS= '🟣'
 

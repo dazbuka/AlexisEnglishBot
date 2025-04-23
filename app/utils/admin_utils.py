@@ -491,7 +491,7 @@ async def get_day_list_for_kb():
         day_list.append(f'{i}-day {day_item}')
     return day_list
 
-async def get_medias_list_for_kb_with_limit(medias = None, limit: int = 20, offset: int = 0, media_only: bool = True):
+async def get_medias_list_for_kb_with_limit(medias = None, limit: int = 20, offset: int = 0, media_only: bool = False):
     if not medias:
         medias = await rq.get_medias_by_filters(limit=limit, offset=offset, media_only=media_only)
     media_list = []
@@ -500,7 +500,12 @@ async def get_medias_list_for_kb_with_limit(medias = None, limit: int = 20, offs
     return media_list
 
 
-
+async def get_colls_list_for_kb_with_ids(media_only: bool = False, test_only: bool = False):
+    medias = await rq.get_medias_by_filters(media_only=media_only, test_only=test_only)
+    media_list = []
+    for media in medias:
+        media_list.append(f'{media.id}-{media.collocation}')
+    return media_list
 
 
 async def get_users_list_for_kb_with_limit(users = None, limit: int = 21):
