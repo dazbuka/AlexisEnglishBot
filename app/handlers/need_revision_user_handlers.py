@@ -5,16 +5,16 @@ from datetime import datetime, timedelta
 from aiogram.exceptions import TelegramBadRequest
 import app.database.requests as rq
 
-import data.user_messages as umsg
+from app.handlers.common_settings import *
 
 user_router = Router()
 
 
 # инлайн кнопка просмотра определения на английском
-@user_router.callback_query(F.data.startswith(umsg.USER_BUTTON_DEFINITION))
+@user_router.callback_query(F.data.startswith(USER_BUTTON_DEFINITION))
 async def show_definition(call: CallbackQuery):
     # вытаскиваем из колбека номер слова и берем его из базы данных
-    word_id=int(call.data.replace(umsg.USER_BUTTON_DEFINITION, ''))
+    word_id=int(call.data.replace(USER_BUTTON_DEFINITION, ''))
     words = await rq.get_words_by_filters(word_id=word_id)
     word = words[0] if words else None
     try:
@@ -26,10 +26,10 @@ async def show_definition(call: CallbackQuery):
 
 
 # инлайн кнопка просмотра перевода
-@user_router.callback_query(F.data.startswith(umsg.USER_BUTTON_TRANSLATION))
+@user_router.callback_query(F.data.startswith(USER_BUTTON_TRANSLATION))
 async def show_translation(call: CallbackQuery):
     # вытаскиваем из колбека номер слова и берем его из базы данных
-    word_id=int(call.data.replace(umsg.USER_BUTTON_TRANSLATION, ''))
+    word_id=int(call.data.replace(USER_BUTTON_TRANSLATION, ''))
     words = await rq.get_words_by_filters(word_id=word_id)
     word = words[0] if words else None
     try:
@@ -41,10 +41,10 @@ async def show_translation(call: CallbackQuery):
 
 
 # инлайн кнопка отправки медиа на повторение сегодня
-@user_router.callback_query(F.data.startswith(umsg.USER_BUTTON_REPEAT_TODAY))
+@user_router.callback_query(F.data.startswith(USER_BUTTON_REPEAT_TODAY))
 async def repeat_today(call: CallbackQuery):
     # вытаскиваем из колбека номер коллокации и пользователя
-    media_id=int(call.data.replace(umsg.USER_BUTTON_REPEAT_TODAY, ''))
+    media_id=int(call.data.replace(USER_BUTTON_REPEAT_TODAY, ''))
     user = await rq.get_users_by_filters(user_tg_id=call.from_user.id)
     # добавляем задание на сегодня
     await rq.set_task(user_id=user.id, media_id=media_id, task_time=datetime.now(), author_id=user.id)
@@ -52,10 +52,10 @@ async def repeat_today(call: CallbackQuery):
 
 
 # инлайн кнопка отправки медиа на повторение завтра
-@user_router.callback_query(F.data.startswith(umsg.USER_BUTTON_REPEAT_TOMORROW))
+@user_router.callback_query(F.data.startswith(USER_BUTTON_REPEAT_TOMORROW))
 async def repeat_tomorrow(call: CallbackQuery):
     # вытаскиваем из колбека номер коллокации и пользователя
-    media_id=int(call.data.replace(umsg.USER_BUTTON_REPEAT_TOMORROW, ''))
+    media_id=int(call.data.replace(USER_BUTTON_REPEAT_TOMORROW, ''))
     user = await rq.get_users_by_filters(user_tg_id=call.from_user.id)
     # добавляем задание на завтра
     await rq.set_task(user_id=user.id, media_id=media_id, task_time=datetime.now()+timedelta(days=1), author_id=user.id)

@@ -4,12 +4,10 @@ from datetime import datetime
 import  app.database.requests as rq
 from config import logger
 from config import DEVELOPER_ID
-from app.handlers.common_settings import REMINDER_INTERVAL, REMINDER_SLEEP_INTERVAL, SENDING_SLEEP_INTERVAL
 from app.utils.admin_utils import count_user_tasks_by_tg_id, check_now_time_in_reminder_intervals
-import data.common_messages as cmsg
 import app.keyboards.user_keyboards as ukb
 from aiogram.exceptions import TelegramBadRequest
-
+from app.handlers.common_settings import *
 
 async def send_reminders(bot: Bot) -> int:
     logger.info('бот работает, проверка связи раз в час')
@@ -30,7 +28,7 @@ async def send_reminders(bot: Bot) -> int:
                 if await check_now_time_in_reminder_intervals(user.intervals):
                     last_msg = await rq.get_user_last_message_id(user.telegram_id)
                     r_mess = await bot.send_message(user.telegram_id,
-                                                    cmsg.YOU_HAVE_TASKS.format(daily_count+missed_count),
+                                                    MESS_YOU_HAVE_TASKS.format(daily_count+missed_count),
                                                     reply_markup=await ukb.common_main_kb(user_tg_id=user.telegram_id))
                     try:
                         await bot.delete_message(chat_id=user.telegram_id, message_id=last_msg)

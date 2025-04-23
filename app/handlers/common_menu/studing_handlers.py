@@ -9,8 +9,6 @@ from app.utils.admin_utils import count_user_tasks_by_tg_id
 import app.utils.user_utils as uut
 import app.database.requests as rq
 import app.keyboards.user_keyboards as ukb
-import data.user_messages as umsg
-import data.common_messages as cmsg
 from aiogram.fsm.state import StatesGroup, State
 from app.utils.admin_utils import message_answer
 
@@ -35,12 +33,12 @@ async def check_user_tasks(call: CallbackQuery, state: FSMContext):
                                              missed_tasks=missed_count)
     # если есть невыполненные задания сегодня или пропущенные, показываем клавиатуру
     if daily_count+missed_count != 0:
-        task_message = cmsg.YOU_HAVE_TASKS.format(daily_count+missed_count)
+        task_message = MESS_YOU_HAVE_TASKS.format(daily_count+missed_count)
         await message_answer(source=call, message_text=task_message, reply_markup=reply_kb)
     # если нет - все сделано и в главное меню
     else:
         reply_kb= await ukb.common_main_kb(user_tg_id=call.from_user.id)
-        await message_answer(source=call, message_text=umsg.USER_STUDYING_ANSWER_ALL_DONE, reply_markup=reply_kb)
+        await message_answer(source=call, message_text=USER_STUDYING_ANSWER_ALL_DONE, reply_markup=reply_kb)
     await call.answer()
 
 
@@ -49,19 +47,19 @@ class TestAnswer(StatesGroup):
     test_task = State()
 
 
-@user_studying_router.callback_query(F.data.startswith(umsg.USER_STUDYING_BUTTON_NEXT_DAILY_TASK))
-@user_studying_router.callback_query(F.data.startswith(umsg.USER_STUDYING_BUTTON_NEXT_MISSED_TASK))
+@user_studying_router.callback_query(F.data.startswith(USER_STUDYING_BUTTON_NEXT_DAILY_TASK))
+@user_studying_router.callback_query(F.data.startswith(USER_STUDYING_BUTTON_NEXT_MISSED_TASK))
 async def next_task_pressed(call: CallbackQuery, state: FSMContext):
     # очищаем стейт
     await state.clear()
     task_type = ''
     # получаем список заданий для этого пользователя с атрибутом отправлено = нет, сегодня или пропущенные
-    if call.data.startswith(umsg.USER_STUDYING_BUTTON_NEXT_DAILY_TASK):
+    if call.data.startswith(USER_STUDYING_BUTTON_NEXT_DAILY_TASK):
         task_list = await rq.get_tasks_by_filters(user_tg_id=call.from_user.id,
                                                   sent=False,
                                                   daily_tasks_only=True)
         task_type = 'daily'
-    elif call.data.startswith(umsg.USER_STUDYING_BUTTON_NEXT_MISSED_TASK):
+    elif call.data.startswith(USER_STUDYING_BUTTON_NEXT_MISSED_TASK):
         task_list = await rq.get_tasks_by_filters(user_tg_id=call.from_user.id,
                                                   sent=False,
                                                   missed_tasks_only=True)
@@ -69,7 +67,7 @@ async def next_task_pressed(call: CallbackQuery, state: FSMContext):
     # если получен пустой список заданий
     if not task_list:
         reply_kb = await ukb.common_main_kb(user_tg_id= call.from_user.id)
-        message_text = umsg.USER_STUDYING_ANSWER_ALL_DONE_WITH_TYPE.format(task_type)
+        message_text = USER_STUDYING_ANSWER_ALL_DONE_WITH_TYPE.format(task_type)
 
         await message_answer(source=call, message_text=message_text, reply_markup=reply_kb)
     # если задания есть - отправляемЮ сначала проверим тест или задание

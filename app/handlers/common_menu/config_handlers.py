@@ -9,8 +9,6 @@ import app.utils.admin_utils as aut
 import app.database.requests as rq
 import app.keyboards.user_keyboards as ukb
 import app.handlers.callback_messages as callmsg
-import data.user_messages as umsg
-import data.common_messages as cmsg
 
 
 user_settings_router = Router()
@@ -29,12 +27,12 @@ async def show_settings_menu(call : CallbackQuery, state: FSMContext):
     await state.clear()
     # клавиатура для дальнейшего вывода
     reply_kb = await ukb.inline_settings_menu()
-    await call.message.edit_text(umsg.USER_BUTTON_SETTINGS, reply_markup=reply_kb)
+    await call.message.edit_text(USER_BUTTON_SETTINGS, reply_markup=reply_kb)
     await call.answer()
 
 
 # хендлер перехода в меню settings - пункт главного меню
-@user_settings_router.callback_query(F.data == umsg.USER_REVISION_BUTTON_REMINDER_TIME)
+@user_settings_router.callback_query(F.data == USER_REVISION_BUTTON_REMINDER_TIME)
 async def set_reminder_interval(call: CallbackQuery, state: FSMContext):
     # сообщение логгеру
     logger.info(f'{call.from_user.username} ({call.from_user.first_name})'
@@ -50,7 +48,7 @@ async def set_reminder_interval(call: CallbackQuery, state: FSMContext):
     # клавиатура для дальнейшего вывода
     reply_kb = await ukb.inline_settings_intervals_buttons_kb(setted_intervals)
     # reply_kb = await ukb.inline_settings_intervals_buttons_kb(all_intervals)
-    await call.message.edit_text(umsg.USER_INVITE_INTERVALS, reply_markup=reply_kb)
+    await call.message.edit_text(USER_INVITE_INTERVALS, reply_markup=reply_kb)
     await state.set_state(AddInterval.intervals)
     await state.update_data(intervals=setted_intervals)
     await call.answer()

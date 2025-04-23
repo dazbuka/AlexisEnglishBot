@@ -7,7 +7,7 @@ from aiogram.types import (
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from app.keyboards.menu_buttons import button_confirm
 from data.admin_messages import *
-
+from app.handlers.common_settings import *
 
 def update_button_with_call_base(button : InlineKeyboardButton, call_base : str):
     button_with_call_base = InlineKeyboardButton(text=button.text,

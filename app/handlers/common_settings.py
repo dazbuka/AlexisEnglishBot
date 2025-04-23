@@ -1,3 +1,5 @@
+# v🔁⬆️🛠️♟️🧑‍🏫🖊️🗓️📑📬🧰🗃️⚙️📲🕹🔎📚👇📌📖➡️⬅️🗄⚙️
+
 from enum import Enum
 
 class MediaType(Enum):
@@ -23,28 +25,111 @@ STUDYING_DAY_LIST = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 28, 35]
 TEST_TYPES = ['test4','test7']
 
 
+TEXT_NEXT = '>>'
+TEXT_LAST = '>|'
+TEXT_PREV = '<<'
+TEXT_FIRST = '|<'
+#
+CALL_NEXT = '>>_'
+CALL_LAST = '>|_'
+CALL_PREV = '<<_'
+CALL_FIRST = '|<_'
+
+
+YES='yes'
+NO='no'
+
+
+HAVE_TASKS = "({})"
+HAVE_NO_TASKS = "(-)"
+
+USER_MSG_WHEN_BLOCKED='Access denied.'
+USER_MSG_WHEN_WAITING="Access denied. Wait for admin's permission."
+USER_MSG_WHEN_DELETED='Request declined. Access denied.'
+USER_MSG_REQUEST_WHEN_BLOCKED="Send request to admin."
+USER_MSG_REQUEST_SENDED="Request sended."
+# menu moving
+USER_BUTTON_MAIN_MENU = '⬆️Main menu⬆️'
+USER_BUTTON_REVISION_MENU = '🔎Revision menu🔎'
+
+# user inviting
+USER_INVITE_PRESS_ANY_BUTTON= "🕹Press any button👇"
+USER_INVITE_CHOOSE_AND_PRESS_ANY= "📌Choose any and tap it👇"
+
+#studing menu
+USER_STUDYING_BUTTON_NEXT_DAILY_TASK= "📬Next daily"
+USER_STUDYING_BUTTON_NEXT_MISSED_TASK= "🧰Next missed"
+# studying answers messages
+USER_STUDYING_ANSWER_ALL_DONE= '💪Stellar job, no more tasks!'
+USER_STUDYING_ANSWER_ALL_DONE_WITH_TYPE= '💪Stellar job, no more {} tasks!'
+# test messages
+USER_STUDYING_TEST4_TASK_MESSAGE= 'Fill in the gaps:'
+USER_STUDYING_TEST7_TASK_MESSAGE= 'Type common collocation with the word:'
+USER_STUDYING_TEST_ANSWER_RIGHT_WORD= "🎉Good job, it's the right word: <b>{}</b>, your answer was: <b>{}</b>"
+USER_STUDYING_TEST_CHECK_YOURSELF= '📎Check yourself, the right answer is: \n<b>{}</b>\n\nYour answer was: \n<b>{}</b>'
+
+#revision menu
+USER_REVISION_BUTTON_SHOW_LAST_WORDS= "📚Look through words📚"
+USER_REVISION_BUTTON_SHOW_LAST_TASKS= "📖Look recently learned📖"
+# revision words menu
+USER_REVISION_BUTTON_WORD_LIST= "📚Back to words📚"
+# revision last tasks  menu
+USER_REVISION_BUTTON_PREVIOUS_TASK= "⬅️Previous⬅️"
+USER_REVISION_BUTTON_NEXT_TASK= "➡️Next➡️"
+# revision answers
+USER_REVISION_ANSWER_NO_REVISION= '🤷Nothing for revision🤷'
+# revision alarm
+USER_REVISION_ALARM_FIRST_TASK_OPENED= "Your first studied collocation, better press button 'Previous'"
+
+#settings menu
+USER_REVISION_BUTTON_REMINDER_TIME= "⏰Reminder time⏰"
+USER_BUTTON_CONFIRM="✅Confirm✅"
+USER_BUTTON_SETTINGS = '⚙️Settings menu⚙️'
+USER_INVITE_INTERVALS= '🕒Pick a slot for a reminder (MSK).🕝'
+
+
+# common user menu
+USER_BUTTON_DEFINITION= "🪄Definition"
+USER_BUTTON_TRANSLATION= "📗Translation"
+USER_BUTTON_REPEAT_TODAY= "🔁Repeat today"
+USER_BUTTON_REPEAT_TOMORROW= "🔄Repeat tomorrow"
+
+
+
+USER_YOUR_HOMEWORK='Your homework:'
+USER_YOUR_NO_HOMEWORK='🤷No homework🤷'
+
+
+
+
+MESS_YOU_HAVE_TASKS= "🗓️A friendly reminder! You have <b>{}</b> daily task(s) to complete!"
+MESS_PRESS_ANY_BUTTON="🕹Press any button👇"
+MESS_HELP = 'Hello, this is help!🤗'
+MESS_DONT_UNDERSTAND= "Can't understand you, press any button:"
+
+
 CALL_MAIN_MENU= '@m_main_menu️'
 BTEXT_MAIN_MENU= '-Main menu-️'
-MESS_MAIN_MENU = "Im Alexis English Bot! Welcome to main menu"
-BTEXT_MAIN_MENU_BACK = "Exit to main menu"
+MESS_MAIN_MENU = "🧑‍🏫Hi, I'm AlexisEnglishBot! Welcome to main menu.\n🕹Press any button👇"
+BTEXT_MAIN_MENU_BACK = "⬆️Back to main menu⬆️"
 
 CALL_STUDY_MENU= '@m_study_menu️'
-BTEXT_STUDY_MENU= '---Study menu NEW---'
+BTEXT_STUDY_MENU= '🗓️Check my tasks'
 MESS_STUDY_MENU = "Welcome to study menu!"
 BTEXT_STUDY_MENU_BACK = "Exit to study menu"
 
 CALL_REVISION_MENU= '@m_revision_menu️'
-BTEXT_REVISION_MENU= '---Revision menu NEW---'
+BTEXT_REVISION_MENU= '🔎Revision🔎'
 MESS_REVISION_MENU = "Welcome to revision menu!"
 BTEXT_REVISION_MENU_BACK = "Exit to revision menu"
 
 CALL_HOMEWORK_MENU= '@m_homework_menu️'
-BTEXT_HOMEWORK_MENU= '---Homework menu NEW---'
+BTEXT_HOMEWORK_MENU= '🏠Homework🏠'
 MESS_HOMEWORK_MENU = "Welcome to homework menu!"
 BTEXT_HOMEWORK_MENU_BACK = "Exit to homework menu"
 
 CALL_CONFIG_MENU= '@m_config_menu️'
-BTEXT_CONFIG_MENU= '---Config menu NEW---'
+BTEXT_CONFIG_MENU= '⚙️Settings⚙️'
 MESS_CONFIG_MENU = "Welcome to config menu!"
 BTEXT_CONFIG_MENU_BACK = "Exit to config menu"
 
@@ -64,6 +149,9 @@ BTEXT_ADD_WORD = "📌Add word📌"
 
 CALL_ADD_COLL= 'c_add_coll_'
 BTEXT_ADD_COLL = "📌Add collocation📌"
+
+CALL_ADD_TEST = "c_add_test_"
+BTEXT_ADD_TEST = "📌Add test📌"
 
 CALL_ADD_GROUP = "c_add_group_"
 BTEXT_ADD_GROUP = "📌Add group📌"
@@ -98,7 +186,9 @@ MESS_NULL_CHOOSING = 'Нельзя продолжить пока ничего н
 MESS_ADDED_TO_DB = 'Информация добавлена в базу данных!'
 MESS_ERROR_ADDED_TO_DB = 'Ошибка при записи в базу данных, обратитесь к администратору'
 CALL_CONFIRM= "@confirm_"
-TEXT_BUTTON_CONFIRM= "✅CONFIRM✅"
+BTEXT_CONFIRM= "✅CONFIRM✅"
+
+
 
 MESS_ADD_ENDING = 'Поверьте все и подтвердите'
 CALL_ADD_ENDING = "add_ending_"

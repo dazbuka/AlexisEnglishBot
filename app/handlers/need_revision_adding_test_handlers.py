@@ -3,17 +3,17 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery
 from config import logger
-from app.handlers.common_settings import STUDYING_DAY_LIST, TEST_TYPES
 
 import app.keyboards.admin_keyboards as akb
 import app.database.requests as rq
 import data.admin_messages as amsg
-import data.common_messages as cmsg
 import app.handlers.callback_messages as callmsg
 
 from app.utils.admin_utils import (get_shema_text_by_word_id,
                                    get_text_from_test_adding_state,
                                    get_word_list_for_kb_with_ids_limited, message_answer)
+from app.handlers.common_settings import *
+
 
 admin_adding_test_router = Router()
 
@@ -28,7 +28,7 @@ class AddTest(StatesGroup):
     confirmation = State()
 
 # хендлер начала ввода теста, все начинается с выбора слова
-@admin_adding_test_router.callback_query(F.data == amsg.ADMIN_BUTTON_ADD_TEST)
+@admin_adding_test_router.callback_query(F.data == CALL_ADD_TEST)
 async def admin_adding_test_start(call: CallbackQuery, state: FSMContext):
     await state.clear()
     # получаем список слов
@@ -186,7 +186,7 @@ async def admin_adding_test_capture_confirmation_from_message(message: Message, 
 async def admin_adding_test_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
     confirm=call.data.replace(callmsg.CALL_ADM_ADD_TEST_CONF, '')
-    if confirm==cmsg.YES:
+    if confirm==YES:
         st_data = await state.get_data()
         word = st_data.get("word")
         word_id = st_data.get("word_id")
@@ -208,7 +208,7 @@ async def admin_adding_test_capture_confirmation_from_call(call: CallbackQuery, 
         message_text = amsg.ADM_ADD_TEST_ADDED.format(word, media_type) if res else amsg.ADM_ADD_TEST_ERROR
         reply_kb = await akb.admin_adding_menu_kb()
         await call.message.edit_text(message_text, reply_markup=reply_kb)
-    elif confirm == cmsg.NO:
+    elif confirm == NO:
         await state.clear()
         word_list = await get_word_list_for_kb_with_ids_limited()
         message_text = amsg.ADM_ADD_TEST_WORD_AGAIN

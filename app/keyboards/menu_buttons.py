@@ -3,12 +3,10 @@ from aiogram.types import (
 )
 from data.admin_messages import *
 from app.handlers.common_settings import *
-import app.handlers.callback_messages as callmsg
-import data.common_messages as cmsg
 from app.handlers.common_settings import *
 
 
-button_confirm = InlineKeyboardButton(text=TEXT_BUTTON_CONFIRM, callback_data=CALL_CONFIRM)
+button_confirm = InlineKeyboardButton(text=BTEXT_CONFIRM, callback_data=CALL_CONFIRM)
 # button to go to main menu
 button_main_menu = InlineKeyboardButton(text=BTEXT_MAIN_MENU, callback_data=CALL_MAIN_MENU)
 button_main_menu_back = InlineKeyboardButton(text=BTEXT_MAIN_MENU_BACK, callback_data=CALL_MAIN_MENU)
@@ -35,6 +33,7 @@ button_adding_menu_back = InlineKeyboardButton(text=BTEXT_ADDING_MENU_BACK, call
 
 button_add_word = InlineKeyboardButton(text=BTEXT_ADD_WORD, callback_data=CALL_ADD_WORD)
 button_add_coll = InlineKeyboardButton(text=BTEXT_ADD_COLL, callback_data=CALL_ADD_COLL)
+button_add_test = InlineKeyboardButton(text=BTEXT_ADD_TEST, callback_data=CALL_ADD_TEST)
 button_add_group = InlineKeyboardButton(text=BTEXT_ADD_GROUP, callback_data=CALL_ADD_GROUP)
 button_add_homework = InlineKeyboardButton(text=BTEXT_ADD_HOMEWORK, callback_data=CALL_ADD_HOMEWORK)
 

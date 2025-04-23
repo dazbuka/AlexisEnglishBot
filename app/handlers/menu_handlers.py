@@ -1,7 +1,6 @@
 from aiogram.filters.command import Command, CommandStart
 from aiogram.types import Message, CallbackQuery
 import app.keyboards.user_keyboards as ukb
-import data.common_messages as cmsg
 from app.database.requests import set_user
 
 from aiogram import Router, F
@@ -11,12 +10,11 @@ from aiogram.types import CallbackQuery
 from app.utils.admin_utils import message_answer
 from app.handlers.admin_menu.states.menu_states import MenuStateParams
 from app.handlers.admin_menu.admin_setting.setting_scheme_handlers import setting_scheme_router
-from app.handlers.admin_menu.admin_setting.setting_coll_handlers import setting_colls_router
+from app.handlers.admin_menu.admin_setting.setting_colls_handlers import setting_colls_router
 from app.handlers.admin_menu.admin_adding.adding_word_handlers import adding_word_router
 from app.handlers.admin_menu.admin_adding.adding_coll_handlers import adding_coll_router
 from app.handlers.admin_menu.admin_adding.adding_group_handlers import adding_group_router
 from app.handlers.admin_menu.admin_adding.adding_homework_handlers import adding_homework_router
-
 
 from app.handlers.common_settings import *
 
@@ -67,6 +65,7 @@ setting_menu_params = MenuStateParams(curr_call=CALL_SETTING_MENU,
 adding_menu_params = MenuStateParams(curr_call=CALL_ADDING_MENU,
                                      curr_menu=[[button_add_word],
                                                 [button_add_coll],
+                                                [button_add_test],
                                                 [button_add_group],
                                                 [button_add_homework],
                                                 [button_admin_menu, button_main_menu]],
@@ -82,6 +81,10 @@ async def command_start(message: Message, state: FSMContext):
     print('сделай проверку наличия кваргсов экзекьютора')
     print('сделать енум или множество карусельки, в который еще можно и функцию засунуть по листанию')
     print('поработай с функцией добавления элементов в принимающее множество, нужно объединить все 3')
+    print('сделай проверку на наличие слова в базе')
+    print('доработай прием текста')
+    print('убери проверку на команду старт, настрой роутеры')
+    print('закрой доступ к админке')
     # чистим стейт
     await state.clear()
     # проверяем пользователя и регистрируем при необходимости

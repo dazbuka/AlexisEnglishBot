@@ -1,9 +1,8 @@
 import app.database.requests as rq
 from config import logger
-import data.user_messages as umsg
 from aiogram.types import Message, CallbackQuery
 from app.utils.admin_utils import message_answer
-
+from app.handlers.common_settings import *
 
 # функция отправки медиа пользователю, ответ на колл
 async def send_media_to_user_call_with_kb(media,
@@ -65,11 +64,11 @@ async def send_media_to_user_call_with_kb(media,
 # функция отправки теста пользователю, ответ на колл
 async def send_test_to_user_with_kb(media, call : CallbackQuery, reply_kb):
     if media.media_type=='test4':
-        text = umsg.USER_STUDYING_TEST4_TASK_MESSAGE + '\n' + media.collocation
+        text = USER_STUDYING_TEST4_TASK_MESSAGE + '\n' + media.collocation
     elif media.media_type == 'test7':
         words = await rq.get_words_by_filters(word_id=media.word_id)
         word = words[0].word
-        text = f'{umsg.USER_STUDYING_TEST7_TASK_MESSAGE}\n<b>{word}</b>'
+        text = f'{USER_STUDYING_TEST7_TASK_MESSAGE}\n<b>{word}</b>'
     else:
         text = f'Неизвестный формат теста, обратитесь к администратору'
     # await call.message.answer(text=text, reply_markup=reply_kb)
@@ -84,9 +83,9 @@ async def check_user_test_answer(media, message : Message, reply_kb):
         word_dict = await rq.get_words_by_filters(word_id=media.word_id)
         word = word_dict[0].word
         if len(answer) >= 3 and answer in word :
-            message_text = umsg.USER_STUDYING_TEST_ANSWER_RIGHT_WORD.format(word, answer)
+            message_text = USER_STUDYING_TEST_ANSWER_RIGHT_WORD.format(word, answer)
         else:
-            message_text = umsg.USER_STUDYING_TEST_CHECK_YOURSELF.format(word, answer)
+            message_text = USER_STUDYING_TEST_CHECK_YOURSELF.format(word, answer)
     elif media.media_type == 'test7':
         medias = await rq.get_medias_by_filters(word_id=media.word_id, media_only=True)
         # вводим переменную - количество правильно введенных коллокаций
@@ -98,7 +97,7 @@ async def check_user_test_answer(media, message : Message, reply_kb):
             if media.collocation in answer:
                 score += 1
         right_answer = '\n'.join(map(str,rezult))
-        message_text = f'{umsg.USER_STUDYING_TEST_CHECK_YOURSELF.format(right_answer, message.text)}'
+        message_text = f'{USER_STUDYING_TEST_CHECK_YOURSELF.format(right_answer, message.text)}'
         # если есть совпадения - дописываем счет
         if score != 0:
             message_text = f"🎉Good job, your score: {score}\n\n{message_text}"

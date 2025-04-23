@@ -7,11 +7,9 @@ from app.database.models import async_main
 from app.scheduler import check_reminders
 
 from app.handlers.common_handler import common_router
-from app.handlers.admin_handlers import admin_router
 
-from app.handlers.admin_adding_test_handlers import admin_adding_test_router
-from app.handlers.admin_adding_task_handlers import admin_adding_task_router
-from app.handlers.user_handlers import user_router
+from app.handlers.need_revision_adding_test_handlers import admin_adding_test_router
+from app.handlers.need_revision_user_handlers import user_router
 from app.handlers.common_menu.studing_handlers import user_studying_router
 from app.handlers.common_menu.revision_handlers import user_revision_router
 from app.handlers.common_menu.show_homework_handlers import user_homework_router
@@ -65,8 +63,6 @@ async def main():
                        user_homework_router,
                        user_router,
                        admin_adding_test_router,
-                       admin_adding_task_router,
-                       admin_router,
                        common_router)
     # подключаем проверку напоминалок в промежутках времени
 
@@ -83,7 +79,7 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print('Exit')
+        print('Bot exit')
 
 
 

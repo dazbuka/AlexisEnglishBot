@@ -6,9 +6,10 @@ from aiogram.exceptions import TelegramBadRequest
 from app.database.models import UserStatus
 
 import app.database.requests as rq
-import data.user_messages as umsg
 import app.keyboards.user_keyboards as ukb
 import app.keyboards.admin_keyboards as akb
+from app.handlers.common_settings import *
+
 
 class DeletingAndLoggingMessagesMiddleware(BaseMiddleware):
     async def __call__(self,
@@ -100,9 +101,9 @@ class BlockingUserMiddleware(BaseMiddleware):
 
             # дополнительно проверям, не шлет ли заблокированный пользователь запрос на разблокировку
             if update.callback_query:
-                if update.callback_query.data == umsg.USER_MSG_REQUEST_WHEN_BLOCKED:
+                if update.callback_query.data == USER_MSG_REQUEST_WHEN_BLOCKED:
                     await update.callback_query.answer()
-                    await update.callback_query.message.edit_text(umsg.USER_MSG_REQUEST_SENDED)
+                    await update.callback_query.message.edit_text(USER_MSG_REQUEST_SENDED)
                     # если он в ожидании - то есть его не удалили совсем
                     if user.status == UserStatus.WAITING:
                         message_text = f"Пользователь {user.telegram_id} - {user.ident_name} просит его разблокировать"
@@ -117,10 +118,10 @@ class BlockingUserMiddleware(BaseMiddleware):
         else:
             user = await rq.get_users_by_filters(user_tg_id=update_message.chat.id)
             if user.status == UserStatus.BLOCKED:
-                await bot.send_message(update_message.chat.id, umsg.USER_MSG_WHEN_BLOCKED,
+                await bot.send_message(update_message.chat.id, USER_MSG_WHEN_BLOCKED,
                                        reply_markup=await ukb.inline_block_menu())
                 await rq.update_user_status(update_message.chat.id, UserStatus.WAITING)
             elif user.status == UserStatus.WAITING:
-                await bot.send_message(update_message.chat.id, umsg.USER_MSG_WHEN_WAITING)
+                await bot.send_message(update_message.chat.id, USER_MSG_WHEN_WAITING)
             elif user.status == UserStatus.DELETED:
-                await bot.send_message(update_message.chat.id, umsg.USER_MSG_WHEN_DELETED)
+                await bot.send_message(update_message.chat.id, USER_MSG_WHEN_DELETED)

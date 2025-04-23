@@ -4,10 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 import app.utils.admin_utils as aut
 from app.keyboards.keyboard_builder import keyboard_builder
-# from app.handlers.common_settings import (CALL_CHANGE_WORD, CALL_CHANGE_USER, CALL_CHANGE_DATE,
-#                                           CALL_CONFIRM, MESS_MORE_CHOOSING, MESS_NULL_CHOOSING, CALL_CHANGE_LEVEL)
-
-from data.admin_messages import  (CALL_NEXT, CALL_LAST, CALL_PREV, CALL_FIRST)
+from app.handlers.common_settings import *
 from app.handlers.common_settings import *
 
 class StateParams:

@@ -9,8 +9,6 @@ import app.utils.user_utils as uut
 import app.database.requests as rq
 import app.keyboards.user_keyboards as ukb
 import app.handlers.callback_messages as callmsg
-import data.user_messages as umsg
-import data.common_messages as cmsg
 
 
 user_revision_router = Router()
@@ -32,17 +30,17 @@ async def check_user_tasks(call : CallbackQuery, state: FSMContext):
     reply_kb = await ukb.inline_revision_menu(next_task_id=next_task_id)
     # проверяем были ли вообще задания хоть какие-нибудь
     if all_count != 0:
-        message_text = umsg.USER_INVITE_PRESS_ANY_BUTTON
+        message_text = USER_INVITE_PRESS_ANY_BUTTON
         await message_answer(source=call, message_text=message_text, reply_markup=reply_kb)
     else:
-        message_text = umsg.USER_REVISION_ANSWER_NO_REVISION
+        message_text = USER_REVISION_ANSWER_NO_REVISION
         reply_kb = await ukb.common_main_kb(user_tg_id= call.from_user.id)
         await message_answer(source=call, message_text=message_text, reply_markup=reply_kb)
     await call.answer()
 
 
 # инлайн кнопка - колбэк реакция на нажатие пункта меню просмотр ревижн
-@user_revision_router.callback_query(F.data == umsg.USER_REVISION_BUTTON_SHOW_LAST_WORDS)
+@user_revision_router.callback_query(F.data == USER_REVISION_BUTTON_SHOW_LAST_WORDS)
 async def show_last_words(call: CallbackQuery):
     # логгер
     logger.info(f'{call.message.from_user.username} ({call.message.from_user.first_name})'
@@ -58,7 +56,7 @@ async def show_last_words(call: CallbackQuery):
             word_list.append(word[0].word)
     word_list=sorted(list(set(word_list)))
     # отправляем пользователю
-    message_text = umsg.USER_INVITE_CHOOSE_AND_PRESS_ANY
+    message_text = USER_INVITE_CHOOSE_AND_PRESS_ANY
     reply_kb = await ukb.inline_revision_word_buttons_kb(word_list)
     await message_answer(source=call, message_text=message_text, reply_markup=reply_kb)
     await call.answer()
@@ -78,7 +76,7 @@ async def show_revision_word_list(call: CallbackQuery):
     for media in media_list:
         collocation_list.append([media.id, media.collocation])
     # ответ для выбора коллокаций, клавиатура - список
-    message_text = umsg.USER_INVITE_CHOOSE_AND_PRESS_ANY
+    message_text = USER_INVITE_CHOOSE_AND_PRESS_ANY
     reply_kb = await ukb.inline_revision_collocations_buttons_kb(collocation_list)
     await message_answer(source=call, message_text=message_text, reply_markup=reply_kb)
     await call.answer()
@@ -109,13 +107,13 @@ async def show_revision_collocation_list(call: CallbackQuery):
 
 
 # просмотр пройденных заданий
-@user_revision_router.callback_query(F.data.startswith(umsg.USER_REVISION_BUTTON_SHOW_LAST_TASKS))
+@user_revision_router.callback_query(F.data.startswith(USER_REVISION_BUTTON_SHOW_LAST_TASKS))
 async def show_last_medias(call: CallbackQuery):
     # логгер
     logger.info(f'{call.message.from_user.username} ({call.message.from_user.first_name}) '
                 f' - выбрал пункт меню просмотр последний заданий *{call.data}*')
     # вытаскиваем из колбэка номер задания
-    task_id = int(call.data.replace(umsg.USER_REVISION_BUTTON_SHOW_LAST_TASKS, ''))
+    task_id = int(call.data.replace(USER_REVISION_BUTTON_SHOW_LAST_TASKS, ''))
     # получаем все задания пользователя
     tasks = await rq.get_tasks_by_filters(task_id=task_id)
     task = tasks[0]
@@ -143,7 +141,7 @@ async def show_last_medias(call: CallbackQuery):
         next_task_id = task_num_list[ind + 1]
     # отвечаем на колбэк, если нулевое алярм самое старое изученнное
     if ind == 0:
-        await call.answer(umsg.USER_REVISION_ALARM_FIRST_TASK_OPENED, show_alert=True)
+        await call.answer(USER_REVISION_ALARM_FIRST_TASK_OPENED, show_alert=True)
     else:
         await call.answer()
     # keyboard
