@@ -387,18 +387,6 @@ async def set_homework(hometask, users, homework_date, author_id) -> bool:
             return False
 
 
-# добавление url
-async def set_link(link_name, link_url, users, priority) -> bool:
-    async with async_session() as session:
-        try:
-            session.add(Link(name=link_name, link=link_url, users=users, priority=priority))
-            await session.commit()
-            logger.info(f"В базу данных добавлена ссылка {link_url}!")
-            return True
-        except SQLAlchemyError as e:
-            logger.error(f"Ошибка при добавлении ссылки в базу данных: {e}")
-            return False
-
 # запрос на задания с фильтрами
 async def get_homeworks_by_filters(homework_id: int = None,
                                    actual : bool = True):
@@ -422,6 +410,49 @@ async def get_homeworks_by_filters(homework_id: int = None,
 
         except SQLAlchemyError as e:
             logger.error(f"Ошибка при поиске homeworks: {e}")
+
+# добавление url
+async def set_link(link_name, link_url, users, priority) -> bool:
+    async with async_session() as session:
+        try:
+            session.add(Link(name=link_name, link=link_url, users=users, priority=priority))
+            await session.commit()
+            logger.info(f"В базу данных добавлена ссылка {link_url}!")
+            return True
+        except SQLAlchemyError as e:
+            logger.error(f"Ошибка при добавлении ссылки в базу данных: {e}")
+            return False
+
+
+# запрос на задания с фильтрами
+async def get_links_by_filters(user_id: int = None,
+                               user_tg_id : int | BigInteger = None):
+    async with async_session() as session:
+        try:
+            selection = select(Link)
+
+            if user_id:
+                selection = selection.filter(Link.users.contains(user_id)).order_by(Link.priority.asc())
+
+                # .order_by(Link.priority.desc())
+
+            # if user_tg_id:
+            #     # selection =select(User,Task).join(Task,User.tasks_as_user)
+            #     selection = selection.join(User.tasks)
+            #     selection = selection.filter(User.telegram_id == user_tg_id)
+
+            rez = await session.execute(selection)
+            links = rez.scalars().all()
+
+            if not links:
+                logger.info(f"не нашел links в базе данных")
+
+            return links
+
+        except SQLAlchemyError as e:
+            logger.error(f"Ошибка при поиске заданий: {e}")
+
+
 
 
 # добавление group

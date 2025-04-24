@@ -126,6 +126,7 @@ BTEXT_REVISION_MENU_BACK = "Exit to revision menu"
 CALL_LINKS_MENU= '@m_links_menu️'
 BTEXT_LINKS_MENU= '🕸Links🕸'
 MESS_LINKS_MENU = "Welcome to links menu!"
+MESS_LINKS_MENU_EMPTY = "You have no links!"
 BTEXT_LINKS_MENU_BACK = "Exit to links menu"
 
 CALL_HOMEWORK_MENU= '@m_homework_menu️'
@@ -274,7 +275,6 @@ BTEXT_CHANGE_PRIRITY = "Изменить приоритет"
 NUM_CAPTURE_PRIRITY_COLS = 1
 NUM_CAPTURE_PRIRITY_ROWS = 7
 CHECK_CAPTURE_PRIRITY= '🟣'
-
 
 
 # capturing day

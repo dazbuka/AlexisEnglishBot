@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from aiogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
@@ -18,6 +20,7 @@ def update_button_with_call_base(button : InlineKeyboardButton, call_base : str)
 async def keyboard_builder(menu_pack : list,
                            buttons_base_call : str | None = '',
                            buttons_add_list : list | None = None,
+                           buttons_add_buttons : Optional[List[InlineKeyboardButton]] = None,
                            buttons_add_cols: int | None = None,
                            buttons_add_rows: int | None = None,
                            is_adding_confirm_button : bool = False,
@@ -56,6 +59,39 @@ async def keyboard_builder(menu_pack : list,
             builder.button(text=TEXT_NEXT, callback_data=f'{buttons_base_call}{CALL_NEXT}{buttons_add_table_number}')
             builder.button(text=TEXT_LAST, callback_data=f'{buttons_base_call}{CALL_LAST}{buttons_add_table_number}')
         adjusting.extend(tables[buttons_add_table_number])
+
+    if buttons_add_buttons:
+        tables = []
+        tables_of_buttons = []
+        while buttons_add_buttons:
+            table = []
+            table_of_buttons = []
+            row = 0
+            while row < buttons_add_rows and buttons_add_buttons:
+                line = 0
+                while line < buttons_add_cols and buttons_add_buttons:
+                    line += 1
+                    table_of_buttons.append(buttons_add_buttons[0])
+                    buttons_add_buttons = buttons_add_buttons[1:]
+                table.append(line)
+                row += 1
+            tables.append(table)
+            tables_of_buttons.append(table_of_buttons)
+
+        for button in tables_of_buttons[buttons_add_table_number]:
+            # ограничение длины колбека - 64, ,возьмем 15 - точно хватит для цифр и начала букв
+            builder.add(button)
+
+        if len(tables)>1:
+            tables[buttons_add_table_number].append(4)
+            builder.button(text=TEXT_FIRST, callback_data=f'{buttons_base_call}{CALL_FIRST}{buttons_add_table_number}')
+            builder.button(text=TEXT_PREV, callback_data=f'{buttons_base_call}{CALL_PREV}{buttons_add_table_number}')
+            builder.button(text=TEXT_NEXT, callback_data=f'{buttons_base_call}{CALL_NEXT}{buttons_add_table_number}')
+            builder.button(text=TEXT_LAST, callback_data=f'{buttons_base_call}{CALL_LAST}{buttons_add_table_number}')
+        adjusting.extend(tables[buttons_add_table_number])
+
+        # for button in buttons_add_buttons:
+        #     builder.add(button)
 
     # если нужно добавить кнопку подтверждения ввода
     if is_adding_confirm_button:
