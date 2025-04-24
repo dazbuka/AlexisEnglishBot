@@ -15,6 +15,8 @@ from app.handlers.admin_menu.admin_adding.adding_word_handlers import adding_wor
 from app.handlers.admin_menu.admin_adding.adding_coll_handlers import adding_coll_router
 from app.handlers.admin_menu.admin_adding.adding_group_handlers import adding_group_router
 from app.handlers.admin_menu.admin_adding.adding_homework_handlers import adding_homework_router
+from app.handlers.admin_menu.admin_adding.adding_links_handlers import adding_link_router
+from app.handlers.common_menu.links_handlers import links_router
 
 from app.handlers.common_settings import *
 
@@ -23,8 +25,10 @@ admin_menu_router.include_router(adding_word_router)
 admin_menu_router.include_router(adding_coll_router)
 admin_menu_router.include_router(adding_group_router)
 admin_menu_router.include_router(adding_homework_router)
+admin_menu_router.include_router(adding_link_router)
 admin_menu_router.include_router(setting_scheme_router)
 admin_menu_router.include_router(setting_colls_router)
+admin_menu_router.include_router(links_router)
 
 from app.keyboards.menu_buttons import *
 
@@ -36,6 +40,7 @@ class MenuState(StatesGroup):
 main_menu_params = MenuStateParams(curr_call=CALL_MAIN_MENU,
                                    curr_menu=[[button_study_menu],
                                               [button_revision_menu],
+                                              [button_links_menu],
                                               [button_homework_menu],
                                               [button_config_menu],
                                               [button_admin_menu]],
@@ -66,6 +71,7 @@ adding_menu_params = MenuStateParams(curr_call=CALL_ADDING_MENU,
                                      curr_menu=[[button_add_word],
                                                 [button_add_coll],
                                                 [button_add_test],
+                                                [button_add_link],
                                                 [button_add_group],
                                                 [button_add_homework],
                                                 [button_admin_menu, button_main_menu]],

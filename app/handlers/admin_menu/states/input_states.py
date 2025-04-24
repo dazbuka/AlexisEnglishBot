@@ -14,7 +14,7 @@ class StateParams:
                  call_add_capture: str = None,
                  state_main_mess: str = None,
                  but_change_text: str = None,
-                 is_last_state_with_changing_mode: bool = None,
+                 is_last_state_with_changing_mode: bool = False,
                  # необязательные
                  is_can_be_empty: bool = False,
                  next_state: State = None,
@@ -120,6 +120,16 @@ class CaptureDatesStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_DATES_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_DATES
 
+class CapturePriorityStateParams(StateParams):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_PRIRITY
+        self.state_main_mess : str = MESS_CAPTURE_PRIRITY
+        self.but_change_text : str  = BTEXT_CHANGE_PRIRITY
+        self.items_kb_cols : int = NUM_CAPTURE_PRIRITY_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_PRIRITY_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_PRIRITY
+
 class CaptureDaysStateParams(StateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -167,9 +177,9 @@ class FSMExecutor:
         next_state = next_state_str.split(':', 1)[1]
         next_state_params: StateParams = await fsm_state.get_value(next_state)
         print(next_state_str)
-        # print('params')
-        # print(current_state_params)
-
+        print('params')
+        print(next_state)
+        print(next_state_params)
         # сначала обработчик для колла, заодно проверяем чтобы не было мессаджа
         if fsm_call and not fsm_mess:
             # вытаскиваем колл и убираем из него базовый и добавочный колл (заменяем на пусто)
@@ -212,7 +222,9 @@ class FSMExecutor:
                 # во всех остальных случаях переходим в следущюий стейт
                 else:
                     print('c4', end='-')
+                    print(next_state_params)
                     absolute_next_state = next_state_params
+                    print(absolute_next_state)
                 page_num_common = 0
                 # проверяем на случай если нажата кнопка карусельки
             # если работает каруселька по перемещению между страницами, абсолютный некст будет текущим, страница

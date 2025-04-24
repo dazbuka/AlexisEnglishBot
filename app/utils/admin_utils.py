@@ -248,6 +248,27 @@ async def state_text_builder(state):
         if text:
             message_text += f'Перевод:\n<b>{text}</b>\n'
 
+    if 'input_link_name_state' in st_data:
+        word = (st_data.get("input_link_name_state")).input_text
+        text = word
+        if text:
+            message_text += f'Имя ссылки:\n<b>{text}</b>\n'
+
+    if 'input_link_url_state' in st_data:
+        word = (st_data.get("input_link_url_state")).input_text
+        text = word
+        if text:
+            message_text += f'Ссылка:\n<b>{text}</b>\n'
+
+    if 'capture_priority_state' in st_data:
+        items = (st_data.get("capture_priority_state")).captured_items_set
+        items_list = []
+        for item in items_list:
+            items_list.append(item)
+        text = ', '.join(items_list)
+        if text:
+            message_text += f'Приоритет:\n<b>{text}</b>\n'
+
     if 'capture_words_state' in st_data:
         words = (st_data.get("capture_words_state")).captured_items_set
         word_list = []

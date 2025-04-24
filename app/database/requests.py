@@ -2,7 +2,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import BigInteger
 from config import bot, DEVELOPER_ID
 from app.database.models import async_session
-from app.database.models import User, Task, Media, Word, Homework, Group
+from app.database.models import User, Task, Media, Word, Homework, Group, Link
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from config import logger
@@ -386,6 +386,18 @@ async def set_homework(hometask, users, homework_date, author_id) -> bool:
             logger.error(f"Ошибка при добавлении домашнего задания в базу данных: {e}")
             return False
 
+
+# добавление url
+async def set_link(link_name, link_url, users, priority) -> bool:
+    async with async_session() as session:
+        try:
+            session.add(Link(name=link_name, link=link_url, users=users, priority=priority))
+            await session.commit()
+            logger.info(f"В базу данных добавлена ссылка {link_url}!")
+            return True
+        except SQLAlchemyError as e:
+            logger.error(f"Ошибка при добавлении ссылки в базу данных: {e}")
+            return False
 
 # запрос на задания с фильтрами
 async def get_homeworks_by_filters(homework_id: int = None,

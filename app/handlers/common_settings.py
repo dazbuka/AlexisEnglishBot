@@ -123,6 +123,11 @@ BTEXT_REVISION_MENU= '🔎Revision🔎'
 MESS_REVISION_MENU = "Welcome to revision menu!"
 BTEXT_REVISION_MENU_BACK = "Exit to revision menu"
 
+CALL_LINKS_MENU= '@m_links_menu️'
+BTEXT_LINKS_MENU= '🕸Links🕸'
+MESS_LINKS_MENU = "Welcome to links menu!"
+BTEXT_LINKS_MENU_BACK = "Exit to links menu"
+
 CALL_HOMEWORK_MENU= '@m_homework_menu️'
 BTEXT_HOMEWORK_MENU= '🏠Homework🏠'
 MESS_HOMEWORK_MENU = "Welcome to homework menu!"
@@ -159,6 +164,8 @@ BTEXT_ADD_GROUP = "📌Add group📌"
 CALL_ADD_HOMEWORK = "c_add_homework_"
 BTEXT_ADD_HOMEWORK = "📌Add homework📌"
 
+CALL_ADD_LINK = "c_add_link_"
+BTEXT_ADD_LINK = "📌Add link📌"
 
 CALL_SETTING_MENU = "@c_adm_menu_set"
 MESS_SETTING_MENU = "Choose what do you want to set or assign"
@@ -259,6 +266,17 @@ NUM_CAPTURE_DATES_COLS = 4
 NUM_CAPTURE_DATES_ROWS = 5
 CHECK_CAPTURE_DATES= '🟣'
 
+# capturing date
+CALL_CAPTURE_PRIRITY = "capture_priority_"
+CALL_CHANGING_PRIRITY = "changing_priority_"
+MESS_CAPTURE_PRIRITY = 'Выберите приорирет'
+BTEXT_CHANGE_PRIRITY = "Изменить приоритет"
+NUM_CAPTURE_PRIRITY_COLS = 1
+NUM_CAPTURE_PRIRITY_ROWS = 7
+CHECK_CAPTURE_PRIRITY= '🟣'
+
+
+
 # capturing day
 CALL_CAPTURE_DAYS = "capture_daуs_"
 CALL_CHANGING_DAYS = "changing_days_"
@@ -283,6 +301,16 @@ CALL_INPUT_HOMEWORK = "input_homework_"
 CALL_CHANGING_HOMEWORK = "changing_homework_"
 MESS_INPUT_HOMEWORK = "Введите домашнее задание"
 BTEXT_CHANGE_HOMEWORK = "Изменить домашнее задание"
+# input link name
+CALL_INPUT_LINK_NAME = "input_link_name"
+CALL_CHANGING_LINK_NAME = "changing_link_name_"
+MESS_INPUT_LINK_NAME = "Введите наименование ссылки"
+BTEXT_CHANGE_LINK_NAME = "Изменить наименование ссылки"
+# input link url
+CALL_INPUT_LINK_URL = "input_link_url"
+CALL_CHANGING_LINK_URL = "changing_link_url_"
+MESS_INPUT_LINK_URL = "Введите url ссылки"
+BTEXT_CHANGE_LINK_URL = "Изменить url ссылки"
 # input collocation
 CALL_INPUT_COLL = "input_coll_"
 CALL_CHANGING_COLL = "changing_coll_"
