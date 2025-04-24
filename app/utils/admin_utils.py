@@ -360,20 +360,20 @@ async def state_text_builder(state):
     return message_text
 
 # получает номер страницы пагинации при управлении в карусельке вперед назад
-async def get_new_carousel_page_num(call: str, items_kb: list, rows: int, cols: int):
+async def get_new_carousel_page_num(call_item: str, items_kb: list, rows: int, cols: int):
     # считаем количество таблиц исходя из длины массива кнопок и количества строк и столбцов
     count_of_tables = ((len(items_kb) - 1) // (cols * rows)) + 1
     # меняем пагинацию в зависимости от нажатой кнопки
     # если нажата НЕКСТ - вытаскиваем из колла номер текущей страницы, добавляем 1, если последний - идем на первую
-    if call.startswith(CALL_NEXT):
-        page_num = int(call.replace(CALL_NEXT, ''))
+    if call_item.startswith(CALL_NEXT):
+        page_num = int(call_item.replace(CALL_NEXT, ''))
         page_num = 0 if page_num == count_of_tables - 1 else page_num + 1
     # если нажата ПРЕД - вытаскиваем из колла номер текущей страницы, вычитаем 1, если первая - идем на последнюю
-    elif call.startswith(CALL_PREV):
-        page_num = int(call.replace(CALL_PREV, ''))
+    elif call_item.startswith(CALL_PREV):
+        page_num = int(call_item.replace(CALL_PREV, ''))
         page_num = count_of_tables - 1 if page_num == 0 else page_num - 1
     # если нажата последняя - идет туда
-    elif call.startswith(CALL_LAST):
+    elif call_item.startswith(CALL_LAST):
         page_num = count_of_tables - 1
     # если нажата первая - идем туда
     else:

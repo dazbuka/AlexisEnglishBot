@@ -235,7 +235,7 @@ class FSMExecutor:
 
                 #
                 absolute_next_state = current_state_params
-                page_num_common = await aut.get_new_carousel_page_num(call=item_call,
+                page_num_common = await aut.get_new_carousel_page_num(call_item=item_call,
                                                                       items_kb=absolute_next_state.items_kb_list,
                                                                       rows=absolute_next_state.items_kb_rows,
                                                                       cols=absolute_next_state.items_kb_cols)
