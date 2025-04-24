@@ -25,10 +25,10 @@ STUDYING_DAY_LIST = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 28, 35]
 TEST_TYPES = ['test4','test7']
 
 
-TEXT_NEXT = '>>'
-TEXT_LAST = '>|'
-TEXT_PREV = '<<'
-TEXT_FIRST = '|<'
+TEXT_NEXT = '➡️'
+TEXT_LAST = '⏭️'
+TEXT_PREV = '⬅️'
+TEXT_FIRST = '⏮️'
 #
 CALL_NEXT = '>>_'
 CALL_LAST = '>|_'
@@ -114,9 +114,14 @@ MESS_MAIN_MENU = "🧑‍🏫Hi, I'm AlexisEnglishBot! Welcome to main menu.\n�
 BTEXT_MAIN_MENU_BACK = "⬆️Back to main menu⬆️"
 
 CALL_STUDY_MENU= '@m_study_menu️'
-BTEXT_STUDY_MENU= '🗓️Check my tasks'
+BTEXT_STUDY_MENU= '❤️New study menu❤️'
 MESS_STUDY_MENU = "Welcome to study menu!"
 BTEXT_STUDY_MENU_BACK = "Exit to study menu"
+
+CALL_STUDY_MENU_OLD= '@m_old_study_menu️'
+BTEXT_STUDY_MENU_OLD= '🗓️Check my tasks'
+MESS_STUDY_MENU_OLD = "Welcome to study menu!"
+BTEXT_STUDY_MENU_BACK_OLD = "Exit to study menu"
 
 CALL_REVISION_MENU= '@m_revision_menu️'
 BTEXT_REVISION_MENU= '🔎Revision🔎'
@@ -128,6 +133,12 @@ BTEXT_LINKS_MENU= '🕸Links🕸'
 MESS_LINKS_MENU = "Welcome to links menu!"
 MESS_LINKS_MENU_EMPTY = "You have no links!"
 BTEXT_LINKS_MENU_BACK = "Exit to links menu"
+
+CALL_TASKS_MENU= '@m_tasks_menu️'
+BTEXT_TASKS_MENU= 'Tasks'
+MESS_TASKS_MENU = "Welcome to tasks menu!"
+MESS_TASKS_MENU_EMPTY = "You have no tasks!"
+BTEXT_TASKS_MENU_BACK = "Exit to tasks menu"
 
 CALL_HOMEWORK_MENU= '@m_homework_menu️'
 BTEXT_HOMEWORK_MENU= '🏠Homework🏠'
@@ -200,6 +211,22 @@ BTEXT_CONFIRM= "✅CONFIRM✅"
 
 MESS_ADD_ENDING = 'Поверьте все и подтвердите'
 CALL_ADD_ENDING = "add_ending_"
+
+
+
+# show links
+CALL_SHOW_TASKS = "show_links_"
+MESS_SHOW_TASKS = 'Выберите коллокацию'
+NUM_SHOW_TASKS_COLS = 1
+NUM_SHOW_TASKS_ROWS = 10
+
+
+# show links
+CALL_SHOW_LINKS = "show_links_"
+MESS_SHOW_LINKS = 'Выберите ссылку'
+NUM_SHOW_LINKS_COLS = 1
+NUM_SHOW_LINKS_ROWS = 1
+
 
 
 # capturing word

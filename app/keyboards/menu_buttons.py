@@ -15,6 +15,9 @@ button_main_menu_back = InlineKeyboardButton(text=BTEXT_MAIN_MENU_BACK, callback
 button_study_menu = InlineKeyboardButton(text=BTEXT_STUDY_MENU, callback_data=CALL_STUDY_MENU)
 button_study_menu_back = InlineKeyboardButton(text=BTEXT_STUDY_MENU_BACK, callback_data=CALL_STUDY_MENU)
 
+button_study_menu_old = InlineKeyboardButton(text=BTEXT_STUDY_MENU_OLD, callback_data=CALL_STUDY_MENU_OLD)
+button_study_menu_back_old = InlineKeyboardButton(text=BTEXT_STUDY_MENU_BACK_OLD, callback_data=CALL_STUDY_MENU_OLD)
+
 button_revision_menu = InlineKeyboardButton(text=BTEXT_REVISION_MENU, callback_data=CALL_REVISION_MENU)
 button_revision_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_MENU_BACK, callback_data=CALL_REVISION_MENU)
 

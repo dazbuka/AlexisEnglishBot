@@ -374,6 +374,41 @@ async def get_tasks_by_filters(task_id: int = None,
             logger.error(f"Ошибка при поиске заданий: {e}")
 
 
+async def get_tasks_for_study(user_id: int = None,
+                              user_tg_id : int | BigInteger = None,
+                              sent: bool = None,
+                              media_task_only: bool = None):
+    async with async_session() as session:
+        try:
+            selection = select(Task)
+
+            if user_id:
+                selection = selection.filter(Task.user_id==user_id)
+
+            if user_tg_id:
+                # selection =select(User,Task).join(Task,User.tasks_as_user)
+                selection = selection.join(User.tasks)
+                selection = selection.filter(User.telegram_id == user_tg_id).order_by(Task.time.asc())
+
+            if sent is not None:
+                selection = selection.filter(Task.sent == sent)
+
+            if media_task_only:
+                selection = selection.join(Media)
+                selection = selection.filter(Media.media_type.startswith('test') == False)
+
+            selection = selection.options(selectinload(Task.user), selectinload(Task.media))
+            rez = await session.execute(selection)
+            tasks = rez.scalars().all()
+            if tasks:
+                return tasks
+            else:
+                logger.info(f"не нашел tasks в базе данных")
+
+        except SQLAlchemyError as e:
+            logger.error(f"Ошибка при поиске заданий: {e}")
+
+
 # добавление task
 async def set_homework(hometask, users, homework_date, author_id) -> bool:
     async with async_session() as session:

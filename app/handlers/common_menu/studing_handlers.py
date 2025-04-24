@@ -17,7 +17,7 @@ user_studying_router = Router()
 
 
 # хендлер перехода в режим изучения - первый пункт главного меню
-@user_studying_router.callback_query(F.data.startswith(CALL_STUDY_MENU))
+@user_studying_router.callback_query(F.data.startswith(CALL_STUDY_MENU_OLD))
 async def check_user_tasks(call: CallbackQuery, state: FSMContext):
     # сообщение логгеру
     logger.info(f'{call.from_user.username} ({call.from_user.first_name})'
