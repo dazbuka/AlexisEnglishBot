@@ -234,6 +234,7 @@ async def get_words_by_filters(word_id: int = None,
 # запросы по таблице medias
 # запрос на медиа с фильтрами
 async def get_medias_by_filters(media_id: int = None,
+                                media_id_new: int = None,
                                 word_id: int = None,
                                 media_type: str = None,
                                 word: str = None,
@@ -287,6 +288,11 @@ async def get_medias_by_filters(media_id: int = None,
             rez = await session.execute(selection)
             medias = rez.scalars().all()
 
+            if media_id_new:
+                selection = selection.filter(Media.id == media_id_new)
+                rezult = await session.execute(selection)
+                words = rezult.scalars().one_or_none()
+
             if medias:
                 return medias
             else:
@@ -335,12 +341,14 @@ async def set_task(user_id, media_id, task_time, author_id) -> bool:
 async def update_task_status(task_id):
     async with (async_session() as session):
         task = await session.scalar(select(Task).where(Task.id == task_id))
+        print(f'update task status {task.id}')
         task.sent = True
         await session.commit()
 
 
 # запрос на задания с фильтрами
 async def get_tasks_by_filters(task_id: int = None,
+                               task_id_new: int = None,
                                user_id: int = None,
                                user_tg_id : int | BigInteger = None,
                                sent: bool = None,
@@ -396,15 +404,16 @@ async def get_tasks_by_filters(task_id: int = None,
                 selection = selection.join(Media)
                 selection = selection.filter(Media.media_type.startswith('test') == False)
 
-            # if test_only:
-            #     selection = selection.filter(Media.media_type.startswith('test'))
-            #
-            # if media_only:
-            #     selection = selection.filter(Media.media_type.startswith('test') == False)
-
             selection = selection.options(selectinload(Task.user), selectinload(Task.media))
             rez = await session.execute(selection)
             tasks = rez.scalars().all()
+
+            if task_id_new:
+                selection = selection.filter(Task.id == task_id_new)
+                selection = selection.options(selectinload(Task.user), selectinload(Task.media))
+                rezult = await session.execute(selection)
+                tasks = rezult.scalars().one_or_none()
+
             if tasks:
                 return tasks
             else:
@@ -414,10 +423,10 @@ async def get_tasks_by_filters(task_id: int = None,
             logger.error(f"Ошибка при поиске заданий: {e}")
 
 
-async def get_tasks_for_study(user_id: int = None,
-                              user_tg_id : int | BigInteger = None,
-                              sent: bool = None,
-                              media_task_only: bool = None):
+async def get_tasks(user_id: int = None,
+                    user_tg_id : int | BigInteger = None,
+                    sent: bool = None,
+                    media_task_only: bool = None):
     async with async_session() as session:
         try:
             selection = select(Task)

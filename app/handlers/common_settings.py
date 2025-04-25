@@ -113,10 +113,11 @@ BTEXT_MAIN_MENU= '-Main menu-️'
 MESS_MAIN_MENU = "🧑‍🏫Hi, I'm AlexisEnglishBot! Welcome to main menu.\n🕹Press any button👇"
 BTEXT_MAIN_MENU_BACK = "⬆️Back to main menu⬆️"
 
-CALL_STUDY_MENU= '@m_study_menu️'
-BTEXT_STUDY_MENU= '❤️New study menu❤️'
-MESS_STUDY_MENU = "Welcome to study menu!"
-BTEXT_STUDY_MENU_BACK = "Exit to study menu"
+CALL_TASKS_MENU= '@m_tasks_menu️'
+BTEXT_TASKS_MENU= 'Tasks'
+MESS_TASKS_MENU = "Welcome to tasks menu!"
+MESS_TASKS_MENU_EMPTY = "You have no tasks!"
+BTEXT_TASKS_MENU_BACK = "Exit to tasks menu"
 
 CALL_STUDY_MENU_OLD= '@m_old_study_menu️'
 BTEXT_STUDY_MENU_OLD= '🗓️Check my tasks'
@@ -134,11 +135,7 @@ MESS_LINKS_MENU = "Welcome to links menu!"
 MESS_LINKS_MENU_EMPTY = "You have no links!"
 BTEXT_LINKS_MENU_BACK = "Exit to links menu"
 
-CALL_TASKS_MENU= '@m_tasks_menu️'
-BTEXT_TASKS_MENU= 'Tasks'
-MESS_TASKS_MENU = "Welcome to tasks menu!"
-MESS_TASKS_MENU_EMPTY = "You have no tasks!"
-BTEXT_TASKS_MENU_BACK = "Exit to tasks menu"
+
 
 CALL_HOMEWORK_MENU= '@m_homework_menu️'
 BTEXT_HOMEWORK_MENU= '🏠Homework🏠'

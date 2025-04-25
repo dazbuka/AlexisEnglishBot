@@ -18,7 +18,7 @@ from app.handlers.admin_menu.admin_adding.adding_group_handlers import adding_gr
 from app.handlers.admin_menu.admin_adding.adding_homework_handlers import adding_homework_router
 from app.handlers.admin_menu.admin_adding.adding_links_handlers import adding_link_router
 from app.handlers.common_menu.links_handlers import links_router
-from app.handlers.common_menu.study_handlers import study_router
+from app.handlers.common_menu.tasks_handlers import tasks_router
 
 from app.handlers.common_settings import *
 
@@ -32,7 +32,7 @@ admin_menu_router.include_router(adding_link_router)
 admin_menu_router.include_router(setting_scheme_router)
 admin_menu_router.include_router(setting_colls_router)
 admin_menu_router.include_router(links_router)
-admin_menu_router.include_router(study_router)
+admin_menu_router.include_router(tasks_router)
 
 from app.keyboards.menu_buttons import *
 
@@ -42,7 +42,7 @@ class MenuState(StatesGroup):
     current_menu_params = State()
 
 main_menu_params = MenuStateParams(curr_call=CALL_MAIN_MENU,
-                                   curr_menu=[[button_study_menu],
+                                   curr_menu=[[button_tasks_menu],
                                               [button_study_menu_old],
                                               [button_revision_menu],
                                               [button_links_menu],
