@@ -218,7 +218,7 @@ CALL_ADD_ENDING = "add_ending_"
 CALL_SHOW_TASKS = "show_links_"
 MESS_SHOW_TASKS = 'Выберите коллокацию'
 NUM_SHOW_TASKS_COLS = 1
-NUM_SHOW_TASKS_ROWS = 10
+NUM_SHOW_TASKS_ROWS = 5
 
 
 # show links
