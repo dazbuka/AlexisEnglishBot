@@ -2,7 +2,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import BigInteger
 from config import bot, DEVELOPER_ID
 from app.database.models import async_session
-from app.database.models import User, Task, Media, Word, Homework, Group, Link
+from app.database.models import User, Task, Media, Word, Source, Homework, Group, Link
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from config import logger
@@ -128,10 +128,26 @@ async def get_users_by_filters(user_id: int = None,
             logger.error(f"Ошибка при поиске users: {e}")
 
 
-# запросы по таблице words
+
+ # добавление source в базу данных, ничего не возвращает
+async def add_source_to_db(source_name, author_id) -> bool:
+    async with async_session() as session:
+        try:
+            source_in_db = await session.scalar(select(Source).where(Source.source_name == source_name))
+            if not source_in_db:
+                session.add(Source(source_name=source_name,
+                                   author_id=author_id))
+                await session.commit()
+                logger.info(f"В базу данных добавлен source  {source_name}!")
+            else:
+                logger.info(f"Такой source уже существует!")
+            return True
+        except SQLAlchemyError as e:
+            logger.error(f"Ошибка при добавлении source: {e}")
+            return False
 
 # добавление слова в базу данных, ничего не возвращает
-async def add_word_to_db(word, translation, definition, part, author_id, level) -> bool:
+async def add_word_to_db(word, translation, definition, part, author_id, level, source_id) -> bool:
     async with async_session() as session:
         try:
             word_in_db = await session.scalar(select(Word).where(Word.word == word))
@@ -141,6 +157,7 @@ async def add_word_to_db(word, translation, definition, part, author_id, level) 
                                  definition=definition,
                                  part=part,
                                  author_id=author_id,
+                                 source_id=source_id,
                                  level=level))
                 await session.commit()
                 logger.info(f"В базу данных добавлено слово {word}!")
@@ -151,13 +168,36 @@ async def add_word_to_db(word, translation, definition, part, author_id, level) 
             logger.error(f"Ошибка при добавлении слова: {e}")
             return False
 
+# поиск пользователя по фильтрам
+async def get_sources_by_filters(source_id: int = None, source_name: str = None):
+    async with async_session() as session:
+        try:
+            selection = select(Source).options(selectinload(Source.words))
+
+            if source_name:
+                selection = selection.filter_by(source_name = source_name)
+
+            rezult = await session.execute(selection)
+            sources = rezult.scalars().all()
+
+            if source_id:
+                selection = selection.filter(Source.id == source_id)
+                rezult = await session.execute(selection)
+                sources = rezult.scalars().one_or_none()
+
+            if not sources:
+                logger.info(f"не нашел sources в базе данных")
+            return sources
+        except SQLAlchemyError as e:
+            logger.error(f"Ошибка при поиске sources: {e}")
+
 
 # поиск пользователя по фильтрам
 async def get_words_by_filters(word_id: int = None,
                                word: str = None,
                                limit: int = None,
                                piece_of_word: str = None,
-                               id: int = None):
+                               word_id_new: int = None):
     async with async_session() as session:
         try:
             selection = select(Word).options(selectinload(Word.medias))
@@ -177,8 +217,8 @@ async def get_words_by_filters(word_id: int = None,
             rezult = await session.execute(selection)
             words = rezult.scalars().all()
 
-            if id:
-                selection = selection.filter(Word.id == id)
+            if word_id_new:
+                selection = selection.filter(Word.id == word_id_new)
                 rezult = await session.execute(selection)
                 words = rezult.scalars().one_or_none()
 

@@ -37,6 +37,7 @@ button_admin_menu_back = InlineKeyboardButton(text=BTEXT_ADMIN_MENU, callback_da
 button_adding_menu = InlineKeyboardButton(text=BTEXT_ADDING_MENU, callback_data=CALL_ADDING_MENU)
 button_adding_menu_back = InlineKeyboardButton(text=BTEXT_ADDING_MENU_BACK, callback_data=CALL_ADDING_MENU)
 
+button_add_source = InlineKeyboardButton(text=BTEXT_ADD_SOURCE, callback_data=CALL_ADD_SOURCE)
 button_add_word = InlineKeyboardButton(text=BTEXT_ADD_WORD, callback_data=CALL_ADD_WORD)
 button_add_coll = InlineKeyboardButton(text=BTEXT_ADD_COLL, callback_data=CALL_ADD_COLL)
 button_add_test = InlineKeyboardButton(text=BTEXT_ADD_TEST, callback_data=CALL_ADD_TEST)
@@ -54,6 +55,7 @@ button_set_coll = InlineKeyboardButton(text=BTEXT_SET_COLL, callback_data=CALL_S
 
 # changing buttons
 #     inputing
+button_change_source_name = InlineKeyboardButton(text=BTEXT_CHANGE_SOURCE_NAME, callback_data=CALL_CHANGING_SOURCE_NAME)
 button_change_word = InlineKeyboardButton(text=BTEXT_CHANGE_WORD, callback_data=CALL_CHANGING_WORD)
 button_change_group = InlineKeyboardButton(text=BTEXT_CHANGE_GROUP, callback_data=CALL_CHANGING_GROUP)
 button_change_collocation = InlineKeyboardButton(text=BTEXT_CHANGE_COLL, callback_data=CALL_CHANGING_COLL)
@@ -65,6 +67,8 @@ button_change_translation = InlineKeyboardButton(text=BTEXT_CHANGE_TRANSLATION, 
 button_change_media = InlineKeyboardButton(text=BTEXT_CHANGE_MEDIA, callback_data=CALL_CHANGING_MEDIA)
 button_change_caption = InlineKeyboardButton(text=BTEXT_CHANGE_CAPTION, callback_data=CALL_CHANGING_CAPTION)
 #     capturing
+
+button_change_sources = InlineKeyboardButton(text=BTEXT_CHANGE_SOURCES, callback_data=CALL_CHANGING_SOURCES)
 button_change_words = InlineKeyboardButton(text=BTEXT_CHANGE_WORDS, callback_data=CALL_CHANGING_WORDS)
 button_change_groups = InlineKeyboardButton(text=BTEXT_CHANGE_GROUPS, callback_data=CALL_CHANGING_GROUPS)
 button_change_collocations = InlineKeyboardButton(text=BTEXT_CHANGE_COLLS, callback_data=CALL_CHANGING_COLLS)

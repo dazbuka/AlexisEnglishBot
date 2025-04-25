@@ -161,6 +161,9 @@ MESS_ADDING_MENU = "Choose what do you want to add"
 BTEXT_ADDING_MENU = "📌Add words, collocation and other📌"
 BTEXT_ADDING_MENU_BACK = "-Exit to ADDING menu-"
 
+CALL_ADD_SOURCE= 'c_add_source_'
+BTEXT_ADD_SOURCE = "📌Add source📌"
+
 CALL_ADD_WORD= 'c_add_word_'
 BTEXT_ADD_WORD = "📌Add word📌"
 
@@ -257,6 +260,15 @@ NUM_CAPTURE_PARTS_ROWS = 10
 CHECK_CAPTURE_PARTS= '🟣'
 PARTS_LIST = ['noun', 'verb', 'adjective', 'adverb', 'pronoun', 'numerals', 'idiom', 'phrasal verb', 'new2']
 
+# capturing source
+CALL_CAPTURE_SOURCES = "capture_sources_"
+CALL_CHANGING_SOURCES = "changing_sources_"
+MESS_CAPTURE_SOURCES = 'Выберите источник или введите с клавиатуры и отправьте боту часть названия'
+BTEXT_CHANGE_SOURCES = "Изменить источник"
+NUM_CAPTURE_SOURCES_COLS = 1
+NUM_CAPTURE_SOURCES_ROWS = 10
+CHECK_CAPTURE_SOURCES= '🟣'
+
 # capturing level
 CALL_CAPTURE_LEVELS = "capture_levels_"
 CALL_CHANGING_LEVELS = "changing_levels_"
@@ -313,10 +325,18 @@ NUM_CAPTURE_DAYS_COLS = 4
 NUM_CAPTURE_DAYS_ROWS = 8
 CHECK_CAPTURE_DAYS= '🟣'
 
+
+# input source
+CALL_INPUT_SOURCE_NAME = "input_source_"
+CALL_CHANGING_SOURCE_NAME = "changing_source_name_"
+MESS_INPUT_SOURCE_NAME = "Введите имя источника"
+MESS_INPUT_SOURCE_NAME_ALREADY_EXIST = "Такой источник уже существует, попробуйте ввести имя источника еще раз"
+BTEXT_CHANGE_SOURCE_NAME = "Изменить источник"
 # input word
 CALL_INPUT_WORD = "input_word_"
 CALL_CHANGING_WORD = "changing_word_"
 MESS_INPUT_WORD = "Введите слово для словаря"
+MESS_INPUT_WORD_ALREADY_EXIST = "Такое слово уже существует, попробуйте ввести слово для словаря еще раз"
 BTEXT_CHANGE_WORD = "Изменить слово"
 # input group
 CALL_INPUT_GROUP = "input_group_"
@@ -362,4 +382,4 @@ BTEXT_CHANGE_DEFINITION = "Изменить определение"
 CALL_INPUT_TRANSLATION = "input_translation_"
 CALL_CHANGING_TRANSLATION = "changing_translation_"
 MESS_INPUT_TRANSLATION = "Введите русский перевод"
-BTEXT_CHANGE_TRANSLATION = "Изменить определение"
+BTEXT_CHANGE_TRANSLATION = "Изменить перевод"

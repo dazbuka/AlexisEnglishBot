@@ -206,12 +206,19 @@ async def state_text_builder(state):
     st_data = await state.get_data()
     # конечное сообщение - пустое
     message_text = ''
+
     if 'author_id' in st_data:
         author_id = st_data.get('author_id')
         author = await rq.get_users_by_filters(user_id=author_id)
         text = author.ident_name
         if text:
             message_text += f'Автор:\n<b>{text}</b>\n'
+
+    if 'input_source_name_state' in st_data:
+        source = (st_data.get("input_source_name_state")).input_text
+        text = source
+        if text:
+            message_text += f'Источник:\n<b>{text}</b>\n'
 
     if 'input_word_state' in st_data:
         word = (st_data.get("input_word_state")).input_text
@@ -224,6 +231,16 @@ async def state_text_builder(state):
         text = word
         if text:
             message_text += f'Группа:\n<b>{text}</b>\n'
+
+    if 'capture_sources_state' in st_data:
+        sources=(st_data.get("capture_sources_state")).captured_items_set
+        source_list = []
+        for source_id in sources:
+            source_item = (await rq.get_sources_by_filters(source_id=source_id)).source_name
+            source_list.append(source_item)
+        text = ', '.join(source_list)
+        if text:
+            message_text += f'Источник:\n<b>{text}</b>\n'
 
     if 'capture_parts_state' in st_data:
         dates=(st_data.get("capture_parts_state")).captured_items_set
@@ -273,7 +290,7 @@ async def state_text_builder(state):
         words = (st_data.get("capture_words_state")).captured_items_set
         word_list = []
         for word_id in words:
-            word = (await rq.get_words_by_filters(id=word_id)).word
+            word = (await rq.get_words_by_filters(word_id_new=word_id)).word
             word_list.append(word)
         text = ', '.join(word_list)
         if text:
@@ -472,6 +489,15 @@ async def get_word_list_for_kb_with_ids_limited(words = None, limit: int = 21):
     for word in words:
         word_list.append(f'{word.id}-{word.word}')
     return word_list
+
+# new
+async def get_source_list_for_kb_with_ids() -> list:
+    sources = await rq.get_sources_by_filters()
+    sources_list = []
+    if sources:
+        for source in sources:
+            sources_list.append(f'{source.id}-{source.source_name}')
+    return sources_list
 
 # new
 async def get_word_list_for_kb_with_ids() -> list:

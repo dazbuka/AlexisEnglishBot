@@ -160,6 +160,15 @@ class CaptureLevelsStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_LEVELS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_LEVELS
 
+class CaptureSourcesStateParams(StateParams):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_SOURCES
+        self.state_main_mess : str = MESS_CAPTURE_SOURCES
+        self.but_change_text : str  = BTEXT_CHANGE_SOURCES
+        self.items_kb_cols : int = NUM_CAPTURE_SOURCES_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_SOURCES_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_SOURCES
 
 class FSMExecutor:
     def __init__(self):
@@ -177,9 +186,6 @@ class FSMExecutor:
         next_state = next_state_str.split(':', 1)[1]
         next_state_params: StateParams = await fsm_state.get_value(next_state)
         print(next_state_str)
-        print('params')
-        print(next_state)
-        print(next_state_params)
         # сначала обработчик для колла, заодно проверяем чтобы не было мессаджа
         if fsm_call and not fsm_mess:
             # вытаскиваем колл и убираем из него базовый и добавочный колл (заменяем на пусто)
@@ -195,11 +201,14 @@ class FSMExecutor:
                 if next_state_params.is_input:
                     page_num_common = 0
                 else:
-                    last_item = list(absolute_next_state.captured_items_set)[-1]
-                    page_num_common = await aut.get_current_carousel_page_num(item=last_item,
-                                                                              items_kb=absolute_next_state.items_kb_list,
-                                                                              rows=absolute_next_state.items_kb_rows,
-                                                                              cols=absolute_next_state.items_kb_cols)
+                    if absolute_next_state.captured_items_set:
+                        last_item = list(absolute_next_state.captured_items_set)[-1]
+                        page_num_common = await aut.get_current_carousel_page_num(item=last_item,
+                                                                                  items_kb=absolute_next_state.items_kb_list,
+                                                                                  rows=absolute_next_state.items_kb_rows,
+                                                                                  cols=absolute_next_state.items_kb_cols)
+                    else:
+                        page_num_common = 0
                 # если нажата кнопка подтверждения на клавиатуре
             elif CALL_CONFIRM in item_call:
                 print('c2', end='-')
@@ -209,8 +218,6 @@ class FSMExecutor:
                 if not current_state_params.captured_items_set and not current_state_params.is_can_be_empty:
                     print('c3', end='-')
                     # выводим сообщение, чередуем, чтобы не было ошибки "невозможно редактировать"
-                    print(fsm_call.message.caption)
-                    print(fsm_call.message.text)
                     if fsm_call.message.caption:
                         common_mess = fsm_call.message.caption
                     else:
@@ -222,9 +229,7 @@ class FSMExecutor:
                 # во всех остальных случаях переходим в следущюий стейт
                 else:
                     print('c4', end='-')
-                    print(next_state_params)
                     absolute_next_state = next_state_params
-                    print(absolute_next_state)
                 page_num_common = 0
                 # проверяем на случай если нажата кнопка карусельки
             # если работает каруселька по перемещению между страницами, абсолютный некст будет текущим, страница

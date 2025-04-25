@@ -6,10 +6,11 @@ from aiogram.fsm.context import FSMContext
 from app.keyboards.menu_buttons import *
 from app.handlers.common_settings import *
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
-from app.utils.admin_utils import message_answer, state_text_builder
-from app.database.requests import get_users_by_filters, add_word_to_db
-from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor,
-                                                         CaptureLevelsStateParams, CapturePartsStateParams)
+from app.utils.admin_utils import message_answer, state_text_builder, get_word_list_for_kb_with_ids, \
+    get_source_list_for_kb_with_ids
+from app.database.requests import get_users_by_filters, add_word_to_db, get_words_by_filters
+from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor, CaptureLevelsStateParams,
+                                                         CapturePartsStateParams, CaptureSourcesStateParams)
 
 adding_word_router = Router()
 
@@ -18,6 +19,7 @@ class AddWord(StatesGroup):
     input_word_state = State()
     capture_parts_state = State()
     capture_levels_state = State()
+    capture_sources_state = State()
     input_definition_state = State()
     input_translation_state = State()
     confirmation_state = State()
@@ -31,7 +33,8 @@ menu_add_word_with_changing = [
      update_button_with_call_base(button_change_levels, CALL_ADD_WORD + CALL_ADD_ENDING),
      update_button_with_call_base(button_change_parts, CALL_ADD_WORD + CALL_ADD_ENDING)],
     [update_button_with_call_base(button_change_translation, CALL_ADD_WORD + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_definition, CALL_ADD_WORD + CALL_ADD_ENDING)],
+     update_button_with_call_base(button_change_definition, CALL_ADD_WORD + CALL_ADD_ENDING),
+     update_button_with_call_base(button_change_sources, CALL_ADD_WORD + CALL_ADD_ENDING)],
     [button_adding_menu_back, button_admin_menu, button_main_menu]
 ]
 
@@ -65,12 +68,21 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     await state.update_data(capture_parts_state=parts_state)
 
     levels_state = CaptureLevelsStateParams(self_state=AddWord.capture_levels_state,
-                                            next_state=AddWord.input_definition_state,
+                                            next_state=AddWord.capture_sources_state,
                                             call_base=CALL_ADD_WORD,
                                             menu_add=menu_add_word,
                                             items_kb_list=LEVELS_LIST,
                                             is_only_one=True)
     await state.update_data(capture_levels_state=levels_state)
+
+    source_state = CaptureSourcesStateParams(self_state=AddWord.capture_sources_state,
+                                          next_state=AddWord.input_definition_state,
+                                          call_base=CALL_ADD_WORD,
+                                          menu_add=menu_add_word,
+                                          items_kb_list=(await get_source_list_for_kb_with_ids())[::-1],
+                                          is_only_one=True,
+                                          is_can_be_empty=True)
+    await state.update_data(capture_sources_state=source_state)
 
     definition_state = StateParams(self_state = AddWord.input_definition_state,
                                    next_state = AddWord.input_translation_state,
@@ -120,10 +132,27 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 @adding_word_router.message(F.text, AddWord.input_word_state)
 @adding_word_router.message(F.text, AddWord.capture_parts_state)
 @adding_word_router.message(F.text, AddWord.capture_levels_state)
+@adding_word_router.message(F.text, AddWord.capture_sources_state)
 @adding_word_router.message(F.text, AddWord.input_definition_state)
 @adding_word_router.message(F.text, AddWord.input_translation_state)
 async def admin_adding_word_capture_word(message: Message, state: FSMContext):
+
+    fsm_state_str = await state.get_state()
     # проверяем слово в базе данных
+    if fsm_state_str == AddWord.input_word_state.state:
+        input_word_state: StateParams = await state.get_value('input_word_state')
+        input_word = message.text.lower()
+        words = await get_words_by_filters(word=input_word)
+        if words:
+            input_word_state.next_state = AddWord.input_word_state
+            input_word_state.state_main_mess = MESS_INPUT_WORD_ALREADY_EXIST
+        else:
+            input_word_state.next_state = AddWord.capture_parts_state
+            input_word_state.state_main_mess = MESS_INPUT_WORD
+        await state.update_data(input_word_state=input_word_state)
+
+
+
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
@@ -132,6 +161,7 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + current_fsm.message_text
     await message_answer(source=message, message_text=message_text, reply_markup=current_fsm.reply_kb)
+
 
     # если оно там есть - пусть пробует снова
     # if await rq.get_words_by_filters(word=message.text.lower().strip()):
@@ -151,7 +181,7 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
     #     await message_answer(source=message, message_text=message_text, reply_markup=reply_kb)
     #     await state.set_state(AddWord.level)
 
-
+@adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_CAPTURE_SOURCES), AddWord.capture_sources_state)
 @adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_CAPTURE_PARTS), AddWord.capture_parts_state)
 @adding_word_router.callback_query(F.data.startswith(CALL_ADD_WORD + CALL_CAPTURE_LEVELS), AddWord.capture_levels_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
@@ -175,7 +205,8 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
     # уходим обратно если нужно что-то изменить
     if (confirm == CALL_CHANGING_WORDS or confirm == CALL_CHANGING_PARTS or confirm == CALL_CHANGING_LEVELS
-            or confirm == CALL_CHANGING_DEFINITION or confirm == CALL_CHANGING_TRANSLATION):
+            or confirm == CALL_CHANGING_DEFINITION or confirm == CALL_CHANGING_TRANSLATION
+            or confirm == CALL_CHANGING_SOURCES):
 
         confirmation_state: StateParams = await state.get_value('confirmation_state')
 
@@ -202,6 +233,14 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             capture_levels_state: StateParams = await state.get_value('capture_levels_state')
             capture_levels_state.next_state = AddWord.confirmation_state
             await state.update_data(capture_levels_state=capture_levels_state)
+
+        elif confirm == CALL_CHANGING_SOURCES:
+            # при нажатии на изменение задаем следующий стейт элементов
+            confirmation_state.next_state = AddWord.capture_sources_state
+            # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
+            capture_sources_state: StateParams = await state.get_value('capture_sources_state')
+            capture_sources_state.next_state = AddWord.confirmation_state
+            await state.update_data(capture_sources_state=capture_sources_state)
 
         elif confirm == CALL_CHANGING_DEFINITION:
             # при нажатии на изменение задаем следующий стейт элементов
@@ -242,6 +281,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         capture_levels: StateParams = await state.get_value('capture_levels_state')
         levels_set = capture_levels.captured_items_set
 
+        capture_sources: StateParams = await state.get_value('capture_sources_state')
+        sources_set = capture_sources.captured_items_set
+        source_item = None
+        if sources_set:
+            for source in sources_set:
+                source_item = source
+
         input_definition: StateParams = await state.get_value('input_definition_state')
         definition_item = input_definition.input_text
 
@@ -258,6 +304,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
                                                       part=part,
                                                       translation=translation_item,
                                                       definition=definition_item,
+                                                      source_id=source_item,
                                                       author_id=author_id)
 
         message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'

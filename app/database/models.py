@@ -40,6 +40,7 @@ class User(Base):
 
     tasks: Mapped[list['Task']] = relationship("Task", back_populates="user", cascade="all, delete-orphan")
 
+    sources: Mapped[List['Source']] = relationship("Source", back_populates="author")
     words: Mapped[List['Word']] = relationship("Word", back_populates="author")
     medias: Mapped[List['Media']] = relationship("Media", back_populates="author")
     events: Mapped[List['Event']] = relationship("Event", back_populates="user")
@@ -120,12 +121,29 @@ class Word(Base):
     part: Mapped[str]
     author_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     level: Mapped[str | None]
+    source_id: Mapped[int] = mapped_column(ForeignKey('sources.id'))
 
     author: Mapped["User"] = relationship("User", back_populates="words")
+    source: Mapped["Source"] = relationship("Source", back_populates="words")
     medias: Mapped[List["Media"]] = relationship("Media", back_populates="word", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Word(id={self.id}, word={self.word})>"
+
+
+class Source(Base):
+    __tablename__ = 'sources'
+
+    author_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    source_type: Mapped[str | None]
+    source_name: Mapped[str] = mapped_column(unique=True)
+    source_description: Mapped[str | None]
+
+    author: Mapped["User"] = relationship("User", back_populates="sources")
+    words: Mapped[List["Word"]] = relationship("Word", back_populates="source")
+
+    def __repr__(self):
+        return f"<Source(id={self.id}, source={self.source_name})>"
 
 
 class Homework(Base):

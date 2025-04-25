@@ -11,6 +11,7 @@ from app.utils.admin_utils import message_answer
 from app.handlers.admin_menu.states.menu_states import MenuStateParams
 from app.handlers.admin_menu.admin_setting.setting_scheme_handlers import setting_scheme_router
 from app.handlers.admin_menu.admin_setting.setting_colls_handlers import setting_colls_router
+from app.handlers.admin_menu.admin_adding.adding_source_handlers import adding_source_router
 from app.handlers.admin_menu.admin_adding.adding_word_handlers import adding_word_router
 from app.handlers.admin_menu.admin_adding.adding_coll_handlers import adding_coll_router
 from app.handlers.admin_menu.admin_adding.adding_group_handlers import adding_group_router
@@ -22,6 +23,7 @@ from app.handlers.common_menu.study_handlers import study_router
 from app.handlers.common_settings import *
 
 admin_menu_router = Router()
+admin_menu_router.include_router(adding_source_router)
 admin_menu_router.include_router(adding_word_router)
 admin_menu_router.include_router(adding_coll_router)
 admin_menu_router.include_router(adding_group_router)
@@ -71,7 +73,8 @@ setting_menu_params = MenuStateParams(curr_call=CALL_SETTING_MENU,
 
 
 adding_menu_params = MenuStateParams(curr_call=CALL_ADDING_MENU,
-                                     curr_menu=[[button_add_word],
+                                     curr_menu=[[button_add_source],
+                                                [button_add_word],
                                                 [button_add_coll],
                                                 [button_add_test],
                                                 [button_add_link],
