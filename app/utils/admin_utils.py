@@ -515,6 +515,14 @@ async def get_group_list_for_kb_with_ids():
         group_list.append(f'{group.id}-{group.name}({group.users})')
     return group_list
 
+
+async def get_homework_list_for_kb_with_ids():
+    homeworks = await rq.get_homeworks_by_filters(actual=False)
+    homework_list = []
+    for homework in homeworks:
+        homework_list.append(f'{homework.id}-{homework.hometask}')
+    return homework_list
+
 # new
 async def get_user_list_for_kb_with_ids():
     users = await rq.get_users_by_filters()

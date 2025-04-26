@@ -42,35 +42,35 @@ class MenuState(StatesGroup):
     current_menu_params = State()
 
 main_menu_params = MenuStateParams(curr_call=CALL_MAIN_MENU,
-                                   curr_menu=[[button_tasks_menu],
+                                   curr_menu=[[button_quick_menu],
+                                              [button_tasks_menu],
                                               [button_study_menu_old],
                                               [button_revision_menu],
                                               [button_links_menu],
                                               [button_homework_menu],
                                               [button_config_menu],
-                                              [button_admin_menu]],
+                                              [button_admin_menu_back]],
                                    curr_main_mess=MESS_MAIN_MENU)
+
+tasks_menu_params = MenuStateParams(curr_call=CALL_TASKS_MENU,
+                                    curr_menu=[[button_tasks_daily_menu],
+                                               [button_tasks_missed_menu],
+                                               [button_main_menu_back]],
+                                    curr_main_mess=MESS_TASKS_MENU)
 
 study_menu_params = MenuStateParams(curr_call=CALL_STUDY_MENU_OLD,
                                     curr_menu=[[button_adding_menu],
                                                [button_setting_menu],
-                                               [button_adm_menu_editing],
+                                               [button_editing_menu],
                                                [button_main_menu]],
-                                    curr_main_mess=MESS_ADMIN_MENU)
+                                    curr_main_mess=MESS_STUDY_MENU_OLD)
 
 admin_menu_params = MenuStateParams(curr_call=CALL_ADMIN_MENU,
                                     curr_menu=[[button_adding_menu],
+                                               [button_editing_menu],
                                                [button_setting_menu],
-                                               [button_adm_menu_editing],
                                                [button_main_menu]],
                                     curr_main_mess=MESS_ADMIN_MENU)
-
-setting_menu_params = MenuStateParams(curr_call=CALL_SETTING_MENU,
-                                      curr_menu=[[button_set_scheme],
-                                                 [button_set_coll],
-                                                 [button_admin_menu, button_main_menu]],
-                                      curr_main_mess=MESS_SETTING_MENU)
-
 
 adding_menu_params = MenuStateParams(curr_call=CALL_ADDING_MENU,
                                      curr_menu=[[button_add_source],
@@ -83,20 +83,33 @@ adding_menu_params = MenuStateParams(curr_call=CALL_ADDING_MENU,
                                                 [button_admin_menu, button_main_menu]],
                                      curr_main_mess=MESS_ADDING_MENU)
 
+editing_menu_params = MenuStateParams(curr_call=CALL_EDITING_MENU,
+                                      curr_menu=[[button_edit_homework],
+                                                [button_admin_menu, button_main_menu]],
+                                      curr_main_mess=MESS_EDITING_MENU)
+
+setting_menu_params = MenuStateParams(curr_call=CALL_SETTING_MENU,
+                                      curr_menu=[[button_set_scheme],
+                                                 [button_set_coll],
+                                                 [button_admin_menu, button_main_menu]],
+                                      curr_main_mess=MESS_SETTING_MENU)
+
+
+
 @admin_menu_router.message(CommandStart())
 async def command_start(message: Message, state: FSMContext):
 
     print('start new')
     print('в экзекьюторе фсм сделать функцию вытаскивания колла в зависимости от способа кодировки колла клавиатуры')
-    print('добавь обратный обрабочик чтобы группы тоже показывались при объединении ползователей, а может и не надо')
     print('сделай нормальный репрезент экзекютора')
     print('сделай проверку наличия кваргсов экзекьютора')
     print('сделать енум или множество карусельки, в который еще можно и функцию засунуть по листанию')
     print('поработай с функцией добавления элементов в принимающее множество, нужно объединить все 3')
-    print('сделай проверку на наличие слова в базе')
     print('доработай прием текста')
     print('убери проверку на команду старт, настрой роутеры')
     print('закрой доступ к админке')
+    print('сделай проверку длины дефинишн и транслейшн 192 вроде')
+    print('сейчас выводит все задания из бд, нужно только сегодняшние и пропущенные')
     # чистим стейт
     await state.clear()
     # проверяем пользователя и регистрируем при необходимости
@@ -109,7 +122,9 @@ async def command_start(message: Message, state: FSMContext):
 @admin_menu_router.callback_query(F.data == CALL_MAIN_MENU)
 @admin_menu_router.callback_query(F.data == CALL_ADMIN_MENU)
 @admin_menu_router.callback_query(F.data == CALL_ADDING_MENU)
+@admin_menu_router.callback_query(F.data == CALL_EDITING_MENU)
 @admin_menu_router.callback_query(F.data == CALL_SETTING_MENU)
+@admin_menu_router.callback_query(F.data == CALL_TASKS_MENU)
 async def admin_menu_setting_button(call: CallbackQuery, state: FSMContext):
 
     if call.data == CALL_MAIN_MENU:
@@ -120,6 +135,10 @@ async def admin_menu_setting_button(call: CallbackQuery, state: FSMContext):
         current_state_params = setting_menu_params
     elif call.data == CALL_ADDING_MENU:
         current_state_params = adding_menu_params
+    elif call.data == CALL_EDITING_MENU:
+        current_state_params = editing_menu_params
+    elif call.data == CALL_TASKS_MENU:
+        current_state_params = tasks_menu_params
     else:
         current_state_params = main_menu_params
 

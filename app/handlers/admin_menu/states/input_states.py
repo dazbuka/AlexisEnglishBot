@@ -61,7 +61,7 @@ class StateParams:
     def __repr__(self):
         presentation = (f'$$$$$$$\n'
                 f'текущий стейт - - {self.self_state}\n'
-                f'выбранный элемент - {self.input_text}\n'
+                f'введенный элемент - {self.input_text}\n'
                 f'набор элементов - {self.captured_items_set}\n'
                 f'$$$$$$$')
 
@@ -99,6 +99,16 @@ class CaptureGroupsStateParams(StateParams):
         self.items_kb_cols : int = NUM_CAPTURE_GROUPS_COLS
         self.items_kb_rows : int = NUM_CAPTURE_GROUPS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_GROUPS
+
+class CaptureHomeworksStateParams(StateParams):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_CAPTURE_HOMEWORKS
+        self.state_main_mess : str = MESS_CAPTURE_HOMEWORKS
+        self.but_change_text : str  = BTEXT_CHANGE_HOMEWORKS
+        self.items_kb_cols : int = NUM_CAPTURE_HOMEWORKS_COLS
+        self.items_kb_rows : int = NUM_CAPTURE_HOMEWORKS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_HOMEWORKS
 
 class CaptureUsersStateParams(StateParams):
     def __init__(self, **kwargs):

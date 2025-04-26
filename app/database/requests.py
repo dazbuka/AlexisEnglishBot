@@ -341,7 +341,6 @@ async def set_task(user_id, media_id, task_time, author_id) -> bool:
 async def update_task_status(task_id):
     async with (async_session() as session):
         task = await session.scalar(select(Task).where(Task.id == task_id))
-        print(f'update task status {task.id}')
         task.sent = True
         await session.commit()
 
@@ -470,9 +469,24 @@ async def set_homework(hometask, users, homework_date, author_id) -> bool:
             logger.error(f"Ошибка при добавлении домашнего задания в базу данных: {e}")
             return False
 
+async def update_homework_editing(homework_id, hometask, users, homework_date, author_id) -> bool:
+    async with (async_session() as session):
+        homework : Homework = await session.scalar(select(Homework).where(Homework.id == homework_id))
+        if homework:
+            homework.hometask = hometask
+            homework.users = users
+            homework.time = homework_date
+            homework.author_id = author_id
+            await session.commit()
+            return True
+        else:
+            logger.info(f'Ошибка при изменении домашнего задания')
+            return False
+
 
 # запрос на задания с фильтрами
 async def get_homeworks_by_filters(homework_id: int = None,
+                                   homework_id_new: int = None,
                                    actual : bool = True):
     async with async_session() as session:
         try:
@@ -486,6 +500,12 @@ async def get_homeworks_by_filters(homework_id: int = None,
 
             rez = await session.execute(selection)
             homeworks = rez.scalars().all()
+
+            if homework_id_new:
+                selection = selection.filter(Homework.id == homework_id_new)
+                # selection = selection.options(selectinload(Task.user), selectinload(Task.media))
+                rezult = await session.execute(selection)
+                homeworks = rezult.scalars().one_or_none()
 
             if homeworks:
                 return homeworks

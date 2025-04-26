@@ -25,6 +25,16 @@ STUDYING_DAY_LIST = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 28, 35]
 TEST_TYPES = ['test4','test7']
 
 
+BTEXT_DEFINITION= "🪄Definition"
+CALL_DEFINITION= "@definition_"
+BTEXT_TRANSLATION= "📗Translation"
+CALL_TRANSLATION= "@translation_"
+BTEXT_REPEAT_TODAY= "🔁Repeat today"
+CALL_REPEAT_TODAY= "@repeat_today_"
+BTEXT_REPEAT_TOMORROW= "🔄Repeat tomorrow"
+CALL_REPEAT_TOMORROW= "@repeat_tomorrow_"
+
+
 TEXT_NEXT = '➡️'
 TEXT_LAST = '⏭️'
 TEXT_PREV = '⬅️'
@@ -113,11 +123,29 @@ BTEXT_MAIN_MENU= '-Main menu-️'
 MESS_MAIN_MENU = "🧑‍🏫Hi, I'm AlexisEnglishBot! Welcome to main menu.\n🕹Press any button👇"
 BTEXT_MAIN_MENU_BACK = "⬆️Back to main menu⬆️"
 
+CALL_QUICK_MENU= '@m_quick_menu️'
+BTEXT_QUICK_MENU= 'Quick tasks'
+MESS_QUICK_MENU = "Welcome to quick tasks menu!"
+MESS_QUICK_MENU_EMPTY = "You have no tasks!"
+BTEXT_QUICK_MENU_BACK = "Exit to tasks menu"
+
 CALL_TASKS_MENU= '@m_tasks_menu️'
-BTEXT_TASKS_MENU= 'Tasks'
-MESS_TASKS_MENU = "Welcome to tasks menu!"
+BTEXT_TASKS_MENU= 'FULL Tasks menu'
+MESS_TASKS_MENU = "Welcome to full tasks menu!"
 MESS_TASKS_MENU_EMPTY = "You have no tasks!"
-BTEXT_TASKS_MENU_BACK = "Exit to tasks menu"
+BTEXT_TASKS_MENU_BACK = "Exit to full tasks menu"
+
+CALL_TASKS_DAILY_MENU= '@m_tasks_daily_menu️'
+BTEXT_TASKS_DAILY_MENU= 'Daily tasks'
+MESS_TASKS_DAILY_MENU = "Welcome to daily tasks!"
+MESS_TASKS_DAILY_MENU_EMPTY = "You have no daily tasks!"
+BTEXT_TASKS_DAILY_MENU_BACK = "Exit to daily tasks menu"
+
+CALL_TASKS_MISSED_MENU= '@m_tasks_missed_menu️'
+BTEXT_TASKS_MISSED_MENU= 'Missed tasks'
+MESS_TASKS_MISSED_MENU = "Welcome to missed tasks!"
+MESS_TASKS_MISSED_MENU_EMPTY = "You have no missed tasks!"
+BTEXT_TASKS_MISSED_MENU_BACK = "Exit to missed tasks menu"
 
 CALL_STUDY_MENU_OLD= '@m_old_study_menu️'
 BTEXT_STUDY_MENU_OLD= '🗓️Check my tasks'
@@ -175,6 +203,8 @@ BTEXT_ADD_GROUP = "📌Add group📌"
 
 CALL_ADD_HOMEWORK = "c_add_homework_"
 BTEXT_ADD_HOMEWORK = "📌Add homework📌"
+CALL_EDIT_HOMEWORK = "c_edit_homework_"
+BTEXT_EDIT_HOMEWORK = "📌Edit homework📌"
 
 CALL_ADD_LINK = "c_add_link_"
 BTEXT_ADD_LINK = "📌Add link📌"
@@ -192,7 +222,7 @@ BTEXT_SET_COLL = "Set task with some collocation"
 
 
 CALL_EDITING_MENU = "c_adm_menu_edit"
-MESS_EDITING_MENU = "Choose what do you want to set or assign"
+MESS_EDITING_MENU = "Choose what do you want to edit"
 BTEXT_EDITING_MENU = "Editing"
 BTEXT_EDITING_MENU_BACK = "-Edit menu-"
 
@@ -321,6 +351,15 @@ BTEXT_CHANGE_DAYS = "Изменить дeнь"
 NUM_CAPTURE_DAYS_COLS = 4
 NUM_CAPTURE_DAYS_ROWS = 8
 CHECK_CAPTURE_DAYS= '🟣'
+
+# capturing homeworks
+CALL_CAPTURE_HOMEWORKS = "capture_homeworks_"
+CALL_CHANGING_HOMEWORKS = "changing_homeworks_"
+MESS_CAPTURE_HOMEWORKS = 'Выберите домашнее задание или введите с клавиатуры и отправьте боту часть названия группы (ее номер)'
+BTEXT_CHANGE_HOMEWORKS = "Изменить домашнее задание"
+NUM_CAPTURE_HOMEWORKS_COLS = 1
+NUM_CAPTURE_HOMEWORKS_ROWS = 5
+CHECK_CAPTURE_HOMEWORKS= '🟣'
 
 
 # input source

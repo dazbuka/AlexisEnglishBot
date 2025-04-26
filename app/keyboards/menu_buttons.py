@@ -5,15 +5,27 @@ from data.admin_messages import *
 from app.handlers.common_settings import *
 from app.handlers.common_settings import *
 
-
+button_repeat_today = InlineKeyboardButton(text=BTEXT_REPEAT_TODAY, callback_data=CALL_REPEAT_TODAY)
+button_repeat_tomorrow = InlineKeyboardButton(text=BTEXT_REPEAT_TOMORROW, callback_data=CALL_REPEAT_TOMORROW)
+button_translation = InlineKeyboardButton(text=BTEXT_TRANSLATION, callback_data=CALL_TRANSLATION)
+button_definition = InlineKeyboardButton(text=BTEXT_DEFINITION, callback_data=CALL_DEFINITION)
 button_confirm = InlineKeyboardButton(text=BTEXT_CONFIRM, callback_data=CALL_CONFIRM)
 # button to go to main menu
 button_main_menu = InlineKeyboardButton(text=BTEXT_MAIN_MENU, callback_data=CALL_MAIN_MENU)
 button_main_menu_back = InlineKeyboardButton(text=BTEXT_MAIN_MENU_BACK, callback_data=CALL_MAIN_MENU)
 
 # main menu
+button_quick_menu = InlineKeyboardButton(text=BTEXT_QUICK_MENU, callback_data=CALL_QUICK_MENU)
+button_quick_menu_back = InlineKeyboardButton(text=BTEXT_QUICK_MENU_BACK, callback_data=CALL_QUICK_MENU)
+
 button_tasks_menu = InlineKeyboardButton(text=BTEXT_TASKS_MENU, callback_data=CALL_TASKS_MENU)
 button_tasks_menu_back = InlineKeyboardButton(text=BTEXT_TASKS_MENU_BACK, callback_data=CALL_TASKS_MENU)
+
+button_tasks_daily_menu = InlineKeyboardButton(text=BTEXT_TASKS_DAILY_MENU, callback_data=CALL_TASKS_DAILY_MENU)
+button_tasks_daily_menu_back = InlineKeyboardButton(text=BTEXT_TASKS_DAILY_MENU_BACK, callback_data=CALL_TASKS_DAILY_MENU)
+
+button_tasks_missed_menu = InlineKeyboardButton(text=BTEXT_TASKS_MISSED_MENU, callback_data=CALL_TASKS_MISSED_MENU)
+button_tasks_missed_menu_back = InlineKeyboardButton(text=BTEXT_TASKS_MISSED_MENU_BACK, callback_data=CALL_TASKS_MISSED_MENU)
 
 button_study_menu_old = InlineKeyboardButton(text=BTEXT_STUDY_MENU_OLD, callback_data=CALL_STUDY_MENU_OLD)
 button_study_menu_back_old = InlineKeyboardButton(text=BTEXT_STUDY_MENU_BACK_OLD, callback_data=CALL_STUDY_MENU_OLD)
@@ -51,6 +63,11 @@ button_setting_menu_back = InlineKeyboardButton(text=BTEXT_SETTING_MENU_BACK, ca
 
 button_set_scheme = InlineKeyboardButton(text=BTEXT_SET_SCHEME, callback_data=CALL_SET_SCHEME)
 button_set_coll = InlineKeyboardButton(text=BTEXT_SET_COLL, callback_data=CALL_SET_COLL)
+
+button_editing_menu = InlineKeyboardButton(text=BTEXT_EDITING_MENU, callback_data=CALL_EDITING_MENU)
+button_editing_menu_back = InlineKeyboardButton(text=BTEXT_EDITING_MENU_BACK, callback_data=CALL_EDITING_MENU)
+
+button_edit_homework = InlineKeyboardButton(text=BTEXT_EDIT_HOMEWORK, callback_data=CALL_EDIT_HOMEWORK)
 
 
 # changing buttons
@@ -93,7 +110,7 @@ button_change_levels = InlineKeyboardButton(text=BTEXT_CHANGE_LEVELS, callback_d
 
 
 
-button_adm_menu_editing = InlineKeyboardButton(text=BTEXT_EDITING_MENU, callback_data=CALL_EDITING_MENU)
+
 
 
 

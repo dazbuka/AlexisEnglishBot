@@ -16,6 +16,11 @@ def update_button_with_call_base(button : InlineKeyboardButton, call_base : str)
                                                  callback_data=call_base + button.callback_data)
     return button_with_call_base
 
+def update_button_with_call_item(button : InlineKeyboardButton, call_item : str):
+    button_with_call_base = InlineKeyboardButton(text=button.text,
+                                                 callback_data=button.callback_data + call_item)
+    return button_with_call_base
+
 # inline keyboard adding task by schema
 async def keyboard_builder(menu_pack : list,
                            buttons_base_call : str | None = '',
