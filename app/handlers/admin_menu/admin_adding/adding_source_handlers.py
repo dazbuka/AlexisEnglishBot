@@ -8,7 +8,7 @@ from app.handlers.common_settings import *
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 from app.utils.admin_utils import message_answer, state_text_builder
 from app.database.requests import get_users_by_filters, add_word_to_db, add_source_to_db, get_sources_by_filters
-from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor,
+from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor,
                                                          CaptureLevelsStateParams, CapturePartsStateParams)
 
 adding_source_router = Router()
@@ -38,22 +38,22 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     author = await get_users_by_filters(user_tg_id=call.from_user.id)
     await state.update_data(author_id=author.id)
     # начальные параметры стейта
-    source_state = StateParams(self_state = AddSource.input_source_name_state,
-                             next_state = AddSource.confirmation_state,
-                             call_base= CALL_ADD_SOURCE,
-                             call_add_capture= CALL_INPUT_SOURCE_NAME,
-                             state_main_mess = MESS_INPUT_SOURCE_NAME,
-                             but_change_text = BTEXT_CHANGE_SOURCE_NAME,
-                             menu_add = menu_add_source,
-                             is_input=True)
+    source_state = InputStateParams(self_state = AddSource.input_source_name_state,
+                                    next_state = AddSource.confirmation_state,
+                                    call_base= CALL_ADD_SOURCE,
+                                    call_add_capture= CALL_INPUT_SOURCE_NAME,
+                                    state_main_mess = MESS_INPUT_SOURCE_NAME,
+                                    but_change_text = BTEXT_CHANGE_SOURCE_NAME,
+                                    menu_add = menu_add_source,
+                                    is_input=True)
     await state.update_data(input_source_name_state=source_state)
 
-    confirmation_state = StateParams(self_state = AddSource.confirmation_state,
-                                     call_base = CALL_ADD_SOURCE,
-                                     call_add_capture= CALL_ADD_ENDING,
-                                     menu_add = menu_add_source_with_changing,
-                                     state_main_mess=MESS_ADD_ENDING,
-                                     is_last_state_with_changing_mode=True)
+    confirmation_state = InputStateParams(self_state = AddSource.confirmation_state,
+                                          call_base = CALL_ADD_SOURCE,
+                                          call_add_capture= CALL_ADD_ENDING,
+                                          menu_add = menu_add_source_with_changing,
+                                          state_main_mess=MESS_ADD_ENDING,
+                                          is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     # переход в первый стейт
@@ -79,7 +79,7 @@ async def admin_adding_source(message: Message, state: FSMContext):
     fsm_state_str = await state.get_state()
     # проверяем наличие в базе данных
     if fsm_state_str == AddSource.input_source_name_state.state:
-        input_source_state: StateParams = await state.get_value('input_source_name_state')
+        input_source_state: InputStateParams = await state.get_value('input_source_name_state')
         input_source = message.text.lower()
         sources = await get_sources_by_filters(source_name=input_source)
         if sources:
@@ -112,13 +112,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     # уходим обратно если нужно что-то изменить
     if confirm == CALL_CHANGING_SOURCE_NAME:
 
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
+        confirmation_state: InputStateParams = await state.get_value('confirmation_state')
 
         if confirm == CALL_CHANGING_SOURCE_NAME:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddSource.input_source_name_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_source_name_state: StateParams = await state.get_value('input_source_name_state')
+            input_source_name_state: InputStateParams = await state.get_value('input_source_name_state')
             input_source_name_state.next_state = AddSource.confirmation_state
             await state.update_data(input_source_name_state=input_source_name_state)
 
@@ -136,7 +136,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         # основной обработчик, запись в бд
         author_id = await state.get_value('author_id')
 
-        input_source: StateParams = await state.get_value('input_source_name_state')
+        input_source: InputStateParams = await state.get_value('input_source_name_state')
         source_item = input_source.input_text
 
         state_text = await state_text_builder(state)

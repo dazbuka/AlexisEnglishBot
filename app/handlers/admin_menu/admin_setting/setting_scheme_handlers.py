@@ -16,7 +16,7 @@ from app.utils.admin_utils import (message_answer,
                                    get_date_list_for_kb)
 from app.utils.admin_utils import state_text_builder
 from app.database.requests import get_medias_by_filters, set_task
-from app.handlers.admin_menu.states.input_states import (FSMExecutor, StateParams, CaptureWordsStateParams,
+from app.handlers.admin_menu.states.input_states import (FSMExecutor, InputStateParams, CaptureWordsStateParams,
                                                          CaptureGroupsStateParams, CaptureUsersStateParams,
                                                          CaptureDatesStateParams)
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
@@ -84,12 +84,12 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
                                           is_only_one = True)
     await state.update_data(capture_dates_state=dates_state)
 
-    confirmation_state = StateParams(self_state = SetScheme.confirmation_state,
-                                     call_base = CALL_SET_SCHEME,
-                                     call_add_capture= CALL_ADD_ENDING,
-                                     menu_add = menu_set_scheme_with_changing,
-                                     state_main_mess=MESS_ADD_ENDING,
-                                     is_last_state_with_changing_mode=True)
+    confirmation_state = InputStateParams(self_state = SetScheme.confirmation_state,
+                                          call_base = CALL_SET_SCHEME,
+                                          call_add_capture= CALL_ADD_ENDING,
+                                          menu_add = menu_set_scheme_with_changing,
+                                          state_main_mess=MESS_ADD_ENDING,
+                                          is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     first_state = words_state
@@ -126,9 +126,9 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
     if CALL_CAPTURE_GROUPS in call.data:
-        groups_state : StateParams  = await state.get_value('capture_groups_state')
+        groups_state : InputStateParams  = await state.get_value('capture_groups_state')
         added_id = groups_state.captured_items_set
-        users_state : StateParams = await state.get_value('capture_users_state')
+        users_state : InputStateParams = await state.get_value('capture_users_state')
         new_user_set = set()
         for group_id in added_id:
             added_items = (await get_groups_by_filters(group_id=group_id)).users
@@ -167,13 +167,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     # уходим обратно если нужно что-то изменить
 
     if confirm == CALL_CHANGING_WORDS or confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_DATES:
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
+        confirmation_state: InputStateParams = await state.get_value('confirmation_state')
 
         if confirm == CALL_CHANGING_WORDS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = SetScheme.capture_words_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_words: StateParams = await state.get_value('capture_words_state')
+            capture_words: InputStateParams = await state.get_value('capture_words_state')
             capture_words.next_state = SetScheme.confirmation_state
             await state.update_data(capture_words_state=capture_words)
 
@@ -181,7 +181,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = SetScheme.capture_users_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_users: StateParams = await state.get_value('capture_users_state')
+            capture_users: InputStateParams = await state.get_value('capture_users_state')
             capture_users.next_state = SetScheme.confirmation_state
             await state.update_data(capture_users_state=capture_users)
 
@@ -189,7 +189,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = SetScheme.capture_dates_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_dates: StateParams = await state.get_value('capture_dates_state')
+            capture_dates: InputStateParams = await state.get_value('capture_dates_state')
             capture_dates.next_state = SetScheme.confirmation_state
             await state.update_data(capture_dates_state=capture_dates)
 
@@ -205,13 +205,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         # основной обработчик, запись в бд
         author_id = await state.get_value('author_id')
 
-        capture_words: StateParams = await state.get_value('capture_words_state')
+        capture_words: InputStateParams = await state.get_value('capture_words_state')
         words_set = capture_words.captured_items_set
 
-        capture_users: StateParams = await state.get_value('capture_users_state')
+        capture_users: InputStateParams = await state.get_value('capture_users_state')
         users_set = capture_users.captured_items_set
 
-        capture_dates: StateParams = await state.get_value('capture_dates_state')
+        capture_dates: InputStateParams = await state.get_value('capture_dates_state')
         dates_set = capture_dates.captured_items_set
 
         state_text = await state_text_builder(state)

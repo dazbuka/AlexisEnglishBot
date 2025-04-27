@@ -19,6 +19,7 @@ from app.handlers.admin_menu.admin_adding.adding_homework_handlers import adding
 from app.handlers.admin_menu.admin_adding.adding_links_handlers import adding_link_router
 from app.handlers.common_menu.links_handlers import links_router
 from app.handlers.common_menu.tasks_handlers import tasks_router
+from app.handlers.common_menu.revision_handlers import revision_router
 
 from app.handlers.common_settings import *
 
@@ -33,6 +34,7 @@ admin_menu_router.include_router(setting_scheme_router)
 admin_menu_router.include_router(setting_colls_router)
 admin_menu_router.include_router(links_router)
 admin_menu_router.include_router(tasks_router)
+admin_menu_router.include_router(revision_router)
 
 from app.keyboards.menu_buttons import *
 
@@ -57,6 +59,13 @@ tasks_menu_params = MenuStateParams(curr_call=CALL_TASKS_MENU,
                                                [button_tasks_missed_menu],
                                                [button_main_menu_back]],
                                     curr_main_mess=MESS_TASKS_MENU)
+
+revision_menu_params = MenuStateParams(curr_call=CALL_REVISION_MENU,
+                                       curr_menu=[[button_revision_sources_menu],
+                                                  [button_revision_words_menu],
+                                                  [button_revision_colls_menu],
+                                                  [button_main_menu_back]],
+                                    curr_main_mess=MESS_REVISION_MENU)
 
 study_menu_params = MenuStateParams(curr_call=CALL_STUDY_MENU_OLD,
                                     curr_menu=[[button_adding_menu],
@@ -125,6 +134,7 @@ async def command_start(message: Message, state: FSMContext):
 @admin_menu_router.callback_query(F.data == CALL_EDITING_MENU)
 @admin_menu_router.callback_query(F.data == CALL_SETTING_MENU)
 @admin_menu_router.callback_query(F.data == CALL_TASKS_MENU)
+
 async def admin_menu_setting_button(call: CallbackQuery, state: FSMContext):
 
     if call.data == CALL_MAIN_MENU:
@@ -139,6 +149,8 @@ async def admin_menu_setting_button(call: CallbackQuery, state: FSMContext):
         current_state_params = editing_menu_params
     elif call.data == CALL_TASKS_MENU:
         current_state_params = tasks_menu_params
+    elif call.data == CALL_REVISION_MENU:
+        current_state_params = revision_menu_params
     else:
         current_state_params = main_menu_params
 

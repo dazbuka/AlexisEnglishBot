@@ -33,6 +33,16 @@ button_study_menu_back_old = InlineKeyboardButton(text=BTEXT_STUDY_MENU_BACK_OLD
 button_revision_menu = InlineKeyboardButton(text=BTEXT_REVISION_MENU, callback_data=CALL_REVISION_MENU)
 button_revision_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_MENU_BACK, callback_data=CALL_REVISION_MENU)
 
+button_revision_sources_menu = InlineKeyboardButton(text=BTEXT_REVISION_SOURCES_MENU, callback_data=CALL_REVISION_SOURCES_MENU)
+button_revision_source_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_SOURCES_MENU_BACK, callback_data=CALL_REVISION_SOURCES_MENU)
+
+button_revision_words_menu = InlineKeyboardButton(text=BTEXT_REVISION_WORDS_MENU, callback_data=CALL_REVISION_WORDS)
+button_revision_words_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_WORDS_MENU_BACK, callback_data=CALL_REVISION_WORDS)
+
+button_revision_colls_menu = InlineKeyboardButton(text=BTEXT_REVISION_COLLS_MENU, callback_data=CALL_REVISION_COLLS_MENU)
+button_revision_colls_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_COLLS_MENU_BACK, callback_data=CALL_REVISION_COLLS_MENU)
+
+
 button_links_menu = InlineKeyboardButton(text=BTEXT_LINKS_MENU, callback_data=CALL_LINKS_MENU)
 button_links_menu_back = InlineKeyboardButton(text=BTEXT_LINKS_MENU_BACK, callback_data=CALL_LINKS_MENU)
 
@@ -43,7 +53,7 @@ button_config_menu = InlineKeyboardButton(text=BTEXT_CONFIG_MENU, callback_data=
 button_config_menu_back = InlineKeyboardButton(text=BTEXT_CONFIG_MENU_BACK, callback_data=CALL_CONFIG_MENU)
 
 button_admin_menu = InlineKeyboardButton(text=BTEXT_ADMIN_MENU, callback_data=CALL_ADMIN_MENU)
-button_admin_menu_back = InlineKeyboardButton(text=BTEXT_ADMIN_MENU, callback_data=CALL_ADMIN_MENU)
+button_admin_menu_back = InlineKeyboardButton(text=BTEXT_ADMIN_MENU_BACK, callback_data=CALL_ADMIN_MENU)
 
 
 button_adding_menu = InlineKeyboardButton(text=BTEXT_ADDING_MENU, callback_data=CALL_ADDING_MENU)

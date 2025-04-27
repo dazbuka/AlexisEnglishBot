@@ -11,7 +11,7 @@ from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_
 from app.utils.admin_utils import (message_answer, state_text_builder, get_user_list_for_kb_with_ids,
                                    get_group_list_for_kb_with_ids, get_date_list_for_kb, add_item_in_aim_set_plus_plus)
 from app.database.requests import get_users_by_filters, get_groups_by_filters, set_link
-from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor,
+from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor,
                                                          CaptureUsersStateParams,
                                                          CaptureGroupsStateParams,
                                                          CapturePriorityStateParams)
@@ -49,24 +49,24 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     await state.update_data(author_id=author.id)
 
     # начальные параметры стейта
-    link_name_state = StateParams(self_state = AddLink.input_link_name_state,
-                                 next_state = AddLink.input_link_url_state,
-                                 call_base= CALL_ADD_LINK,
-                                 call_add_capture= CALL_INPUT_LINK_NAME,
-                                 state_main_mess = MESS_INPUT_LINK_NAME,
-                                 but_change_text = BTEXT_CHANGE_LINK_NAME,
-                                 menu_add = menu_add_link,
-                                 is_input=True)
+    link_name_state = InputStateParams(self_state = AddLink.input_link_name_state,
+                                       next_state = AddLink.input_link_url_state,
+                                       call_base= CALL_ADD_LINK,
+                                       call_add_capture= CALL_INPUT_LINK_NAME,
+                                       state_main_mess = MESS_INPUT_LINK_NAME,
+                                       but_change_text = BTEXT_CHANGE_LINK_NAME,
+                                       menu_add = menu_add_link,
+                                       is_input=True)
     await state.update_data(input_link_name_state=link_name_state)
 
-    link_url_state = StateParams(self_state=AddLink.input_link_url_state,
-                                  next_state=AddLink.capture_groups_state,
-                                  call_base=CALL_ADD_LINK,
-                                  call_add_capture=CALL_INPUT_LINK_URL,
-                                  state_main_mess=MESS_INPUT_LINK_URL,
-                                  but_change_text=BTEXT_CHANGE_LINK_URL,
-                                  menu_add=menu_add_link,
-                                  is_input=True)
+    link_url_state = InputStateParams(self_state=AddLink.input_link_url_state,
+                                      next_state=AddLink.capture_groups_state,
+                                      call_base=CALL_ADD_LINK,
+                                      call_add_capture=CALL_INPUT_LINK_URL,
+                                      state_main_mess=MESS_INPUT_LINK_URL,
+                                      but_change_text=BTEXT_CHANGE_LINK_URL,
+                                      menu_add=menu_add_link,
+                                      is_input=True)
     await state.update_data(input_link_url_state=link_url_state)
 
     groups_state = CaptureGroupsStateParams(self_state=AddLink.capture_groups_state,
@@ -92,12 +92,12 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                                 is_only_one=True)
     await state.update_data(capture_priority_state=priority_state)
 
-    confirmation_state = StateParams(self_state = AddLink.confirmation_state,
-                                     call_base = CALL_ADD_LINK,
-                                     call_add_capture= CALL_ADD_ENDING,
-                                     menu_add = menu_add_link_with_changing,
-                                     state_main_mess=MESS_ADD_ENDING,
-                                     is_last_state_with_changing_mode=True)
+    confirmation_state = InputStateParams(self_state = AddLink.confirmation_state,
+                                          call_base = CALL_ADD_LINK,
+                                          call_add_capture= CALL_ADD_ENDING,
+                                          menu_add = menu_add_link_with_changing,
+                                          state_main_mess=MESS_ADD_ENDING,
+                                          is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     # переход в первый стейт
@@ -147,9 +147,9 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
     if CALL_CAPTURE_GROUPS in call.data:
-        groups_state: StateParams = await state.get_value('capture_groups_state')
+        groups_state: InputStateParams = await state.get_value('capture_groups_state')
         added_id = groups_state.captured_items_set
-        users_state: StateParams = await state.get_value('capture_users_state')
+        users_state: InputStateParams = await state.get_value('capture_users_state')
         new_user_set = set()
         for group_id in added_id:
             added_items = (await get_groups_by_filters(group_id=group_id)).users
@@ -174,13 +174,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     if (confirm == CALL_CHANGING_LINK_NAME or confirm == CALL_CHANGING_LINK_URL or confirm == CALL_CHANGING_USERS
             or confirm == CALL_CHANGING_PRIRITY):
 
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
+        confirmation_state: InputStateParams = await state.get_value('confirmation_state')
 
         if confirm == CALL_CHANGING_LINK_NAME:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddLink.input_link_name_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_link_name_state: StateParams = await state.get_value('input_link_name_state')
+            input_link_name_state: InputStateParams = await state.get_value('input_link_name_state')
             input_link_name_state.next_state = AddLink.confirmation_state
             await state.update_data(input_link_name_state=input_link_name_state)
 
@@ -188,7 +188,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddLink.input_link_url_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_link_url_state: StateParams = await state.get_value('input_link_url_state')
+            input_link_url_state: InputStateParams = await state.get_value('input_link_url_state')
             input_link_url_state.next_state = AddLink.confirmation_state
             await state.update_data(input_link_url_state=input_link_url_state)
 
@@ -196,7 +196,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddLink.capture_users_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_users_state: StateParams = await state.get_value('capture_users_state')
+            capture_users_state: InputStateParams = await state.get_value('capture_users_state')
             capture_users_state.next_state = AddLink.confirmation_state
             await state.update_data(capture_users_state=capture_users_state)
 
@@ -204,7 +204,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddLink.capture_priority_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_priority_state: StateParams = await state.get_value('capture_priority_state')
+            capture_priority_state: InputStateParams = await state.get_value('capture_priority_state')
             capture_priority_state.next_state = AddLink.confirmation_state
             await state.update_data(capture_priority_state=capture_priority_state)
 
@@ -220,19 +220,19 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     elif confirm == CALL_CONFIRM:
 
         # основной обработчик, запись в бд
-        input_name_state: StateParams = await state.get_value('input_link_name_state')
+        input_name_state: InputStateParams = await state.get_value('input_link_name_state')
         name_item = input_name_state.input_text
         print(name_item)
 
-        input_url_state: StateParams = await state.get_value('input_link_url_state')
+        input_url_state: InputStateParams = await state.get_value('input_link_url_state')
         url_item = input_url_state.input_text
         print(url_item)
 
-        capture_users: StateParams = await state.get_value('capture_users_state')
+        capture_users: InputStateParams = await state.get_value('capture_users_state')
         users_set = capture_users.captured_items_set
         print(users_set)
 
-        priority_state: StateParams = await state.get_value('capture_priority_state')
+        priority_state: InputStateParams = await state.get_value('capture_priority_state')
         priority_set = priority_state.captured_items_set
         print(priority_set)
 

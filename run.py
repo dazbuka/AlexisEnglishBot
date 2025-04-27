@@ -11,7 +11,7 @@ from app.handlers.common_handler import common_router
 from app.handlers.need_revision_adding_test_handlers import admin_adding_test_router
 from app.handlers.need_revision_user_handlers import user_router
 from app.handlers.common_menu.studing_handlers import user_studying_router
-from app.handlers.common_menu.revision_handlers import user_revision_router
+from app.handlers.common_menu.revision_handlers_old import user_revision_router
 from app.handlers.common_menu.show_homework_handlers import user_homework_router
 from app.handlers.common_menu.config_handlers import user_settings_router
 

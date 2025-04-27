@@ -9,7 +9,7 @@ from app.handlers.common_settings import *
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 from app.utils.admin_utils import message_answer, state_text_builder, get_user_list_for_kb_with_ids
 from app.database.requests import set_group
-from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor,
+from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor,
                                                          CaptureLevelsStateParams,
                                                          CaptureUsersStateParams)
 
@@ -39,14 +39,14 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     await state.clear()
 
     # начальные параметры стейта
-    group_state = StateParams(self_state = AddGroup.input_group_state,
-                              next_state = AddGroup.capture_users_state,
-                              call_base= CALL_ADD_GROUP,
-                              call_add_capture= CALL_INPUT_GROUP,
-                              state_main_mess = MESS_INPUT_GROUP,
-                              but_change_text = BTEXT_CHANGE_GROUP,
-                              menu_add = menu_add_group,
-                              is_input=True)
+    group_state = InputStateParams(self_state = AddGroup.input_group_state,
+                                   next_state = AddGroup.capture_users_state,
+                                   call_base= CALL_ADD_GROUP,
+                                   call_add_capture= CALL_INPUT_GROUP,
+                                   state_main_mess = MESS_INPUT_GROUP,
+                                   but_change_text = BTEXT_CHANGE_GROUP,
+                                   menu_add = menu_add_group,
+                                   is_input=True)
     await state.update_data(input_group_state=group_state)
 
     users_state = CaptureUsersStateParams(self_state=AddGroup.capture_users_state,
@@ -65,12 +65,12 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                             is_only_one=True)
     await state.update_data(capture_levels_state=levels_state)
 
-    confirmation_state = StateParams(self_state = AddGroup.confirmation_state,
-                                     call_base = CALL_ADD_GROUP,
-                                     call_add_capture= CALL_ADD_ENDING,
-                                     menu_add = menu_add_group_with_changing,
-                                     state_main_mess=MESS_ADD_ENDING,
-                                     is_last_state_with_changing_mode=True)
+    confirmation_state = InputStateParams(self_state = AddGroup.confirmation_state,
+                                          call_base = CALL_ADD_GROUP,
+                                          call_add_capture= CALL_ADD_ENDING,
+                                          menu_add = menu_add_group_with_changing,
+                                          state_main_mess=MESS_ADD_ENDING,
+                                          is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     # переход в первый стейт
@@ -147,13 +147,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     # уходим обратно если нужно что-то изменить
     if (confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_LEVELS or confirm == CALL_CHANGING_GROUPS):
 
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
+        confirmation_state: InputStateParams = await state.get_value('confirmation_state')
 
         if confirm == CALL_CHANGING_GROUPS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddGroup.input_group_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_group_state: StateParams = await state.get_value('input_group_state')
+            input_group_state: InputStateParams = await state.get_value('input_group_state')
             input_group_state.next_state = AddGroup.confirmation_state
             await state.update_data(input_group_state=input_group_state)
 
@@ -161,7 +161,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddGroup.capture_users_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_users_state: StateParams = await state.get_value('capture_users_state')
+            capture_users_state: InputStateParams = await state.get_value('capture_users_state')
             capture_users_state.next_state = AddGroup.confirmation_state
             await state.update_data(capture_users_state=capture_users_state)
 
@@ -169,7 +169,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddGroup.capture_levels_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_levels_state: StateParams = await state.get_value('capture_levels_state')
+            capture_levels_state: InputStateParams = await state.get_value('capture_levels_state')
             capture_levels_state.next_state = AddGroup.confirmation_state
             await state.update_data(capture_levels_state=capture_levels_state)
 
@@ -185,13 +185,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     elif confirm == CALL_CONFIRM:
 
         # основной обработчик, запись в бд
-        input_group: StateParams = await state.get_value('input_group_state')
+        input_group: InputStateParams = await state.get_value('input_group_state')
         group_item = input_group.input_text
 
-        capture_users: StateParams = await state.get_value('capture_users_state')
+        capture_users: InputStateParams = await state.get_value('capture_users_state')
         users_set = capture_users.captured_items_set
 
-        capture_levels: StateParams = await state.get_value('capture_levels_state')
+        capture_levels: InputStateParams = await state.get_value('capture_levels_state')
         levels_set = capture_levels.captured_items_set
 
         state_text = await state_text_builder(state)

@@ -12,7 +12,7 @@ import re
 
 from app.handlers.common_settings import MediaType
 from datetime import datetime, date, timedelta
-from app.handlers.admin_menu.states.input_states import StateParams
+from app.handlers.admin_menu.states.input_states import InputStateParams
 from app.handlers.common_settings import *
 
 
@@ -670,7 +670,7 @@ async def add_item_in_aim_set_plus_plus(aim_set: set, added_item: int | str) -> 
 
 
 # 030425 функция добавления в множество нажатых с кнопок значений
-def update_state_params_with_input_message(message: Message, state_params: StateParams):
+def update_state_params_with_input_message(message: Message, state_params: InputStateParams):
     # если число (как правило номер ид слова юзера и др)
 
     if message.content_type == ContentType.TEXT:

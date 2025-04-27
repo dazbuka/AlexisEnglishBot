@@ -169,13 +169,18 @@ async def add_word_to_db(word, translation, definition, part, author_id, level, 
             return False
 
 # поиск пользователя по фильтрам
-async def get_sources_by_filters(source_id: int = None, source_name: str = None):
+async def get_sources_by_filters(source_id: int = None,
+                                 source_id_set: set = None,
+                                 source_name: str = None):
     async with async_session() as session:
         try:
             selection = select(Source).options(selectinload(Source.words))
 
             if source_name:
                 selection = selection.filter_by(source_name = source_name)
+
+            if source_id_set:
+                selection = selection.filter(Source.id.in_(source_id_set)).order_by(Source.created_at.asc())
 
             rezult = await session.execute(selection)
             sources = rezult.scalars().all()
@@ -194,16 +199,24 @@ async def get_sources_by_filters(source_id: int = None, source_name: str = None)
 
 # поиск пользователя по фильтрам
 async def get_words_by_filters(word_id: int = None,
+                               word_id_set: set = None,
                                word: str = None,
                                limit: int = None,
                                piece_of_word: str = None,
-                               word_id_new: int = None):
+                               word_id_new: int = None,
+                               source_id: int = None):
     async with async_session() as session:
         try:
             selection = select(Word).options(selectinload(Word.medias))
 
             if word_id:
                 selection = selection.filter(Word.id == word_id)
+
+            if word_id_set:
+                selection = selection.filter(Word.id.in_(word_id_set)).order_by(Word.created_at.asc())
+
+            if source_id:
+                selection = selection.filter(Word.source_id == source_id)
 
             if word:
                 selection = selection.filter_by(word = word)
@@ -235,6 +248,7 @@ async def get_words_by_filters(word_id: int = None,
 # запрос на медиа с фильтрами
 async def get_medias_by_filters(media_id: int = None,
                                 media_id_new: int = None,
+                                media_id_set: set = None,
                                 word_id: int = None,
                                 media_type: str = None,
                                 word: str = None,
@@ -251,6 +265,9 @@ async def get_medias_by_filters(media_id: int = None,
 
             if media_id:
                 selection = selection.filter(Media.id==media_id)
+
+            if media_id_set:
+                selection = selection.filter(Media.id.in_(media_id_set)).order_by(Media.created_at.asc())
 
             if word_id:
                 selection = selection.filter_by(word_id=word_id)
@@ -291,7 +308,7 @@ async def get_medias_by_filters(media_id: int = None,
             if media_id_new:
                 selection = selection.filter(Media.id == media_id_new)
                 rezult = await session.execute(selection)
-                words = rezult.scalars().one_or_none()
+                medias = rezult.scalars().one_or_none()
 
             if medias:
                 return medias
@@ -445,7 +462,8 @@ async def get_tasks(user_id: int = None,
                 selection = selection.join(Media)
                 selection = selection.filter(Media.media_type.startswith('test') == False)
 
-            selection = selection.options(selectinload(Task.user), selectinload(Task.media))
+            selection = selection.options(selectinload(Task.user),
+                                          selectinload(Task.media).selectinload(Media.word).selectinload(Word.source))
             rez = await session.execute(selection)
             tasks = rez.scalars().all()
             if tasks:

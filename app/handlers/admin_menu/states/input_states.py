@@ -7,7 +7,7 @@ from app.keyboards.keyboard_builder import keyboard_builder
 from app.handlers.common_settings import *
 from app.handlers.common_settings import *
 
-class StateParams:
+class InputStateParams:
     def __init__(self, self_state: State,
                  call_base : str,
                  menu_add : list,
@@ -19,6 +19,7 @@ class StateParams:
                  is_can_be_empty: bool = False,
                  next_state: State = None,
                  items_kb_list : list = None,
+                 buttons_kb_list: list = None,
                  items_kb_cols : int = None,
                  items_kb_rows : int = None,
                  items_kb_check : str = None,
@@ -47,6 +48,7 @@ class StateParams:
         # конец блока - какой стейт будет следующим и последним при вводе
         # для клавиатуры выбора - необязательные
         self.items_kb_list : list = items_kb_list
+        self.buttons_kb_list: list = buttons_kb_list
         self.items_kb_cols : int = items_kb_cols
         self.items_kb_rows : int = items_kb_rows
         self.items_kb_check : str = items_kb_check
@@ -67,7 +69,19 @@ class StateParams:
 
         return presentation
 
-class CaptureWordsStateParams(StateParams):
+
+class ShowWordsStateParams(InputStateParams):
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+        self.call_add_capture : str = CALL_SHOW_WORDS
+        self.state_main_mess : str = MESS_SHOW_WORDS
+        self.items_kb_cols : int = NUM_SHOW_WORDS_COLS
+        self.items_kb_rows : int = NUM_SHOW_WORDS_ROWS
+        self.items_kb_check : str = CHECK_CAPTURE_WORDS
+
+
+class CaptureWordsStateParams(InputStateParams):
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
@@ -79,7 +93,7 @@ class CaptureWordsStateParams(StateParams):
         self.items_kb_check : str = CHECK_CAPTURE_WORDS
 
 
-class CaptureCollsStateParams(StateParams):
+class CaptureCollsStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_COLLS
@@ -90,7 +104,7 @@ class CaptureCollsStateParams(StateParams):
         self.items_kb_check : str = CHECK_CAPTURE_COLLS
 
 
-class CaptureGroupsStateParams(StateParams):
+class CaptureGroupsStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_GROUPS
@@ -100,7 +114,7 @@ class CaptureGroupsStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_GROUPS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_GROUPS
 
-class CaptureHomeworksStateParams(StateParams):
+class CaptureHomeworksStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_HOMEWORKS
@@ -110,7 +124,7 @@ class CaptureHomeworksStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_HOMEWORKS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_HOMEWORKS
 
-class CaptureUsersStateParams(StateParams):
+class CaptureUsersStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_USERS
@@ -120,7 +134,7 @@ class CaptureUsersStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_USERS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_USERS
 
-class CaptureDatesStateParams(StateParams):
+class CaptureDatesStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_DATES
@@ -130,7 +144,7 @@ class CaptureDatesStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_DATES_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_DATES
 
-class CapturePriorityStateParams(StateParams):
+class CapturePriorityStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_PRIRITY
@@ -140,7 +154,7 @@ class CapturePriorityStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_PRIRITY_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_PRIRITY
 
-class CaptureDaysStateParams(StateParams):
+class CaptureDaysStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_DAYS
@@ -150,7 +164,7 @@ class CaptureDaysStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_DAYS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_DAYS
 
-class CapturePartsStateParams(StateParams):
+class CapturePartsStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_PARTS
@@ -160,7 +174,7 @@ class CapturePartsStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_PARTS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_PARTS
 
-class CaptureLevelsStateParams(StateParams):
+class CaptureLevelsStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_LEVELS
@@ -170,7 +184,7 @@ class CaptureLevelsStateParams(StateParams):
         self.items_kb_rows : int = NUM_CAPTURE_LEVELS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_LEVELS
 
-class CaptureSourcesStateParams(StateParams):
+class CaptureSourcesStateParams(InputStateParams):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_SOURCES
@@ -190,11 +204,11 @@ class FSMExecutor:
     async def execute(self, fsm_state: FSMContext, fsm_call: CallbackQuery = None, fsm_mess: Message = None):
         fsm_state_str = await fsm_state.get_state()
         current_state = fsm_state_str.split(':', 1)[1]
-        current_state_params: StateParams = await fsm_state.get_value(current_state)
+        current_state_params: InputStateParams = await fsm_state.get_value(current_state)
         print(fsm_state_str, end=' -> ')
         next_state_str = current_state_params.next_state.state
         next_state = next_state_str.split(':', 1)[1]
-        next_state_params: StateParams = await fsm_state.get_value(next_state)
+        next_state_params: InputStateParams = await fsm_state.get_value(next_state)
         print(next_state_str)
         # сначала обработчик для колла, заодно проверяем чтобы не было мессаджа
         if fsm_call and not fsm_mess:

@@ -16,7 +16,7 @@ from app.utils.admin_utils import (state_text_builder, mess_answer,
 
 import app.keyboards.admin_keyboards as akb
 from config import bot, media_dir
-from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor, CaptureLevelsStateParams,
+from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor, CaptureLevelsStateParams,
                                                          CaptureDaysStateParams, CaptureWordsStateParams)
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
@@ -67,35 +67,35 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     await state.update_data(capture_words_state=words_state)
 
 
-    input_coll_text_state = StateParams(self_state = AddColl.input_coll_state,
-                                        next_state = AddColl.input_media_state,
-                                        call_base= CALL_ADD_COLL,
-                                        call_add_capture= CALL_INPUT_COLL,
-                                        state_main_mess = MESS_INPUT_COLL,
-                                        but_change_text = BTEXT_CHANGE_COLL,
-                                        menu_add = menu_add_coll,
-                                        is_input=True)
+    input_coll_text_state = InputStateParams(self_state = AddColl.input_coll_state,
+                                             next_state = AddColl.input_media_state,
+                                             call_base= CALL_ADD_COLL,
+                                             call_add_capture= CALL_INPUT_COLL,
+                                             state_main_mess = MESS_INPUT_COLL,
+                                             but_change_text = BTEXT_CHANGE_COLL,
+                                             menu_add = menu_add_coll,
+                                             is_input=True)
     await state.update_data(input_coll_state=input_coll_text_state)
 
 
-    input_media_state = StateParams(self_state=AddColl.input_media_state,
-                                    next_state=AddColl.capture_levels_state,
-                                    call_base=CALL_ADD_COLL,
-                                    call_add_capture=CALL_INPUT_MEDIA,
-                                    state_main_mess=MESS_INPUT_MEDIA,
-                                    but_change_text=BTEXT_CHANGE_MEDIA,
-                                    menu_add=menu_add_coll,
-                                    is_input=True)
+    input_media_state = InputStateParams(self_state=AddColl.input_media_state,
+                                         next_state=AddColl.capture_levels_state,
+                                         call_base=CALL_ADD_COLL,
+                                         call_add_capture=CALL_INPUT_MEDIA,
+                                         state_main_mess=MESS_INPUT_MEDIA,
+                                         but_change_text=BTEXT_CHANGE_MEDIA,
+                                         menu_add=menu_add_coll,
+                                         is_input=True)
     await state.update_data(input_media_state=input_media_state)
 
-    input_caption_text_state = StateParams(self_state=AddColl.input_caption_state,
-                                           next_state=AddColl.confirmation_state,
-                                           call_base=CALL_ADD_COLL,
-                                           call_add_capture=CALL_INPUT_CAPTION,
-                                           state_main_mess=MESS_INPUT_CAPTION,
-                                           but_change_text=BTEXT_CHANGE_CAPTION,
-                                           menu_add=menu_add_coll,
-                                           is_input=True)
+    input_caption_text_state = InputStateParams(self_state=AddColl.input_caption_state,
+                                                next_state=AddColl.confirmation_state,
+                                                call_base=CALL_ADD_COLL,
+                                                call_add_capture=CALL_INPUT_CAPTION,
+                                                state_main_mess=MESS_INPUT_CAPTION,
+                                                but_change_text=BTEXT_CHANGE_CAPTION,
+                                                menu_add=menu_add_coll,
+                                                is_input=True)
     await state.update_data(input_caption_state=input_caption_text_state)
 
 
@@ -118,12 +118,12 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 
 
 
-    confirmation_state = StateParams(self_state = AddColl.confirmation_state,
-                                     call_base = CALL_ADD_COLL,
-                                     call_add_capture= CALL_ADD_ENDING,
-                                     menu_add = menu_add_coll_with_changing,
-                                     state_main_mess=MESS_ADD_ENDING,
-                                     is_last_state_with_changing_mode=True)
+    confirmation_state = InputStateParams(self_state = AddColl.confirmation_state,
+                                          call_base = CALL_ADD_COLL,
+                                          call_add_capture= CALL_ADD_ENDING,
+                                          menu_add = menu_add_coll_with_changing,
+                                          state_main_mess=MESS_ADD_ENDING,
+                                          is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
 
@@ -164,11 +164,11 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
     # взимообмен кэпшен стейт и медиа стейт, в котором есть переменная кэпшн
 
 
-    media_state: StateParams = await state.get_value('input_media_state')
+    media_state: InputStateParams = await state.get_value('input_media_state')
 
     if fsm_state_str == AddColl.input_media_state.state:
         caption = media_state.input_text
-        input_caption_state: StateParams = await state.get_value('input_caption_state')
+        input_caption_state: InputStateParams = await state.get_value('input_caption_state')
         input_caption_state.input_text = caption
         await state.update_data(input_caption_state=input_caption_state)
 
@@ -195,13 +195,13 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
     fsm_state_str = await state.get_state()
 
-    media_state: StateParams = await state.get_value('input_media_state')
+    media_state: InputStateParams = await state.get_value('input_media_state')
 
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + current_fsm.message_text
 
     if fsm_state_str == AddColl.capture_days_state.state:
-        word_state: StateParams = await state.get_value('capture_words_state')
+        word_state: InputStateParams = await state.get_value('capture_words_state')
         word_id = list(word_state.captured_items_set)[0]
         scheme = await get_shema_text_by_word_id(word_id=word_id)
         message_text += '\n\n' + scheme
@@ -226,13 +226,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     if (confirm == CALL_CHANGING_WORDS or confirm == CALL_CHANGING_COLL or confirm == CALL_CHANGING_LEVELS
             or confirm == CALL_CHANGING_CAPTION or confirm == CALL_CHANGING_MEDIA or confirm == CALL_CHANGING_DAYS):
 
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
+        confirmation_state: InputStateParams = await state.get_value('confirmation_state')
 
         if confirm == CALL_CHANGING_WORDS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.capture_words_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_words_state: StateParams = await state.get_value('capture_words_state')
+            capture_words_state: InputStateParams = await state.get_value('capture_words_state')
             capture_words_state.next_state = AddColl.confirmation_state
             await state.update_data(capture_words_state=capture_words_state)
 
@@ -240,7 +240,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.input_coll_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_coll_state: StateParams = await state.get_value('input_coll_state')
+            input_coll_state: InputStateParams = await state.get_value('input_coll_state')
             input_coll_state.next_state = AddColl.confirmation_state
             await state.update_data(input_coll_state=input_coll_state)
 
@@ -248,7 +248,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.capture_levels_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_levels_state: StateParams = await state.get_value('capture_levels_state')
+            capture_levels_state: InputStateParams = await state.get_value('capture_levels_state')
             capture_levels_state.next_state = AddColl.confirmation_state
             await state.update_data(capture_levels_state=capture_levels_state)
 
@@ -256,7 +256,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.input_media_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_media_state: StateParams = await state.get_value('input_media_state')
+            input_media_state: InputStateParams = await state.get_value('input_media_state')
             input_media_state.next_state = AddColl.confirmation_state
             await state.update_data(input_media_state=input_media_state)
 
@@ -264,7 +264,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.input_caption_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_caption_state: StateParams = await state.get_value('input_caption_state')
+            input_caption_state: InputStateParams = await state.get_value('input_caption_state')
             input_caption_state.next_state = AddColl.confirmation_state
             await state.update_data(input_caption_state=input_caption_state)
 
@@ -272,7 +272,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddColl.capture_days_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_days_state: StateParams = await state.get_value('capture_days_state')
+            capture_days_state: InputStateParams = await state.get_value('capture_days_state')
             capture_days_state.next_state = AddColl.confirmation_state
             await state.update_data(capture_days_state=capture_days_state)
 
@@ -280,7 +280,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         current_fsm = FSMExecutor()
         await current_fsm.execute(state, call)
 
-        media_state: StateParams = await state.get_value('input_media_state')
+        media_state: InputStateParams = await state.get_value('input_media_state')
 
         state_text = await state_text_builder(state)
         message_text = state_text + '\n' + current_fsm.message_text
@@ -297,23 +297,23 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         # основной обработчик, запись в бд
         author_id = await state.get_value('author_id')
 
-        capture_words: StateParams = await state.get_value('capture_words_state')
+        capture_words: InputStateParams = await state.get_value('capture_words_state')
         words_set = capture_words.captured_items_set
 
-        input_coll: StateParams = await state.get_value('input_coll_state')
+        input_coll: InputStateParams = await state.get_value('input_coll_state')
         collocation = input_coll.input_text
 
-        input_media: StateParams = await state.get_value('input_media_state')
+        input_media: InputStateParams = await state.get_value('input_media_state')
         # media_caption = input_media.input_text
         media_type = input_media.media_type
         media_tg_id = input_media.media_id
-        input_caption: StateParams = await state.get_value('input_caption_state')
+        input_caption: InputStateParams = await state.get_value('input_caption_state')
         caption = input_caption.input_text
 
-        capture_levels: StateParams = await state.get_value('capture_levels_state')
+        capture_levels: InputStateParams = await state.get_value('capture_levels_state')
         levels_set = capture_levels.captured_items_set
 
-        capture_days: StateParams = await state.get_value('capture_days_state')
+        capture_days: InputStateParams = await state.get_value('capture_days_state')
         days_set = capture_days.captured_items_set
 
         state_text = await state_text_builder(state)
@@ -356,7 +356,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         reply_kb = await keyboard_builder(menu_pack=menu_add_coll, buttons_base_call="")
 
 
-        media_state: StateParams = await state.get_value('input_media_state')
+        media_state: InputStateParams = await state.get_value('input_media_state')
 
         await mess_answer(source=call,
                           media_type=media_state.media_type,

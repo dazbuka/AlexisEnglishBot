@@ -9,7 +9,7 @@ from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_
 from app.utils.admin_utils import message_answer, state_text_builder, get_word_list_for_kb_with_ids, \
     get_source_list_for_kb_with_ids
 from app.database.requests import get_users_by_filters, add_word_to_db, get_words_by_filters
-from app.handlers.admin_menu.states.input_states import (StateParams, FSMExecutor, CaptureLevelsStateParams,
+from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor, CaptureLevelsStateParams,
                                                          CapturePartsStateParams, CaptureSourcesStateParams)
 
 adding_word_router = Router()
@@ -49,14 +49,14 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     author = await get_users_by_filters(user_tg_id=call.from_user.id)
     await state.update_data(author_id=author.id)
     # начальные параметры стейта
-    word_state = StateParams(self_state = AddWord.input_word_state,
-                             next_state = AddWord.capture_parts_state,
-                             call_base= CALL_ADD_WORD,
-                             call_add_capture= CALL_INPUT_WORD,
-                             state_main_mess = MESS_INPUT_WORD,
-                             but_change_text = BTEXT_CHANGE_WORDS,
-                             menu_add = menu_add_word,
-                             is_input=True)
+    word_state = InputStateParams(self_state = AddWord.input_word_state,
+                                  next_state = AddWord.capture_parts_state,
+                                  call_base= CALL_ADD_WORD,
+                                  call_add_capture= CALL_INPUT_WORD,
+                                  state_main_mess = MESS_INPUT_WORD,
+                                  but_change_text = BTEXT_CHANGE_WORDS,
+                                  menu_add = menu_add_word,
+                                  is_input=True)
     await state.update_data(input_word_state=word_state)
 
     parts_state = CapturePartsStateParams(self_state=AddWord.capture_parts_state,
@@ -84,32 +84,32 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                           is_can_be_empty=True)
     await state.update_data(capture_sources_state=source_state)
 
-    definition_state = StateParams(self_state = AddWord.input_definition_state,
-                                   next_state = AddWord.input_translation_state,
-                                   call_base= CALL_ADD_WORD,
-                                   call_add_capture= CALL_INPUT_DEFINITION,
-                                   state_main_mess = MESS_INPUT_DEFINITION,
-                                   but_change_text = BTEXT_CHANGE_DEFINITION,
-                                   menu_add = menu_add_word,
-                                   is_input=True)
+    definition_state = InputStateParams(self_state = AddWord.input_definition_state,
+                                        next_state = AddWord.input_translation_state,
+                                        call_base= CALL_ADD_WORD,
+                                        call_add_capture= CALL_INPUT_DEFINITION,
+                                        state_main_mess = MESS_INPUT_DEFINITION,
+                                        but_change_text = BTEXT_CHANGE_DEFINITION,
+                                        menu_add = menu_add_word,
+                                        is_input=True)
     await state.update_data(input_definition_state=definition_state)
 
-    translation_state = StateParams(self_state = AddWord.input_translation_state,
-                                    next_state = AddWord.confirmation_state,
-                                    call_base= CALL_ADD_WORD,
-                                    call_add_capture= CALL_INPUT_TRANSLATION,
-                                    state_main_mess = MESS_INPUT_TRANSLATION,
-                                    but_change_text = BTEXT_CHANGE_TRANSLATION,
-                                    menu_add = menu_add_word,
-                                    is_input=True)
+    translation_state = InputStateParams(self_state = AddWord.input_translation_state,
+                                         next_state = AddWord.confirmation_state,
+                                         call_base= CALL_ADD_WORD,
+                                         call_add_capture= CALL_INPUT_TRANSLATION,
+                                         state_main_mess = MESS_INPUT_TRANSLATION,
+                                         but_change_text = BTEXT_CHANGE_TRANSLATION,
+                                         menu_add = menu_add_word,
+                                         is_input=True)
     await state.update_data(input_translation_state=translation_state)
 
-    confirmation_state = StateParams(self_state = AddWord.confirmation_state,
-                                     call_base = CALL_ADD_WORD,
-                                     call_add_capture= CALL_ADD_ENDING,
-                                     menu_add = menu_add_word_with_changing,
-                                     state_main_mess=MESS_ADD_ENDING,
-                                     is_last_state_with_changing_mode=True)
+    confirmation_state = InputStateParams(self_state = AddWord.confirmation_state,
+                                          call_base = CALL_ADD_WORD,
+                                          call_add_capture= CALL_ADD_ENDING,
+                                          menu_add = menu_add_word_with_changing,
+                                          state_main_mess=MESS_ADD_ENDING,
+                                          is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     # переход в первый стейт
@@ -140,7 +140,7 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
     fsm_state_str = await state.get_state()
     # проверяем слово в базе данных
     if fsm_state_str == AddWord.input_word_state.state:
-        input_word_state: StateParams = await state.get_value('input_word_state')
+        input_word_state: InputStateParams = await state.get_value('input_word_state')
         input_word = message.text.lower()
         words = await get_words_by_filters(word=input_word)
         if words:
@@ -208,13 +208,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             or confirm == CALL_CHANGING_DEFINITION or confirm == CALL_CHANGING_TRANSLATION
             or confirm == CALL_CHANGING_SOURCES):
 
-        confirmation_state: StateParams = await state.get_value('confirmation_state')
+        confirmation_state: InputStateParams = await state.get_value('confirmation_state')
 
         if confirm == CALL_CHANGING_WORDS:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.input_word_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_word_state: StateParams = await state.get_value('input_word_state')
+            input_word_state: InputStateParams = await state.get_value('input_word_state')
             input_word_state.next_state = AddWord.confirmation_state
             await state.update_data(input_word_state=input_word_state)
 
@@ -222,7 +222,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.capture_parts_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_parts_state: StateParams = await state.get_value('capture_parts_state')
+            capture_parts_state: InputStateParams = await state.get_value('capture_parts_state')
             capture_parts_state.next_state = AddWord.confirmation_state
             await state.update_data(capture_parts_state=capture_parts_state)
 
@@ -230,7 +230,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.capture_levels_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_levels_state: StateParams = await state.get_value('capture_levels_state')
+            capture_levels_state: InputStateParams = await state.get_value('capture_levels_state')
             capture_levels_state.next_state = AddWord.confirmation_state
             await state.update_data(capture_levels_state=capture_levels_state)
 
@@ -238,7 +238,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.capture_sources_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            capture_sources_state: StateParams = await state.get_value('capture_sources_state')
+            capture_sources_state: InputStateParams = await state.get_value('capture_sources_state')
             capture_sources_state.next_state = AddWord.confirmation_state
             await state.update_data(capture_sources_state=capture_sources_state)
 
@@ -246,7 +246,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.input_definition_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_definition_state: StateParams = await state.get_value('input_definition_state')
+            input_definition_state: InputStateParams = await state.get_value('input_definition_state')
             input_definition_state.next_state = AddWord.confirmation_state
             await state.update_data(input_definition_state=input_definition_state)
 
@@ -254,7 +254,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddWord.input_translation_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим
-            input_translation_state: StateParams = await state.get_value('input_translation_state')
+            input_translation_state: InputStateParams = await state.get_value('input_translation_state')
             input_translation_state.next_state = AddWord.confirmation_state
             await state.update_data(input_translation_state=input_translation_state)
 
@@ -272,26 +272,26 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         # основной обработчик, запись в бд
         author_id = await state.get_value('author_id')
 
-        input_word: StateParams = await state.get_value('input_word_state')
+        input_word: InputStateParams = await state.get_value('input_word_state')
         word_item = input_word.input_text
 
-        capture_parts: StateParams = await state.get_value('capture_parts_state')
+        capture_parts: InputStateParams = await state.get_value('capture_parts_state')
         parts_set = capture_parts.captured_items_set
 
-        capture_levels: StateParams = await state.get_value('capture_levels_state')
+        capture_levels: InputStateParams = await state.get_value('capture_levels_state')
         levels_set = capture_levels.captured_items_set
 
-        capture_sources: StateParams = await state.get_value('capture_sources_state')
+        capture_sources: InputStateParams = await state.get_value('capture_sources_state')
         sources_set = capture_sources.captured_items_set
         source_item = None
         if sources_set:
             for source in sources_set:
                 source_item = source
 
-        input_definition: StateParams = await state.get_value('input_definition_state')
+        input_definition: InputStateParams = await state.get_value('input_definition_state')
         definition_item = input_definition.input_text
 
-        input_translation: StateParams = await state.get_value('input_translation_state')
+        input_translation: InputStateParams = await state.get_value('input_translation_state')
         translation_item = input_translation.input_text
 
         state_text = await state_text_builder(state)
