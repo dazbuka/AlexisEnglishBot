@@ -8,7 +8,7 @@ from app.handlers.common_settings import *
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 from app.utils.admin_utils import message_answer, state_text_builder, get_user_list_for_kb_with_ids
-from app.database.requests import set_group, get_users_by_filters
+from app.database.requests import set_group, get_users_by_filters, get_groups_by_filters
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
 from app.handlers.admin_menu.states.state_params import (InputStateParams, ConfirmationStateParams,
                                                          CaptureLevelsStateParams,
@@ -94,6 +94,20 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
 @adding_group_router.message(F.text, AddGroup.capture_levels_state)
 async def admin_adding_group_capture(message: Message, state: FSMContext):
     # проверяем слово в базе данных
+    fsm_state_str = await state.get_state()
+    # проверяем группу в базе данных
+    if fsm_state_str == AddGroup.input_group_state.state:
+        input_group_state: InputStateParams = await state.get_value('input_group_state')
+        input_group = message.text.lower()
+        groups = await get_groups_by_filters(name=input_group)
+        if groups:
+            input_group_state.next_state = AddGroup.input_group_state
+            input_group_state.state_main_mess = MESS_INPUT_GROUP_ALREADY_EXIST
+        else:
+            input_group_state.next_state = AddGroup.capture_users_state
+            input_group_state.state_main_mess = MESS_INPUT_GROUP
+        await state.update_data(input_group_state=input_group_state)
+
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
@@ -102,24 +116,6 @@ async def admin_adding_group_capture(message: Message, state: FSMContext):
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + current_fsm.message_text
     await message_answer(source=message, message_text=message_text, reply_markup=current_fsm.reply_kb)
-
-    # если оно там есть - пусть пробует снова
-    # if await rq.get_words_by_filters(word=message.text.lower().strip()):
-    #     message_text = amsg.ADM_ADD_WORD_WORD_FIND
-    #     reply_kb = await akb.admin_adding_word_kb()
-    #     await message_answer(source=message, message_text=message_text, reply_markup=reply_kb)
-    #     await state.set_state(AddWord.word)
-    # # если нет - запоминаем в стейт слово и ид юзера из бд
-    # else:
-    #     await state.update_data(word=message.text.lower().strip())
-    #     user = await rq.get_users_by_filters(user_tg_id=message.from_user.id)
-    #     await state.update_data(author=user.id)
-    #     # приглашаем выбрать уровень слова
-    #     state_text = await get_text_from_word_adding_state(state)
-    #     message_text = f'{state_text}\n{amsg.ADM_ADD_WORD_LEVEL}'
-    #     reply_kb = await akb.admin_adding_word_kb(adding_level=True)
-    #     await message_answer(source=message, message_text=message_text, reply_markup=reply_kb)
-    #     await state.set_state(AddWord.level)
 
 @adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP), AddGroup.capture_users_state)
 @adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP), AddGroup.capture_levels_state)

@@ -423,6 +423,7 @@ BTEXT_CHANGE_WORD = "Изменить слово"
 CALL_INPUT_GROUP = "input_group_"
 CALL_CHANGING_GROUP = "changing_group_"
 MESS_INPUT_GROUP = "Введите название группы"
+MESS_INPUT_GROUP_ALREADY_EXIST = "Такая группа уже существует, попробуйте ввести другое наименование"
 BTEXT_CHANGE_GROUP = "Изменить название группы"
 # input homework
 CALL_INPUT_HOMEWORK = "input_homework_"

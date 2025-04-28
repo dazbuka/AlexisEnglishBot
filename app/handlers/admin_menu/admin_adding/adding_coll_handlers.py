@@ -61,10 +61,9 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 
     words_state = CaptureWordsStateParams(self_state=AddColl.capture_words_state,
                                           next_state=AddColl.input_coll_state,
-                                          call_base=CALL_ADD_COLL,
-                                          menu_add=menu_add_coll,
-                                          items_kb_list=(await get_word_list_for_kb_with_ids())[::-1],
-                                          is_only_one=True)
+                                          menu_add=menu_add_coll)#,
+                                          # is_only_one=True)
+    await words_state.update_state_kb_for_all_users_and_base_call(call_base=CALL_ADD_COLL)
     await state.update_data(capture_words_state=words_state)
 
 
@@ -136,8 +135,8 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     # формируем сообщение, меню, клавиатуру и выводим их
 
     reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
-                                      buttons_add_list= first_state.items_kb_list,
-                                      buttons_base_call=first_state.call_base + first_state.call_add_capture,
+                                      buttons_add_buttons=first_state.buttons_kb_list,
+                                      buttons_base_call=first_state.call_base,
                                       buttons_add_cols=first_state.items_kb_cols,
                                       buttons_add_rows=first_state.items_kb_rows,
                                       is_adding_confirm_button=not first_state.is_input)
@@ -183,7 +182,7 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
 
 
 
-@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_WORDS), AddColl.capture_words_state)
+@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.capture_words_state)
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_LEVELS), AddColl.capture_levels_state)
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_DAYS), AddColl.capture_days_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):

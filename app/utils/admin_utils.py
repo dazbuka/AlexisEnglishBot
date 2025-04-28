@@ -1,6 +1,7 @@
 from typing import List, Optional
 from aiogram.types import InlineKeyboardButton
 from aiogram import Bot
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.testing import is_none
 
 import app.database.requests as rq
@@ -398,39 +399,31 @@ async def get_new_carousel_page_num(call_item: str, items_kb: list, rows: int, c
         page_num = 0
     return page_num
 
-def get_new_page_num(button_list: List[InlineKeyboardButton] | None,
-                     call: CallbackQuery,
-                     call_base: str,
+def get_new_page_num(call : CallbackQuery,
                      mess: Message,
+                     button_list: List[InlineKeyboardButton] | None,
+                     call_base: str,
                      cols: int,
                      rows: int) -> int:
 
     if mess:
-        print('======1======')
         page_num = 0
     elif call:
-        print('======2======')
-        page_num = 0
-        if call.data:
-            print(call.data)
+        if button_list:
             call_item = call.data.replace(call_base,'')
-            print(call_item)
             # # считаем количество таблиц исходя из длины массива кнопок и количества строк и столбцов
             count_of_tables = ((len(button_list) - 1) // (cols * rows)) + 1
             # # меняем пагинацию в зависимости от нажатой кнопки
             # # если нажата НЕКСТ - вытаскиваем из колла номер текущей страницы, добавляем 1, если последний - идем на первую
             if call_item.startswith(CALL_NEXT):
-                print('======2======')
                 page_num = int(call_item.replace(CALL_NEXT, ''))
                 page_num = 0 if page_num == count_of_tables - 1 else page_num + 1
             # если нажата ПРЕД - вытаскиваем из колла номер текущей страницы, вычитаем 1, если первая - идем на последнюю
             elif call_item.startswith(CALL_PREV):
-                print('======2======')
                 page_num = int(call_item.replace(CALL_PREV, ''))
                 page_num = count_of_tables - 1 if page_num == 0 else page_num - 1
             # если нажата последняя - идет туда
             elif call_item.startswith(CALL_LAST):
-                print('======2======')
                 page_num = count_of_tables - 1
             # если нажата первая - идем туда
             elif call_item.startswith(CALL_FIRST):
@@ -438,7 +431,14 @@ def get_new_page_num(button_list: List[InlineKeyboardButton] | None,
             # в других случаях - вычисляем
             else:
                 page_num = 0
-    print(page_num)
+                for i in range(len(button_list)):
+                    if call.data == button_list[i].callback_data:
+                        page_num = i // (rows * cols)
+        else:
+            page_num = 0
+    else:
+        page_num = 0
+
     return page_num
 
 

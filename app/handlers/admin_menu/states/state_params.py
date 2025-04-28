@@ -12,7 +12,8 @@ from app.utils.admin_utils import (update_button_list_with_check, get_new_carous
                                    get_current_carousel_page_num, add_item_in_aim_set_plus_minus,
                                    add_item_in_only_one_aim_set)
 # , update_state_params_with_input_message)
-from app.database.requests import set_group, get_users_by_filters
+from app.database.requests import set_group, get_users_by_filters, get_words_by_filters
+
 
 class InputStateParams:
     def __init__(self, self_state: State,
@@ -88,9 +89,9 @@ class ShowWordsStateParams(InputStateParams):
         self.items_kb_check : str = CHECK_CAPTURE_WORDS
 
 
+
 class CaptureWordsStateParams(InputStateParams):
     def __init__(self, **kwargs):
-
         super().__init__(**kwargs)
         self.call_add_capture : str = CALL_CAPTURE_WORDS
         self.state_main_mess : str = MESS_CAPTURE_WORDS
@@ -98,6 +99,17 @@ class CaptureWordsStateParams(InputStateParams):
         self.items_kb_cols : int = NUM_CAPTURE_WORDS_COLS
         self.items_kb_rows : int = NUM_CAPTURE_WORDS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_WORDS
+
+    async def update_state_kb_for_all_users_and_base_call(self, call_base):
+        words_list = await get_words_by_filters()
+        words_kb = []
+        for word in words_list:
+            curr_button = InlineKeyboardButton(text=f'{word.word}',
+                                               callback_data=f'{call_base}{word.id}')
+            words_kb.append(curr_button)
+        words_reversed = words_kb[::-1]
+        self.buttons_kb_list = words_reversed
+        self.call_base = call_base
 
 
 class CaptureCollsStateParams(InputStateParams):
@@ -139,6 +151,8 @@ class CaptureHomeworksStateParams(InputStateParams):
                                                callback_data=f'{call_base}{user.id}')
             users_kb.append(curr_button)
         self.buttons_kb_list = users_kb
+
+
 
 class CaptureUsersStateParams(InputStateParams):
     def __init__(self, **kwargs):
