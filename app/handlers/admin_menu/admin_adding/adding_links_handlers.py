@@ -11,11 +11,10 @@ from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_
 from app.utils.admin_utils import (message_answer, state_text_builder, get_user_list_for_kb_with_ids,
                                    get_group_list_for_kb_with_ids, get_date_list_for_kb, add_item_in_aim_set_plus_plus)
 from app.database.requests import get_users_by_filters, get_groups_by_filters, set_link
-from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor,
-                                                         CaptureUsersStateParams,
+from app.handlers.admin_menu.states.state_executor import FSMExecutor
+from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureUsersStateParams,
                                                          CaptureGroupsStateParams,
                                                          CapturePriorityStateParams)
-
 adding_link_router = Router()
 
 class AddLink(StatesGroup):

@@ -8,11 +8,11 @@ from app.handlers.common_settings import *
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 from app.utils.admin_utils import message_answer, state_text_builder, get_user_list_for_kb_with_ids
-from app.database.requests import set_group
-from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor,
+from app.database.requests import set_group, get_users_by_filters
+from app.handlers.admin_menu.states.state_executor import FSMExecutor
+from app.handlers.admin_menu.states.state_params import (InputStateParams, ConfirmationStateParams,
                                                          CaptureLevelsStateParams,
                                                          CaptureUsersStateParams)
-
 adding_group_router = Router()
 
 class AddGroup(StatesGroup):
@@ -49,29 +49,28 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                    is_input=True)
     await state.update_data(input_group_state=group_state)
 
+
     users_state = CaptureUsersStateParams(self_state=AddGroup.capture_users_state,
                                           next_state=AddGroup.capture_levels_state,
-                                          call_base=CALL_ADD_GROUP,
-                                          menu_add=menu_add_group,
-                                          items_kb_list=await get_user_list_for_kb_with_ids())
-
+                                          menu_add=menu_add_group)
+    await users_state.update_state_call_base_and_kb_with_all_users(call_base=CALL_ADD_GROUP)
     await state.update_data(capture_users_state=users_state)
+
 
     levels_state = CaptureLevelsStateParams(self_state=AddGroup.capture_levels_state,
                                             next_state=AddGroup.confirmation_state,
-                                            call_base=CALL_ADD_GROUP,
                                             menu_add=menu_add_group,
-                                            items_kb_list=LEVELS_LIST,
                                             is_only_one=True)
+    levels_state.update_state_kb_with_level_list(call_base=CALL_ADD_GROUP)
     await state.update_data(capture_levels_state=levels_state)
 
-    confirmation_state = InputStateParams(self_state = AddGroup.confirmation_state,
-                                          call_base = CALL_ADD_GROUP,
-                                          call_add_capture= CALL_ADD_ENDING,
-                                          menu_add = menu_add_group_with_changing,
-                                          state_main_mess=MESS_ADD_ENDING,
-                                          is_last_state_with_changing_mode=True)
+
+    confirmation_state = ConfirmationStateParams(self_state = AddGroup.confirmation_state,
+                                                 menu_add = menu_add_group_with_changing,
+                                                 is_last_state_with_changing_mode=True)
+    confirmation_state.update_state_with_call_base(CALL_ADD_GROUP)
     await state.update_data(confirmation_state=confirmation_state)
+
 
     # переход в первый стейт
     first_state = group_state
@@ -122,9 +121,8 @@ async def admin_adding_group_capture(message: Message, state: FSMContext):
     #     await message_answer(source=message, message_text=message_text, reply_markup=reply_kb)
     #     await state.set_state(AddWord.level)
 
-
-@adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP + CALL_CAPTURE_USERS), AddGroup.capture_users_state)
-@adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP + CALL_CAPTURE_LEVELS), AddGroup.capture_levels_state)
+@adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP), AddGroup.capture_users_state)
+@adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP), AddGroup.capture_levels_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
@@ -145,11 +143,11 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
     confirm = call.data.replace(CALL_ADD_GROUP + CALL_ADD_ENDING, '')
 
     # уходим обратно если нужно что-то изменить
-    if (confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_LEVELS or confirm == CALL_CHANGING_GROUPS):
+    if (confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_LEVELS or confirm == CALL_CHANGING_GROUP):
 
         confirmation_state: InputStateParams = await state.get_value('confirmation_state')
 
-        if confirm == CALL_CHANGING_GROUPS:
+        if confirm == CALL_CHANGING_GROUP:
             # при нажатии на изменение задаем следующий стейт элементов
             confirmation_state.next_state = AddGroup.input_group_state
             # делаем так, чтобы в стейте добавления последний стейт (на изменения который) стал следующим

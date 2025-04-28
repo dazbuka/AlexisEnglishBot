@@ -1,3 +1,4 @@
+from typing import List, Optional
 from aiogram.types import InlineKeyboardButton
 from aiogram import Bot
 from sqlalchemy.testing import is_none
@@ -12,7 +13,7 @@ import re
 
 from app.handlers.common_settings import MediaType
 from datetime import datetime, date, timedelta
-from app.handlers.admin_menu.states.input_states import InputStateParams
+# from app.handlers.admin_menu.states.input_states import InputStateParams
 from app.handlers.common_settings import *
 
 
@@ -397,6 +398,49 @@ async def get_new_carousel_page_num(call_item: str, items_kb: list, rows: int, c
         page_num = 0
     return page_num
 
+def get_new_page_num(button_list: List[InlineKeyboardButton] | None,
+                     call: CallbackQuery,
+                     call_base: str,
+                     mess: Message,
+                     cols: int,
+                     rows: int) -> int:
+
+    if mess:
+        print('======1======')
+        page_num = 0
+    elif call:
+        print('======2======')
+        page_num = 0
+        if call.data:
+            print(call.data)
+            call_item = call.data.replace(call_base,'')
+            print(call_item)
+            # # считаем количество таблиц исходя из длины массива кнопок и количества строк и столбцов
+            count_of_tables = ((len(button_list) - 1) // (cols * rows)) + 1
+            # # меняем пагинацию в зависимости от нажатой кнопки
+            # # если нажата НЕКСТ - вытаскиваем из колла номер текущей страницы, добавляем 1, если последний - идем на первую
+            if call_item.startswith(CALL_NEXT):
+                print('======2======')
+                page_num = int(call_item.replace(CALL_NEXT, ''))
+                page_num = 0 if page_num == count_of_tables - 1 else page_num + 1
+            # если нажата ПРЕД - вытаскиваем из колла номер текущей страницы, вычитаем 1, если первая - идем на последнюю
+            elif call_item.startswith(CALL_PREV):
+                print('======2======')
+                page_num = int(call_item.replace(CALL_PREV, ''))
+                page_num = count_of_tables - 1 if page_num == 0 else page_num - 1
+            # если нажата последняя - идет туда
+            elif call_item.startswith(CALL_LAST):
+                print('======2======')
+                page_num = count_of_tables - 1
+            # если нажата первая - идем туда
+            elif call_item.startswith(CALL_FIRST):
+                page_num = 0
+            # в других случаях - вычисляем
+            else:
+                page_num = 0
+    print(page_num)
+    return page_num
+
 
 # получает номер страницы пагинации при выбере слова, чтобы остаться на той же странице
 async def get_current_carousel_page_num(item: str | int, items_kb: list, rows: int, cols: int):
@@ -669,27 +713,6 @@ async def add_item_in_aim_set_plus_plus(aim_set: set, added_item: int | str) -> 
     return aim_set
 
 
-# 030425 функция добавления в множество нажатых с кнопок значений
-def update_state_params_with_input_message(message: Message, state_params: InputStateParams):
-    # если число (как правило номер ид слова юзера и др)
-
-    if message.content_type == ContentType.TEXT:
-        added_item = message.text.lower()
-        state_params.media_type = MediaType.TEXT.value
-        state_params.input_text = added_item
-    elif message.content_type == ContentType.PHOTO:
-        state_params.media_type = MediaType.PHOTO.value
-        state_params.media_id = message.photo[-1].file_id
-        state_params.input_text = message.caption
-    elif message.content_type == ContentType.VIDEO:
-        state_params.media_type = MediaType.VIDEO.value
-        state_params.media_id = message.video.file_id
-        state_params.input_text = message.caption
-
-    return state_params
-
-
-
 # 030425 функция установки чеков в список кнопок
 async def set_check_in_button_list(button_list: list | None, aim_set : set | None, check: str = '🟣') -> list:
     # проверяем передан ли нам баттон лист и множество
@@ -711,6 +734,27 @@ async def set_check_in_button_list(button_list: list | None, aim_set : set | Non
     else:
         new_button_list = None
     return new_button_list
+
+
+# 030425 функция установки чеков в список кнопок
+def update_button_list_with_check(button_list: List[InlineKeyboardButton] | None,
+                                  aim_set : set | None,
+                                  call_base : str,
+                                  check: str = '🟣') -> List[InlineKeyboardButton]:
+    # проверяем передан ли нам баттон лист и множество
+    button_list_new = []
+    if button_list:
+        for button in button_list:
+            current_item = button.callback_data.replace(call_base,'')
+            if aim_set:
+                if isinstance((list(aim_set))[0], int):
+                    aim_set = [str(x) for x in aim_set]
+            if current_item in aim_set:
+                curr_button = InlineKeyboardButton(text=check + button.text + check, callback_data=button.callback_data)
+            else:
+                curr_button = InlineKeyboardButton(text=button.text, callback_data=button.callback_data)
+            button_list_new.append(curr_button)
+    return button_list_new
 
 
 async def get_list_from_check_list(check_list: str, check: str = '🟣') -> list:

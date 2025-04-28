@@ -14,9 +14,11 @@ from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_
 from aiogram.exceptions import TelegramBadRequest
 from config import logger
 from datetime import datetime, timedelta
-from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor, CaptureLevelsStateParams,
+
+from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureLevelsStateParams,
                                                          CaptureDaysStateParams, CaptureWordsStateParams,
                                                          ShowWordsStateParams)
+from app.handlers.admin_menu.states.state_executor import FSMExecutor
 
 
 
@@ -102,7 +104,7 @@ async def setting_state_main(call: CallbackQuery, state: FSMContext):
         await state.update_data(sources=sources_kb_buttons)
 
     elif call.data == CALL_REVISION_WORDS:
-        print(f'rev_source_12 - {await state.get_state()}')
+        print(f'rev_words_12 - {await state.get_state()}')
         base_call = CALL_REVISION_WORDS
         base_cols = NUM_SHOW_WORDS_COLS
         base_rows = NUM_SHOW_WORDS_ROWS
@@ -120,6 +122,18 @@ async def setting_state_main(call: CallbackQuery, state: FSMContext):
 
         items_kb_buttons = words_kb_buttons
 
+        colls_id_set = set()
+        for task in tasks:
+            if task.media_id:
+                colls_id_set.add(task.media_id)
+        colls_kb_buttons = []
+        medias = await get_medias_by_filters(media_id_set=colls_id_set)
+        for media in medias:
+            curr_button = InlineKeyboardButton(text=f'{media.collocation}',
+                                               callback_data=f'{CALL_REVISION_COLLS_MENU}{media.id}')
+            colls_kb_buttons.append(curr_button)
+
+
         message_text = MESS_REVISION_WORDS_MENU
 
         await state.update_data(words=words_kb_buttons)
@@ -132,6 +146,32 @@ async def setting_state_main(call: CallbackQuery, state: FSMContext):
                                            buttons_kb_list=words_kb_buttons,
                                            is_only_one=True)
         await state.update_data(words=show_words_state)
+
+        show_colls_state = ShowWordsStateParams(self_state=RevisionState.colls,
+                                           next_state=RevisionState.colls,
+                                           call_base=CALL_REVISION_COLLS_MENU,
+                                           menu_add=menu_revision,
+                                           buttons_kb_list=colls_kb_buttons,
+                                           is_only_one=True)
+        await state.update_data(colls=show_colls_state)
+
+        first_state = show_words_state
+
+        # переход в первый стейт
+        await state.set_state(first_state.self_state)
+
+        # формируем сообщение, меню, клавиатуру и выводим их
+
+        reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
+                                          buttons_add_list=first_state.items_kb_list,
+                                          buttons_base_call=first_state.call_base + first_state.call_add_capture,
+                                          buttons_add_cols=first_state.items_kb_cols,
+                                          buttons_add_rows=first_state.items_kb_rows,
+                                          is_adding_confirm_button=not first_state.is_input)
+
+        message_text = first_state.state_main_mess
+        await call.message.edit_text(text=message_text, reply_markup=reply_kb)
+
 
 
 
@@ -166,6 +206,34 @@ async def setting_state_main(call: CallbackQuery, state: FSMContext):
 
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
+
+
+
+@revision_router.callback_query(F.data.startswith(CALL_REVISION_WORDS), RevisionState.words)
+async def show_words(call: CallbackQuery, state: FSMContext):
+
+    # создаем экземпляр класса для обработки текущего состояния фсм
+    current_fsm = FSMExecutor()
+    # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
+    await current_fsm.execute(fsm_state=state, fsm_call=call)
+    # отвечаем заменой сообщения
+
+    # fsm_state_str = await state.get_state()
+    #
+    media_state: InputStateParams = await state.get_value('input_media_state')
+    #
+    # state_text = await state_text_builder(state)
+    # message_text = state_text + '\n' + current_fsm.message_text
+
+    message_text = current_fsm.message_text
+    await call.message.edit_text(text=message_text, reply_markup=current_fsm.reply_kb)
+    # await mess_answer(source=call,
+    #                   media_type=media_state.media_type,
+    #                   media_id=media_state.media_id,
+    #                   message_text=message_text,
+    #                   reply_markup=current_fsm.reply_kb)
+    await call.answer()
+
 
 # переход в меню добавления задания по схеме
 @revision_router.callback_query(F.data.startswith(CALL_REVISION_SOURCES_MENU), RevisionState.colls)

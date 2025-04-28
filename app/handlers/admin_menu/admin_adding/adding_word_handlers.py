@@ -9,9 +9,10 @@ from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_
 from app.utils.admin_utils import message_answer, state_text_builder, get_word_list_for_kb_with_ids, \
     get_source_list_for_kb_with_ids
 from app.database.requests import get_users_by_filters, add_word_to_db, get_words_by_filters
-from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor, CaptureLevelsStateParams,
-                                                         CapturePartsStateParams, CaptureSourcesStateParams)
 
+from app.handlers.admin_menu.states.state_executor import FSMExecutor
+from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureLevelsStateParams,
+                                                         CapturePartsStateParams, CaptureSourcesStateParams)
 adding_word_router = Router()
 
 class AddWord(StatesGroup):

@@ -15,8 +15,10 @@ from app.utils.admin_utils import (message_answer, state_text_builder, get_user_
                                    get_homework_list_for_kb_with_ids)
 from app.database.requests import (get_users_by_filters, get_groups_by_filters, set_homework, get_homeworks_by_filters,
                                    update_homework_editing)
-from app.handlers.admin_menu.states.input_states import (InputStateParams, FSMExecutor,
-                                                         CaptureUsersStateParams,
+
+
+from app.handlers.admin_menu.states.state_executor import FSMExecutor
+from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureUsersStateParams,
                                                          CaptureGroupsStateParams,
                                                          CaptureDatesStateParams,
                                                          CaptureHomeworksStateParams)

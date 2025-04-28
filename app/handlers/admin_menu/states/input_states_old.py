@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 import app.utils.admin_utils as aut
+
 from app.keyboards.keyboard_builder import keyboard_builder
 from app.handlers.common_settings import *
 from app.handlers.common_settings import *
@@ -264,10 +265,18 @@ class FSMExecutor:
 
                 #
                 absolute_next_state = current_state_params
-                page_num_common = await aut.get_new_carousel_page_num(call_item=item_call,
-                                                                      items_kb=absolute_next_state.items_kb_list,
-                                                                      rows=absolute_next_state.items_kb_rows,
-                                                                      cols=absolute_next_state.items_kb_cols)
+                if absolute_next_state.items_kb_list:
+                    print('c5.1', end='-')
+                    page_num_common = await aut.get_new_carousel_page_num(call_item=item_call,
+                                                                          items_kb=absolute_next_state.items_kb_list,
+                                                                          rows=absolute_next_state.items_kb_rows,
+                                                                          cols=absolute_next_state.items_kb_cols)
+                else:
+                    print('c5.2', end='-')
+                    page_num_common = await aut.get_new_carousel_page_num(call_item=item_call,
+                                                                          items_kb=absolute_next_state.buttons_kb_list,
+                                                                          rows=absolute_next_state.items_kb_rows,
+                                                                          cols=absolute_next_state.items_kb_cols)
             # если не было подтверждения, а была нажата кнопка элемента на клавиатуре не конфирм и не каруселька
             else:
                 print('c6', end='-')
