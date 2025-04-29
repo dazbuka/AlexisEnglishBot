@@ -1,116 +1,160 @@
-from typing import List, Optional
+from typing import Optional
 from aiogram.types import InlineKeyboardButton
-from typing import Any
-from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
-from aiogram.fsm.state import State, StatesGroup
-# import app.utils.admin_utils as aut
-from app.keyboards.keyboard_builder import keyboard_builder
+from aiogram.fsm.state import State
 from app.handlers.common_settings import *
-from app.handlers.common_settings import *
-from app.utils.admin_utils import (update_button_list_with_check, get_new_carousel_page_num,
-                                   get_current_carousel_page_num, add_item_in_aim_set_plus_minus,
-                                   add_item_in_only_one_aim_set)
-# , update_state_params_with_input_message)
-from app.database.requests import set_group, get_users_by_filters, get_words_by_filters
+from app.database.requests import get_users_by_filters, get_words_by_filters
+from config import logger
+from app.database.models import UserStatus
 
 
 class InputStateParams:
-    def __init__(self, self_state: State,
-                 menu_add : list,
-                 call_base: str = None,
-                 call_add_capture: str = None,
-                 state_main_mess: str = None,
-                 but_change_text: str = None,
-                 is_last_state_with_changing_mode: bool = False,
-                 # необязательные
+    def __init__(self,
+                 self_state: State,
+                 menu_pack : list[list[InlineKeyboardButton]],
+                 call_base: str,
+                 main_mess: str,
+                 # необязательные параменты клавиатуры
+                 buttons_pack: Optional[list[InlineKeyboardButton]] = None,
+                 buttons_cols: Optional[int] = None,
+                 buttons_rows: Optional[int] = None,
+                 buttons_check: Optional[str] = None,
+                 # необязательные параметры для перехода в следующий State
+                 next_state: Optional[State] = None,
+                 # необязательные логические флаги
                  is_can_be_empty: bool = False,
-                 next_state: State = None,
-                 items_kb_list : list = None,
-                 buttons_kb_list: Optional[List[InlineKeyboardButton]] = None,
-                 items_kb_cols : int = None,
-                 items_kb_rows : int = None,
-                 items_kb_check : str = None,
                  is_only_one : bool = False,
+                 is_last_state_with_changing_mode: bool = False,
                  is_input: bool = False
-                 ):
+                 ) -> None:
 
-        # это вводимые значения - либо элемент либо множество для кнопок выбора, изначально - пусто
-        self.input_text : str | None = None
-        self.captured_items_set = set()
-        self.media_id : str | None = None
-        self.media_type : str | None = None
-        self.is_input: bool = is_input
-        self.self_state : State = self_state #
-        self.call_base : str = call_base #
-        self.call_add_capture : str = call_add_capture #
-        self.is_last_state_with_changing_mode: bool = is_last_state_with_changing_mode  #
-        self.menu_add : list = menu_add #
-        # это тексты основного сообщения при вводе, текст кнопки изменения и текст кнопки подтверждения ввода
-        self.state_main_mess: str = state_main_mess #
-        self.but_change_text: str = but_change_text #
-        # может ли быть пустое значение при вводе
-        self.is_can_be_empty: bool = is_can_be_empty
-        # какой стейт будет следующим и последним при вводе
-        self.next_state: State = next_state
-        # конец блока - какой стейт будет следующим и последним при вводе
-        # для клавиатуры выбора - необязательные
-        self.items_kb_list : list = items_kb_list
-        self.buttons_kb_list: List[InlineKeyboardButton] = buttons_kb_list
-        self.items_kb_cols : int = items_kb_cols
-        self.items_kb_rows : int = items_kb_rows
-        self.items_kb_check : str = items_kb_check
-        self.is_only_one : bool = is_only_one # выбор только одного элемента
-        self.is_input : bool = is_input
+        # Вводимые значения
+        self.input_text : Optional[str] = None
+        self.set_of_items: Optional[set] = set()
+        self.media_id : Optional[str] = None
+        self.media_type : Optional[str] = None
 
-    def change_call_to_changing(self):
-        pass
-        # self.call_add_capture = self.call_add_change
-        # return self
+        # Параметры, передаваемые в функцию
+        self.self_state = self_state #
+        self.menu_pack = menu_pack  #
+        self.call_base = call_base #
+        self.main_mess = main_mess  #
 
-    def __repr__(self):
-        presentation = (f'$$$$$$$\n'
-                f'текущий стейт - - {self.self_state}\n'
-                f'введенный элемент - {self.input_text}\n'
-                f'набор элементов - {self.captured_items_set}\n'
-                f'$$$$$$$')
+        # Параменты набора кнопок клавиатуры
+        self.buttons_pack = buttons_pack
+        self.buttons_cols = buttons_cols
+        self.buttons_rows = buttons_rows
+        self.buttons_check = buttons_check
 
-        return presentation
+        # необязательный параметр для перехода в следующий State
+        self.next_state = next_state
+
+        # логические флаги
+        self.is_can_be_empty = is_can_be_empty
+        self.is_only_one = is_only_one  # выбор только одного элемента
+        self.is_last_state_with_changing_mode = is_last_state_with_changing_mode  #
+        self.is_input = is_input
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(state={self.self_state}, "
+            f"menu_pack=<matrix of size {len(self.menu_pack)}x{max(len(row) for row in self.menu_pack) if self.menu_pack else 0}>, "
+            f"call_base='{self.call_base}', "
+            f"main_mess='{self.main_mess}', "
+            f"buttons_pack={'present' if self.buttons_pack else 'absent'}, "
+            f"buttons_cols={self.buttons_cols}, "
+            f"buttons_rows={self.buttons_rows}, "
+            f"buttons_check='{self.buttons_check or ''}', "
+            f"next_state={'present' if self.next_state else 'absent'}, "
+            f"input_text='{self.input_text or ''}', "
+            f"media_id='{self.media_id or ''}', "
+            f"media_type='{self.media_type or ''}', "
+            f"is_can_be_empty={self.is_can_be_empty}, "
+            f"is_only_one={self.is_only_one}, "
+            f"is_last_state_with_changing_mode={self.is_last_state_with_changing_mode}, "
+            f"is_input={self.is_input})"
+        )
+
+
+class CaptureUsersStateParams(InputStateParams):
+    # Расширение родительского класса настройками для выбора слов
+
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_USERS
+        kwargs['buttons_cols'] = NUM_CAPTURE_USERS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_USERS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_USERS
+        super().__init__(**kwargs)
+
+    async def update_state_kb(self, user_filter: str = 'all') -> None:
+        """
+        Обновляет пакет кнопок и базовый callback для выбора пользователей.
+        Args:
+            user_filter (str): Определяет фильтр для выбора пользователей.
+        """
+        # добавляет пакет кнопок и базовый колл для выбора пользователей
+        try:
+            if user_filter == 'active':
+                users_list = await get_users_by_filters(status=UserStatus.ACTIVE)
+            elif user_filter == 'all':
+                users_list = await get_users_by_filters()
+            elif user_filter == 'test':
+                users_list = await get_users_by_filters(user_tg_id=1)
+            else:
+                logger.warning('Некорректный фильтр пользователей.')
+                return
+
+            if not users_list:
+                self.main_mess = MESS_NO_USERS
+                logger.warning('Список пользователей пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            users_kb = [InlineKeyboardButton(text=f'{user.ident_name}', callback_data=f'{self.call_base}{user.id}')
+                        for user in users_list]
+
+            # Устанавливаем значение
+            self.buttons_pack = users_kb
+        except Exception as e:
+            logger.error(f'Произошла ошибка при получении пользователей при обновлении класса CaptureUsersStateParams: {e}')
 
 
 class ShowWordsStateParams(InputStateParams):
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_SHOW_WORDS
-        self.state_main_mess : str = MESS_SHOW_WORDS
-        self.items_kb_cols : int = NUM_SHOW_WORDS_COLS
-        self.items_kb_rows : int = NUM_SHOW_WORDS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_WORDS
-
+        self.main_mess : str = MESS_SHOW_WORDS
+        self.buttons_cols : int = NUM_SHOW_WORDS_COLS
+        self.buttons_rows : int = NUM_SHOW_WORDS_ROWS
+        self.buttons_check : str = CHECK_CAPTURE_WORDS
 
 
 class CaptureWordsStateParams(InputStateParams):
+    # Расширение родительского класса настройками для выбора слов
+    state_main_mess = MESS_CAPTURE_WORDS
+    buttons_cols = NUM_CAPTURE_WORDS_COLS
+    buttons_rows = NUM_CAPTURE_WORDS_ROWS
+    buttons_check = CHECK_CAPTURE_WORDS
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_WORDS
-        self.state_main_mess : str = MESS_CAPTURE_WORDS
-        self.but_change_text : str  = BTEXT_CHANGE_WORDS
-        self.items_kb_cols : int = NUM_CAPTURE_WORDS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_WORDS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_WORDS
 
-    async def update_state_kb_for_all_users_and_base_call(self, call_base):
-        words_list = await get_words_by_filters()
-        words_kb = []
-        for word in words_list:
-            curr_button = InlineKeyboardButton(text=f'{word.word}',
-                                               callback_data=f'{call_base}{word.id}')
-            words_kb.append(curr_button)
-        words_reversed = words_kb[::-1]
-        self.buttons_kb_list = words_reversed
+    async def update_state_with_all_words(self, call_base: str) -> None:
+        # добавляет пакет кнопок и базовый колл для выбора слов
         self.call_base = call_base
-
+        try:
+            words_list = await get_words_by_filters()
+            if not words_list:
+                return
+            words_kb = [InlineKeyboardButton(text=f'{word.word}', callback_data=f'{call_base}{word.id}')
+                        for word in words_list]
+            # Переворачиваем список кнопок
+            reversed_words_kb = words_kb[::-1]
+            # Устанавливаем обновленные значения
+            self.buttons_pack = reversed_words_kb
+        except Exception as e:
+            logger.info(f'Произошла ошибка при получении слов при обновлении класса CaptureWordsStateParams: {e}')
+    
 
 class CaptureCollsStateParams(InputStateParams):
     def __init__(self, **kwargs):
@@ -154,25 +198,7 @@ class CaptureHomeworksStateParams(InputStateParams):
 
 
 
-class CaptureUsersStateParams(InputStateParams):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_USERS
-        self.state_main_mess : str = MESS_CAPTURE_USERS
-        self.but_change_text : str  = BTEXT_CHANGE_USERS
-        self.items_kb_cols : int = NUM_CAPTURE_USERS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_USERS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_USERS
 
-    async def update_state_call_base_and_kb_with_all_users(self, call_base):
-        users_list = await get_users_by_filters()
-        users_kb = []
-        for user in users_list:
-            curr_button = InlineKeyboardButton(text=f'{user.ident_name}',
-                                               callback_data=f'{call_base}{user.id}')
-            users_kb.append(curr_button)
-        self.buttons_kb_list = users_kb
-        self.call_base = call_base
 
 
 class CaptureDatesStateParams(InputStateParams):
@@ -215,31 +241,28 @@ class CapturePartsStateParams(InputStateParams):
         self.items_kb_rows : int = NUM_CAPTURE_PARTS_ROWS
         self.items_kb_check : str = CHECK_CAPTURE_PARTS
 
-class CaptureLevelsStateParams(InputStateParams):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_LEVELS
-        self.state_main_mess : str = MESS_CAPTURE_LEVELS
-        self.but_change_text : str  = BTEXT_CHANGE_LEVELS
-        self.items_kb_cols : int = NUM_CAPTURE_LEVELS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_LEVELS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_LEVELS
 
-    def update_state_kb_with_level_list(self, call_base):
-        levels_kb = []
-        for level in LEVELS_LIST:
-            levels_kb.append(InlineKeyboardButton(text=level, callback_data=call_base+level))
-        self.buttons_kb_list = levels_kb
-        self.call_base = call_base
+class CaptureLevelsStateParams(InputStateParams):
+    # Расширение родительского класса настройками для выбора уровня
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_LEVELS
+        kwargs['buttons_cols'] = NUM_CAPTURE_LEVELS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_LEVELS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_LEVELS
+        levels_kb = [InlineKeyboardButton(text=f'{level}', callback_data=f'{call_base}{level}')
+                     for level in LEVELS_LIST]
+        kwargs['buttons_pack'] = levels_kb
+        super().__init__(**kwargs)
+
+
 
 class ConfirmationStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_ADD_ENDING
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_ADD_ENDING
-        self.state_main_mess : str = MESS_ADD_ENDING
 
-    def update_state_with_call_base(self, call_base):
-        self.call_base = call_base
 
 class CaptureSourcesStateParams(InputStateParams):
     def __init__(self, **kwargs):

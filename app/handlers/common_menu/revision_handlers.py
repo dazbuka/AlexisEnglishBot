@@ -162,14 +162,14 @@ async def setting_state_main(call: CallbackQuery, state: FSMContext):
 
         # формируем сообщение, меню, клавиатуру и выводим их
 
-        reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
+        reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
                                           buttons_add_list=first_state.items_kb_list,
                                           buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                          buttons_add_cols=first_state.items_kb_cols,
-                                          buttons_add_rows=first_state.items_kb_rows,
+                                          buttons_cols=first_state.buttons_cols,
+                                          buttons_rows=first_state.buttons_rows,
                                           is_adding_confirm_button=not first_state.is_input)
 
-        message_text = first_state.state_main_mess
+        message_text = first_state.main_mess
         await call.message.edit_text(text=message_text, reply_markup=reply_kb)
 
 
@@ -199,10 +199,10 @@ async def setting_state_main(call: CallbackQuery, state: FSMContext):
         await state.set_state(RevisionState.colls)
 
     reply_kb = await keyboard_builder(menu_pack=menu_revision_source,
-                                      buttons_add_buttons=items_kb_buttons,
+                                      buttons_pack=items_kb_buttons,
                                       buttons_base_call=base_call,
-                                      buttons_add_cols=base_cols,
-                                      buttons_add_rows=base_rows)
+                                      buttons_cols=base_cols,
+                                      buttons_rows=base_rows)
 
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
@@ -269,12 +269,12 @@ async def tasks_main(call: CallbackQuery, state: FSMContext):
         await state.update_data(sources=sources_kb_buttons)
 
         reply_kb = await keyboard_builder(menu_pack=menu_revision_source,
-                                          buttons_add_buttons=sources_kb_buttons,
+                                          buttons_pack=sources_kb_buttons,
                                           buttons_base_call=CALL_REVISION_SOURCES_MENU,
-                                          buttons_add_cols=NUM_SHOW_SOURCES_COLS,
-                                          buttons_add_rows=NUM_SHOW_SOURCES_ROWS,
+                                          buttons_cols=NUM_SHOW_SOURCES_COLS,
+                                          buttons_rows=NUM_SHOW_SOURCES_ROWS,
                                           is_adding_confirm_button=False,
-                                          buttons_add_table_number=buttons_page)
+                                          buttons_page_number=buttons_page)
         message_text = MESS_REVISION_SOURCES_MENU
         await call.message.edit_text(text=message_text, reply_markup=reply_kb)
         await call.answer()
@@ -299,12 +299,12 @@ async def tasks_main(call: CallbackQuery, state: FSMContext):
                                                    [button_revision_menu_back, button_main_menu_back]]
 
         reply_kb = await keyboard_builder(menu_pack=menu_revision_source_with_def_and_trans,
-                                          buttons_add_buttons=sources_kb_buttons,
+                                          buttons_pack=sources_kb_buttons,
                                           buttons_base_call=CALL_REVISION_SOURCES_MENU,
-                                          buttons_add_cols=NUM_SHOW_SOURCES_COLS,
-                                          buttons_add_rows=NUM_SHOW_SOURCES_ROWS,
+                                          buttons_cols=NUM_SHOW_SOURCES_COLS,
+                                          buttons_rows=NUM_SHOW_SOURCES_ROWS,
                                           is_adding_confirm_button=False,
-                                          buttons_add_table_number=buttons_page)
+                                          buttons_page_number=buttons_page)
 
         message_text = f'Collocation: {curr_media.collocation}'
         if curr_media.caption:
@@ -356,12 +356,12 @@ async def tasks_main(call: CallbackQuery, state: FSMContext):
                                                callback_data=f'{CALL_REVISION_SOURCES_MENU}{source.id}')
             sources_kb_buttons.append(curr_button)
         reply_kb = await keyboard_builder(menu_pack=menu_revision_source,
-                                          buttons_add_buttons=sources_kb_buttons,
+                                          buttons_pack=sources_kb_buttons,
                                           buttons_base_call=CALL_REVISION_SOURCES_MENU,
-                                          buttons_add_cols=NUM_SHOW_SOURCES_COLS,
-                                          buttons_add_rows=NUM_SHOW_SOURCES_ROWS,
+                                          buttons_cols=NUM_SHOW_SOURCES_COLS,
+                                          buttons_rows=NUM_SHOW_SOURCES_ROWS,
                                           is_adding_confirm_button=False,
-                                          buttons_add_table_number=buttons_page)
+                                          buttons_page_number=buttons_page)
         message_text = MESS_REVISION_SOURCES_MENU
         await call.message.edit_text(text=message_text, reply_markup=reply_kb)
         await call.answer()

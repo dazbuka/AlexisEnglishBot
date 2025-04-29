@@ -7,8 +7,8 @@ from app.keyboards.menu_buttons import *
 from app.handlers.common_settings import *
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
-from app.utils.admin_utils import message_answer, state_text_builder, get_user_list_for_kb_with_ids
-from app.database.requests import set_group, get_users_by_filters, get_groups_by_filters
+from app.utils.admin_utils import message_answer, state_text_builder
+from app.database.requests import set_group, get_groups_by_filters
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
 from app.handlers.admin_menu.states.state_params import (InputStateParams, ConfirmationStateParams,
                                                          CaptureLevelsStateParams,
@@ -26,9 +26,9 @@ menu_add_group = [
 ]
 
 menu_add_group_with_changing = [
-    [update_button_with_call_base(button_change_group, CALL_ADD_GROUP + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_users, CALL_ADD_GROUP + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_levels, CALL_ADD_GROUP + CALL_ADD_ENDING)],
+    [update_button_with_call_base(button_change_group, CALL_ADD_GROUP),
+     update_button_with_call_base(button_change_users, CALL_ADD_GROUP),
+     update_button_with_call_base(button_change_levels, CALL_ADD_GROUP)],
     [button_adding_menu_back, button_admin_menu, button_main_menu]
 ]
 
@@ -42,33 +42,31 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     group_state = InputStateParams(self_state = AddGroup.input_group_state,
                                    next_state = AddGroup.capture_users_state,
                                    call_base= CALL_ADD_GROUP,
-                                   call_add_capture= CALL_INPUT_GROUP,
-                                   state_main_mess = MESS_INPUT_GROUP,
-                                   but_change_text = BTEXT_CHANGE_GROUP,
-                                   menu_add = menu_add_group,
+                                   main_mess= MESS_INPUT_GROUP,
+                                   menu_pack= menu_add_group,
                                    is_input=True)
     await state.update_data(input_group_state=group_state)
 
-
     users_state = CaptureUsersStateParams(self_state=AddGroup.capture_users_state,
                                           next_state=AddGroup.capture_levels_state,
-                                          menu_add=menu_add_group)
-    await users_state.update_state_call_base_and_kb_with_all_users(call_base=CALL_ADD_GROUP)
+                                          call_base= CALL_ADD_GROUP,
+                                          menu_pack=menu_add_group)
+    await users_state.update_state_kb(user_filter='test')
     await state.update_data(capture_users_state=users_state)
 
 
     levels_state = CaptureLevelsStateParams(self_state=AddGroup.capture_levels_state,
                                             next_state=AddGroup.confirmation_state,
-                                            menu_add=menu_add_group,
+                                            call_base=CALL_ADD_GROUP,
+                                            menu_pack=menu_add_group,
                                             is_only_one=True)
-    levels_state.update_state_kb_with_level_list(call_base=CALL_ADD_GROUP)
     await state.update_data(capture_levels_state=levels_state)
 
 
     confirmation_state = ConfirmationStateParams(self_state = AddGroup.confirmation_state,
-                                                 menu_add = menu_add_group_with_changing,
+                                                 menu_pack= menu_add_group_with_changing,
+                                                 call_base=CALL_ADD_GROUP,
                                                  is_last_state_with_changing_mode=True)
-    confirmation_state.update_state_with_call_base(CALL_ADD_GROUP)
     await state.update_data(confirmation_state=confirmation_state)
 
 
@@ -76,15 +74,15 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     first_state = group_state
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
-    reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
-                                      buttons_add_list= first_state.items_kb_list,
-                                      buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                      buttons_add_cols=first_state.items_kb_cols,
-                                      buttons_add_rows=first_state.items_kb_rows,
+    reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
+                                      buttons_pack=first_state.buttons_pack,
+                                      buttons_base_call=first_state.call_base,
+                                      buttons_cols=first_state.buttons_cols,
+                                      buttons_rows=first_state.buttons_rows,
                                       is_adding_confirm_button=not first_state.is_input)
 
     state_text = await state_text_builder(state)
-    message_text = state_text + '\n' + first_state.state_main_mess
+    message_text = state_text + '\n' + first_state.main_mess
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
 
@@ -102,10 +100,10 @@ async def admin_adding_group_capture(message: Message, state: FSMContext):
         groups = await get_groups_by_filters(name=input_group)
         if groups:
             input_group_state.next_state = AddGroup.input_group_state
-            input_group_state.state_main_mess = MESS_INPUT_GROUP_ALREADY_EXIST
+            input_group_state.main_mess = MESS_INPUT_GROUP_ALREADY_EXIST
         else:
             input_group_state.next_state = AddGroup.capture_users_state
-            input_group_state.state_main_mess = MESS_INPUT_GROUP
+            input_group_state.main_mess = MESS_INPUT_GROUP
         await state.update_data(input_group_state=input_group_state)
 
     # создаем экземпляр класса для обработки текущего состояния фсм
@@ -133,10 +131,10 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
 
 # конечный обработчик всего стейта
-@adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP + CALL_ADD_ENDING), AddGroup.confirmation_state)
+@adding_group_router.callback_query(F.data.startswith(CALL_ADD_GROUP), AddGroup.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_ADD_GROUP + CALL_ADD_ENDING, '')
+    confirm = call.data.replace(CALL_ADD_GROUP, '')
 
     # уходим обратно если нужно что-то изменить
     if (confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_LEVELS or confirm == CALL_CHANGING_GROUP):
@@ -183,10 +181,10 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         group_item = input_group.input_text
 
         capture_users: InputStateParams = await state.get_value('capture_users_state')
-        users_set = capture_users.captured_items_set
+        users_set = capture_users.set_of_items
 
         capture_levels: InputStateParams = await state.get_value('capture_levels_state')
-        levels_set = capture_levels.captured_items_set
+        levels_set = capture_levels.set_of_items
 
         state_text = await state_text_builder(state)
 

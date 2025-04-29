@@ -28,12 +28,12 @@ async def adding_word_first_state(call: CallbackQuery):
     else:
         message_text = MESS_LINKS_MENU_EMPTY
     reply_kb = await keyboard_builder(menu_pack=[[button_main_menu]],
-                                      buttons_add_buttons=link_kb_buttons,
+                                      buttons_pack=link_kb_buttons,
                                       buttons_base_call=CALL_LINKS_MENU,
-                                      buttons_add_cols=NUM_SHOW_LINKS_COLS,
-                                      buttons_add_rows=NUM_SHOW_LINKS_ROWS,
+                                      buttons_cols=NUM_SHOW_LINKS_COLS,
+                                      buttons_rows=NUM_SHOW_LINKS_ROWS,
                                       is_adding_confirm_button=False,
-                                      buttons_add_table_number=buttons_page)
+                                      buttons_page_number=buttons_page)
 
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()

@@ -364,6 +364,7 @@ CHECK_CAPTURE_GROUPS= '🟣'
 CALL_CAPTURE_USERS = "capture_users_"
 CALL_CHANGING_USERS = "changing_users_"
 MESS_CAPTURE_USERS = 'Выберите пользователя или введите с клавиатуры и отправьте боту часть его имени (или номер)'
+MESS_NO_USERS = 'Список пользователей пуст'
 BTEXT_CHANGE_USERS = "Изменить юзеров"
 NUM_CAPTURE_USERS_COLS = 2
 NUM_CAPTURE_USERS_ROWS = 10

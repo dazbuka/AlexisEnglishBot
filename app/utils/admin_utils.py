@@ -133,42 +133,6 @@ async def count_user_tasks_by_tg_id(user_tg_id):
 
 
 
-async def get_text_from_media_adding_state(state):
-    st_data = await state.get_data()
-
-    word = st_data.get("word")
-    word_text = f'Выбрано слово: {word}\n' if word else ''
-
-    word_id = st_data.get("word_id")
-    word_id_text = f'ID выбранного слова: {word_id}\n' if word_id else ''
-
-    author = st_data.get("author")
-    author_text = f'ID aвторa: {author}\n' if author else ''
-
-    collocation = st_data.get("collocation")
-    collocation_text = f'Коллокация: {collocation}\n' if collocation else ''
-
-    level = st_data.get("level")
-    level_text = f'Уровень: {level}\n' if level else ''
-
-    media_type = st_data.get("media_type")
-    media_type_text = f'Тип медиа: {media_type}\n' if media_type else ''
-
-    caption = st_data.get("caption")
-    caption_text = f'Текст или подпись в видео(фото): {caption}\n' if caption else ''
-
-    tg_id = st_data.get("telegram_id")
-    tg_id_text = f'Номер в телеграм: {tg_id}\n' if tg_id else ''
-
-    study_day = st_data.get("study_day")
-    study_day_text = f'День изучения: {study_day}\n' if study_day else ''
-
-    message_text = (word_text + word_id_text + author_text +
-                    collocation_text + level_text + media_type_text +
-                    caption_text + tg_id_text + study_day_text)
-    return message_text
-
-
 async def get_text_from_test_adding_state(state):
 
     st_data = await state.get_data()
@@ -235,7 +199,7 @@ async def state_text_builder(state):
             message_text += f'Группа:\n<b>{text}</b>\n'
 
     if 'capture_sources_state' in st_data:
-        sources=(st_data.get("capture_sources_state")).captured_items_set
+        sources=(st_data.get("capture_sources_state")).set_of_items
         source_list = []
         for source_id in sources:
             source_item = (await rq.get_sources_by_filters(source_id=source_id)).source_name
@@ -245,7 +209,7 @@ async def state_text_builder(state):
             message_text += f'Источник:\n<b>{text}</b>\n'
 
     if 'capture_parts_state' in st_data:
-        dates=(st_data.get("capture_parts_state")).captured_items_set
+        dates=(st_data.get("capture_parts_state")).set_of_items
         date_list = []
         for date_values in dates:
             date_list.append(date_values)
@@ -280,7 +244,7 @@ async def state_text_builder(state):
             message_text += f'Ссылка:\n<b>{text}</b>\n'
 
     if 'capture_priority_state' in st_data:
-        items = (st_data.get("capture_priority_state")).captured_items_set
+        items = (st_data.get("capture_priority_state")).set_of_items
         items_list = []
         for item in items_list:
             items_list.append(item)
@@ -289,7 +253,7 @@ async def state_text_builder(state):
             message_text += f'Приоритет:\n<b>{text}</b>\n'
 
     if 'capture_words_state' in st_data:
-        words = (st_data.get("capture_words_state")).captured_items_set
+        words = (st_data.get("capture_words_state")).set_of_items
         word_list = []
         for word_id in words:
             word = (await rq.get_words_by_filters(word_id_new=word_id)).word
@@ -305,7 +269,7 @@ async def state_text_builder(state):
             message_text += f'Коллокация:\n<b>{text}</b>\n'
 
     if 'capture_levels_state' in st_data:
-        dates = (st_data.get("capture_levels_state")).captured_items_set
+        dates = (st_data.get("capture_levels_state")).set_of_items
         date_list = []
         for date_values in dates:
             date_list.append(date_values)
@@ -314,7 +278,7 @@ async def state_text_builder(state):
             message_text += f'Уровень:\n<b>{text}</b>\n'
 
     if 'capture_groups_state' in st_data:
-        groups = (st_data.get("capture_groups_state")).captured_items_set
+        groups = (st_data.get("capture_groups_state")).set_of_items
         group_list = []
         for group_id in groups:
             group = (await rq.get_groups_by_filters(group_id=group_id)).name
@@ -324,7 +288,7 @@ async def state_text_builder(state):
             message_text += f'Выбраны группы:\n<b>{text}</b>\n'
 
     if 'capture_users_state' in st_data:
-        users=(st_data.get("capture_users_state")).captured_items_set
+        users=(st_data.get("capture_users_state")).set_of_items
         user_list = []
         for user_id in users:
             user = (await rq.get_users_by_filters(user_id=user_id)).ident_name
@@ -334,7 +298,7 @@ async def state_text_builder(state):
             message_text += f'Выбраны пользователи:\n<b>{text}</b>\n'
 
     if 'capture_dates_state' in st_data:
-        dates=(st_data.get("capture_dates_state")).captured_items_set
+        dates=(st_data.get("capture_dates_state")).set_of_items
         date_list = []
         for date_values in dates:
             date_list.append(date_values)
@@ -343,7 +307,7 @@ async def state_text_builder(state):
             message_text += f'Выбраны даты:\n<b>{text}</b>\n'
 
     if 'capture_days_state' in st_data:
-        days = (st_data.get("capture_days_state")).captured_items_set
+        days = (st_data.get("capture_days_state")).set_of_items
         day_list = []
         for day_values in days:
             day_list.append(str(day_values))
@@ -442,89 +406,6 @@ def get_new_page_num(call : CallbackQuery,
     return page_num
 
 
-# получает номер страницы пагинации при выбере слова, чтобы остаться на той же странице
-async def get_current_carousel_page_num(item: str | int, items_kb: list, rows: int, cols: int):
-    # вычисляем страницу выбранного слова, чтобы остаться на ней
-    page_num = 0
-    if isinstance(item, int):
-        item = str(item)
-    if items_kb:
-        for i in range(len(items_kb)):
-            if item in items_kb[i]:
-                current_kb_item = items_kb[i]
-                if item == current_kb_item.split('-', 1)[0]:
-                    page_num = i // (rows * cols)
-    return page_num
-
-
-async def get_text_from_task_adding_state(state):
-
-    st_data = await state.get_data()
-
-    author = st_data.get("author")
-    author_text = f'ID aвторa: {author}\n' if author else ''
-
-    words = '\n'.join(map(str, st_data.get("words_set"))) if st_data.get("words_set") else None
-    words_text = f'Выбраны слова:\n {words} \n' if words else ''
-
-    medias = '\n'.join(map(str, st_data.get("medias_kb"))) if st_data.get("medias_kb") else None
-    medias_text = f'Выбраны коллокации:\n {medias} \n' if medias else ''
-
-    users = '\n'.join(map(str, st_data.get("users_kb"))) if st_data.get("users_kb") else None
-    users_text = f'Выбраны пользователи:\n {users}\n' if users else ''
-
-    beginning_date = st_data.get("beginning_date")
-    beginning_date_text = f'Дата начала: {beginning_date}\n' if beginning_date else ''
-
-    message_text = (author_text + words_text + medias_text + users_text + beginning_date_text)
-
-    return message_text
-
-async def get_text_from_homework_adding_state(state):
-
-    st_data = await state.get_data()
-
-    author = st_data.get("author")
-    author_text = f'ID aвторa: {author}\n' if author else ''
-
-    hometask = st_data.get("hometask")
-    hometask_text = f'Домашнее задание: {hometask}\n' if hometask else ''
-
-    users = '\n'.join(map(str, st_data.get("users_kb"))) if st_data.get("users_kb") else None
-    users_text = f'Выбраны пользователи:\n {users}\n' if users else ''
-
-    date = st_data.get("date")
-    date_text = f'Дата выполнения: {date}\n' if date else ''
-
-    message_text = (author_text + hometask_text + users_text + date_text)
-
-    return message_text
-
-
-async def get_text_from_group_adding_state(state):
-
-    st_data = await state.get_data()
-
-    name = st_data.get("name")
-    name_text = f'Группа: {name}\n' if name else ''
-
-    level = st_data.get("level")
-    level_text = f'Уровень: {level}\n' if level else ''
-
-    users = '\n'.join(map(str, st_data.get("users_kb"))) if st_data.get("users_kb") else None
-    users_text = f'Пользователи в группе:\n {users}\n' if users else ''
-
-    message_text = (name_text + users_text + level_text)
-    return message_text
-
-
-async def get_words_list_for_kb_with_limit(words = None, limit: int = 21):
-    if not words:
-        words = await rq.get_words_by_filters(limit=limit)
-    word_list = []
-    for word in words:
-        word_list.append(word)
-    return word_list
 
 async def get_word_list_for_kb_with_ids_limited(words = None, limit: int = 21):
     if not words:
@@ -592,14 +473,6 @@ async def get_day_list_for_kb():
         day_list.append(f'{i}-day {day_item}')
     return day_list
 
-async def get_medias_list_for_kb_with_limit(medias = None, limit: int = 20, offset: int = 0, media_only: bool = False):
-    if not medias:
-        medias = await rq.get_medias_by_filters(limit=limit, offset=offset, media_only=media_only)
-    media_list = []
-    for media in medias:
-        media_list.append(f'{media.id}-{media.collocation}')
-    return media_list
-
 
 async def get_colls_list_for_kb_with_ids(media_only: bool = False, test_only: bool = False):
     medias = await rq.get_medias_by_filters(media_only=media_only, test_only=test_only)
@@ -607,33 +480,6 @@ async def get_colls_list_for_kb_with_ids(media_only: bool = False, test_only: bo
     for media in medias:
         media_list.append(f'{media.id}-{media.collocation}')
     return media_list
-
-
-async def get_users_list_for_kb_with_limit(users = None, limit: int = 21):
-    if not users:
-        users = await rq.get_users_by_filters(limit=limit, status=UserStatus.ACTIVE)
-    user_list = []
-    for user in users:
-        user_list.append(f'{user.id}-{user.username}({user.first_name})')
-    return user_list
-
-
-async def get_data_list_for_kb_with_limit(users = None, limit: int = 21):
-    if not users:
-        users = await rq.get_users_by_filters(limit=limit, status=UserStatus.ACTIVE)
-    user_list = []
-    for user in users:
-        user_list.append(f'{user.id}-{user.username}({user.first_name})')
-    return user_list
-
-
-async def get_groups_list_for_kb_with_limit(groups = None, limit: int = 21):
-    if not groups:
-        groups = await rq.get_groups_by_filters(limit=limit)
-    group_list = []
-    for group in groups:
-        group_list.append(f'Group:{group.id}-{group.name}({group.users})')
-    return group_list
 
 
 async def get_shema_text_by_word_id(word_id):
@@ -656,16 +502,6 @@ async def get_reminder_all_day_intervals() -> list:
         end = i+1 if i!=23 else 0
         reminder_24_intervals.append(f'{str(start).zfill(2)}:00-{str(end).zfill(2)}:00')
     return reminder_24_intervals
-
-
-async def get_interval_list_for_kb(reminder_intervals: str, check: str = '🟣') -> list:
-    all_intervals = await get_reminder_all_day_intervals()
-    if reminder_intervals:
-        interval_list = reminder_intervals.replace(' ', '').split(',')
-        for i in range(len(all_intervals)):
-            if all_intervals[i] in interval_list:
-                all_intervals[i] = check + all_intervals[i] + check
-    return all_intervals
 
 
 # 030425 функция добавления в множество нажатых с кнопок значений
@@ -713,28 +549,6 @@ async def add_item_in_aim_set_plus_plus(aim_set: set, added_item: int | str) -> 
     return aim_set
 
 
-# 030425 функция установки чеков в список кнопок
-async def set_check_in_button_list(button_list: list | None, aim_set : set | None, check: str = '🟣') -> list:
-    # проверяем передан ли нам баттон лист и множество
-    if button_list:
-        new_button_list = button_list.copy()
-        if not aim_set:
-            pass
-        elif isinstance((list(aim_set))[0],int):
-            button_list_clear = [int(x.split('-', 1)[0]) for x in button_list]
-            for i in range(len(button_list)):
-                if button_list_clear[i] in aim_set:
-                    new_button_list[i] = check + new_button_list[i] + check
-        elif isinstance((list(aim_set))[0],str):
-            for i in range(len(button_list)):
-                if button_list[i] in aim_set:
-                    new_button_list[i] = check + new_button_list[i] + check
-        else:
-            pass
-    else:
-        new_button_list = None
-    return new_button_list
-
 
 # 030425 функция установки чеков в список кнопок
 def update_button_list_with_check(button_list: List[InlineKeyboardButton] | None,
@@ -757,14 +571,6 @@ def update_button_list_with_check(button_list: List[InlineKeyboardButton] | None
     return button_list_new
 
 
-async def get_list_from_check_list(check_list: str, check: str = '🟣') -> list:
-    new_list = []
-    for i in range(len(check_list)):
-        if check_list[i][0] == check:
-            new_list.append(check_list[i][1:-1])
-    return new_list
-
-
 async def set_check_in_list(checked_list: list, checked_items: list = None, checked_item: str = None, check ='🟣'):
     if checked_items:
         for i in range(len(checked_list)):
@@ -784,20 +590,6 @@ async def set_check_in_list(checked_list: list, checked_items: list = None, chec
                     checked_list[i] = checked_list[i][1:-1]
 
     return checked_list
-
-
-async def set_check_in_id_list_for_kb(checked_list_starts_with_id: list, checked_items: list = None, check ='🟣'):
-    print(checked_list_starts_with_id)
-    print(checked_items)
-    new_list_item = []
-    for i in range(len(checked_list_starts_with_id)):
-        for checked_item in checked_items:
-            if checked_item == int(checked_list_starts_with_id[i].split('-', 1)[0]):
-                new_list_item.append(check + checked_list_starts_with_id[i] + check)
-            else:
-                new_list_item.append(checked_list_starts_with_id[i])
-    print(new_list_item)
-    return new_list_item
 
 
 async def check_now_time_in_reminder_intervals(reminder_intervals: str) -> bool:

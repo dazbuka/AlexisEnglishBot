@@ -52,9 +52,9 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                        next_state = AddLink.input_link_url_state,
                                        call_base= CALL_ADD_LINK,
                                        call_add_capture= CALL_INPUT_LINK_NAME,
-                                       state_main_mess = MESS_INPUT_LINK_NAME,
+                                       main_mess= MESS_INPUT_LINK_NAME,
                                        but_change_text = BTEXT_CHANGE_LINK_NAME,
-                                       menu_add = menu_add_link,
+                                       menu_pack= menu_add_link,
                                        is_input=True)
     await state.update_data(input_link_name_state=link_name_state)
 
@@ -62,9 +62,9 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                       next_state=AddLink.capture_groups_state,
                                       call_base=CALL_ADD_LINK,
                                       call_add_capture=CALL_INPUT_LINK_URL,
-                                      state_main_mess=MESS_INPUT_LINK_URL,
+                                      main_mess=MESS_INPUT_LINK_URL,
                                       but_change_text=BTEXT_CHANGE_LINK_URL,
-                                      menu_add=menu_add_link,
+                                      menu_pack=menu_add_link,
                                       is_input=True)
     await state.update_data(input_link_url_state=link_url_state)
 
@@ -94,8 +94,8 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     confirmation_state = InputStateParams(self_state = AddLink.confirmation_state,
                                           call_base = CALL_ADD_LINK,
                                           call_add_capture= CALL_ADD_ENDING,
-                                          menu_add = menu_add_link_with_changing,
-                                          state_main_mess=MESS_ADD_ENDING,
+                                          menu_pack= menu_add_link_with_changing,
+                                          main_mess=MESS_ADD_ENDING,
                                           is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
@@ -103,15 +103,15 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     first_state = link_name_state
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
-    reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
+    reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
                                       buttons_add_list= first_state.items_kb_list,
                                       buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                      buttons_add_cols=first_state.items_kb_cols,
-                                      buttons_add_rows=first_state.items_kb_rows,
+                                      buttons_cols=first_state.buttons_cols,
+                                      buttons_rows=first_state.buttons_rows,
                                       is_adding_confirm_button=not first_state.is_input)
 
     state_text = await state_text_builder(state)
-    message_text = state_text + '\n' + first_state.state_main_mess
+    message_text = state_text + '\n' + first_state.main_mess
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
 
@@ -147,14 +147,14 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
     if CALL_CAPTURE_GROUPS in call.data:
         groups_state: InputStateParams = await state.get_value('capture_groups_state')
-        added_id = groups_state.captured_items_set
+        added_id = groups_state.set_of_items
         users_state: InputStateParams = await state.get_value('capture_users_state')
         new_user_set = set()
         for group_id in added_id:
             added_items = (await get_groups_by_filters(group_id=group_id)).users
 
             new_user_set = await add_item_in_aim_set_plus_plus(aim_set=new_user_set, added_item=added_items)
-        users_state.captured_items_set = new_user_set
+        users_state.set_of_items = new_user_set
         await state.update_data(capture_users_state=users_state)
 
     state_text = await state_text_builder(state)
@@ -228,11 +228,11 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         print(url_item)
 
         capture_users: InputStateParams = await state.get_value('capture_users_state')
-        users_set = capture_users.captured_items_set
+        users_set = capture_users.set_of_items
         print(users_set)
 
         priority_state: InputStateParams = await state.get_value('capture_priority_state')
-        priority_set = priority_state.captured_items_set
+        priority_set = priority_state.set_of_items
         print(priority_set)
 
         state_text = await state_text_builder(state)

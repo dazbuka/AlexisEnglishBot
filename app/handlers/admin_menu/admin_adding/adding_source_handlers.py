@@ -42,17 +42,17 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                     next_state = AddSource.confirmation_state,
                                     call_base= CALL_ADD_SOURCE,
                                     call_add_capture= CALL_INPUT_SOURCE_NAME,
-                                    state_main_mess = MESS_INPUT_SOURCE_NAME,
+                                    main_mess= MESS_INPUT_SOURCE_NAME,
                                     but_change_text = BTEXT_CHANGE_SOURCE_NAME,
-                                    menu_add = menu_add_source,
+                                    menu_pack= menu_add_source,
                                     is_input=True)
     await state.update_data(input_source_name_state=source_state)
 
     confirmation_state = InputStateParams(self_state = AddSource.confirmation_state,
                                           call_base = CALL_ADD_SOURCE,
                                           call_add_capture= CALL_ADD_ENDING,
-                                          menu_add = menu_add_source_with_changing,
-                                          state_main_mess=MESS_ADD_ENDING,
+                                          menu_pack= menu_add_source_with_changing,
+                                          main_mess=MESS_ADD_ENDING,
                                           is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
@@ -60,15 +60,15 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     first_state = source_state
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
-    reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
+    reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
                                       buttons_add_list= first_state.items_kb_list,
                                       buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                      buttons_add_cols=first_state.items_kb_cols,
-                                      buttons_add_rows=first_state.items_kb_rows,
+                                      buttons_cols=first_state.buttons_cols,
+                                      buttons_rows=first_state.buttons_rows,
                                       is_adding_confirm_button=not first_state.is_input)
 
     state_text = await state_text_builder(state)
-    message_text = state_text + '\n' + first_state.state_main_mess
+    message_text = state_text + '\n' + first_state.main_mess
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
 
@@ -84,10 +84,10 @@ async def admin_adding_source(message: Message, state: FSMContext):
         sources = await get_sources_by_filters(source_name=input_source)
         if sources:
             input_source_state.next_state = AddSource.input_source_name_state
-            input_source_state.state_main_mess = MESS_INPUT_SOURCE_NAME_ALREADY_EXIST
+            input_source_state.main_mess = MESS_INPUT_SOURCE_NAME_ALREADY_EXIST
         else:
             input_source_state.next_state = AddSource.confirmation_state
-            input_source_state.state_main_mess = MESS_INPUT_SOURCE_NAME
+            input_source_state.main_mess = MESS_INPUT_SOURCE_NAME
         await state.update_data(input_source_name_state=input_source_state)
     # создаем экземпляр класса для обработки текущего состояния фсм
 

@@ -88,8 +88,8 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     confirmation_state = InputStateParams(self_state = SetScheme.confirmation_state,
                                           call_base = CALL_SET_SCHEME,
                                           call_add_capture= CALL_ADD_ENDING,
-                                          menu_add = menu_set_scheme_with_changing,
-                                          state_main_mess=MESS_ADD_ENDING,
+                                          menu_pack= menu_set_scheme_with_changing,
+                                          main_mess=MESS_ADD_ENDING,
                                           is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
@@ -98,11 +98,11 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     # переход в первый стейт
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
-    reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
+    reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
                                       buttons_add_list= first_state.items_kb_list,
                                       buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                      buttons_add_cols=first_state.items_kb_cols,
-                                      buttons_add_rows=first_state.items_kb_rows,
+                                      buttons_cols=first_state.buttons_cols,
+                                      buttons_rows=first_state.buttons_rows,
                                       is_adding_confirm_button=True)
 
     state_text = await state_text_builder(state)
@@ -128,14 +128,14 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
     if CALL_CAPTURE_GROUPS in call.data:
         groups_state : InputStateParams  = await state.get_value('capture_groups_state')
-        added_id = groups_state.captured_items_set
+        added_id = groups_state.set_of_items
         users_state : InputStateParams = await state.get_value('capture_users_state')
         new_user_set = set()
         for group_id in added_id:
             added_items = (await get_groups_by_filters(group_id=group_id)).users
 
             new_user_set = await add_item_in_aim_set_plus_plus(aim_set=new_user_set, added_item=added_items)
-        users_state.captured_items_set = new_user_set
+        users_state.set_of_items = new_user_set
         await state.update_data(capture_users_state=users_state)
 
 
@@ -207,13 +207,13 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         author_id = await state.get_value('author_id')
 
         capture_words: InputStateParams = await state.get_value('capture_words_state')
-        words_set = capture_words.captured_items_set
+        words_set = capture_words.set_of_items
 
         capture_users: InputStateParams = await state.get_value('capture_users_state')
-        users_set = capture_users.captured_items_set
+        users_set = capture_users.set_of_items
 
         capture_dates: InputStateParams = await state.get_value('capture_dates_state')
-        dates_set = capture_dates.captured_items_set
+        dates_set = capture_dates.set_of_items
 
         state_text = await state_text_builder(state)
 

@@ -59,9 +59,9 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                             next_state = AddHomework.capture_groups_state,
                                             call_base= CALL_ADD_HOMEWORK,
                                             call_add_capture= CALL_INPUT_HOMEWORK,
-                                            state_main_mess = MESS_INPUT_HOMEWORK,
+                                            main_mess= MESS_INPUT_HOMEWORK,
                                             but_change_text = BTEXT_CHANGE_HOMEWORK,
-                                            menu_add = menu_add_homework,
+                                            menu_pack= menu_add_homework,
                                             is_input=True)
     await state.update_data(input_homework_state=input_homework_state)
 
@@ -91,8 +91,8 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     confirmation_state = InputStateParams(self_state = AddHomework.confirmation_state,
                                           call_base = CALL_ADD_HOMEWORK,
                                           call_add_capture= CALL_ADD_ENDING,
-                                          menu_add = menu_add_homework_with_changing,
-                                          state_main_mess=MESS_ADD_ENDING,
+                                          menu_pack= menu_add_homework_with_changing,
+                                          main_mess=MESS_ADD_ENDING,
                                           is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
@@ -114,15 +114,15 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
 
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
-    reply_kb = await keyboard_builder(menu_pack=first_state.menu_add,
+    reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
                                       buttons_add_list= first_state.items_kb_list,
                                       buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                      buttons_add_cols=first_state.items_kb_cols,
-                                      buttons_add_rows=first_state.items_kb_rows,
+                                      buttons_cols=first_state.buttons_cols,
+                                      buttons_rows=first_state.buttons_rows,
                                       is_adding_confirm_button=not first_state.is_input)
 
     state_text = await state_text_builder(state)
-    message_text = state_text + '\n' + first_state.state_main_mess
+    message_text = state_text + '\n' + first_state.main_mess
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
 
@@ -160,14 +160,14 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
     if CALL_CAPTURE_GROUPS in call.data:
         groups_state: InputStateParams = await state.get_value('capture_groups_state')
-        added_id = groups_state.captured_items_set
+        added_id = groups_state.set_of_items
         users_state: InputStateParams = await state.get_value('capture_users_state')
         new_user_set = set()
         for group_id in added_id:
             added_items = (await get_groups_by_filters(group_id=group_id)).users
 
             new_user_set = await add_item_in_aim_set_plus_plus(aim_set=new_user_set, added_item=added_items)
-        users_state.captured_items_set = new_user_set
+        users_state.set_of_items = new_user_set
         await state.update_data(capture_users_state=users_state)
 
 
@@ -175,7 +175,7 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
     fsm_state_str_next = await state.get_state()
     if fsm_state_str_curr == AddHomework.capture_homeworks_for_edit_state.state and fsm_state_str_next == AddHomework.confirmation_state.state:
         capture_homeworks_state: InputStateParams = await state.get_value('capture_homeworks_for_edit_state')
-        homework_id_set = capture_homeworks_state.captured_items_set
+        homework_id_set = capture_homeworks_state.set_of_items
         homework_id_list = list(homework_id_set)
         homework_id = int(homework_id_list[0])
         homework = await get_homeworks_by_filters(homework_id_new=homework_id, actual=False)
@@ -191,19 +191,19 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
         edited_users = {int(x) for x in homework.users.split(',')}
         users_state: InputStateParams = await state.get_value('capture_users_state')
-        users_state.captured_items_set = edited_users
+        users_state.set_of_items = edited_users
         # users_state.call_base = CALL_EDIT_HOMEWORK
         await state.update_data(capture_users_state=users_state)
 
         edited_date = homework.time.strftime("%d.%m.%Y")
         dates_state: InputStateParams = await state.get_value('capture_dates_state')
-        dates_state.captured_items_set.add(edited_date)
+        dates_state.set_of_items.add(edited_date)
         # dates_state.call_base = CALL_EDIT_HOMEWORK
         await state.update_data(capture_dates_state=dates_state)
 
         confirmation_state: InputStateParams = await state.get_value('confirmation_state')
         confirmation_state.call_base = CALL_EDIT_HOMEWORK
-        confirmation_state.state_main_mess = 'menyaite'
+        confirmation_state.main_mess = 'menyaite'
         await state.update_data(confirmation_state=confirmation_state)
 
 
@@ -274,10 +274,10 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
 
 
         capture_users: InputStateParams = await state.get_value('capture_users_state')
-        users_set = capture_users.captured_items_set
+        users_set = capture_users.set_of_items
 
         capture_dates: InputStateParams = await state.get_value('capture_dates_state')
-        dates_set = capture_dates.captured_items_set
+        dates_set = capture_dates.set_of_items
 
         state_text = await state_text_builder(state)
 
@@ -298,7 +298,7 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
                                                  users=users_for_db)
             if call.data.startswith(CALL_EDIT_HOMEWORK):
                 capture_edited_homework: InputStateParams = await state.get_value('capture_homeworks_for_edit_state')
-                edited_homeworks_set = capture_edited_homework.captured_items_set
+                edited_homeworks_set = capture_edited_homework.set_of_items
                 homework_id_list = list(edited_homeworks_set)
                 homework_id = int(homework_id_list[0])
                 res = res and await update_homework_editing(homework_id=homework_id,

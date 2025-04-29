@@ -49,12 +49,12 @@ async def tasks_main(call: CallbackQuery):
 
 
                 reply_kb = await keyboard_builder(menu_pack=menu_tasks,
-                                                  buttons_add_buttons=tasks_kb_buttons_new,
+                                                  buttons_pack=tasks_kb_buttons_new,
                                                   buttons_base_call=CALL_QUICK_MENU,
-                                                  buttons_add_cols=NUM_SHOW_TASKS_COLS,
-                                                  buttons_add_rows=NUM_SHOW_TASKS_ROWS,
+                                                  buttons_cols=NUM_SHOW_TASKS_COLS,
+                                                  buttons_rows=NUM_SHOW_TASKS_ROWS,
                                                   is_adding_confirm_button=False,
-                                                  buttons_add_table_number=buttons_page)
+                                                  buttons_page_number=buttons_page)
                 message_text = MESS_QUICK_MENU
                 await call.message.edit_text(text=message_text, reply_markup=reply_kb)
             else:
@@ -86,12 +86,12 @@ async def tasks_main(call: CallbackQuery):
                 ]
 
                 reply_kb = await keyboard_builder(menu_pack=menu_tasks_with_def_and_trans,
-                                                  buttons_add_buttons=tasks_kb_buttons_new,
+                                                  buttons_pack=tasks_kb_buttons_new,
                                                   buttons_base_call=CALL_QUICK_MENU,
-                                                  buttons_add_cols=NUM_SHOW_TASKS_COLS,
-                                                  buttons_add_rows=NUM_SHOW_TASKS_ROWS,
+                                                  buttons_cols=NUM_SHOW_TASKS_COLS,
+                                                  buttons_rows=NUM_SHOW_TASKS_ROWS,
                                                   is_adding_confirm_button=False,
-                                                  buttons_add_table_number=buttons_page)
+                                                  buttons_page_number=buttons_page)
                 await mess_answer(source=call,
                                   media_type=curr_task.media.media_type,
                                   media_id=curr_task.media.telegram_id,
@@ -105,12 +105,12 @@ async def tasks_main(call: CallbackQuery):
                                                    callback_data=f'{CALL_QUICK_MENU}{task.id}')
                 tasks_kb_buttons.append(curr_button)
             reply_kb = await keyboard_builder(menu_pack=[[button_main_menu]],
-                                              buttons_add_buttons=tasks_kb_buttons,
+                                              buttons_pack=tasks_kb_buttons,
                                               buttons_base_call=CALL_QUICK_MENU,
-                                              buttons_add_cols=NUM_SHOW_TASKS_COLS,
-                                              buttons_add_rows=NUM_SHOW_TASKS_ROWS,
+                                              buttons_cols=NUM_SHOW_TASKS_COLS,
+                                              buttons_rows=NUM_SHOW_TASKS_ROWS,
                                               is_adding_confirm_button=False,
-                                              buttons_add_table_number=buttons_page)
+                                              buttons_page_number=buttons_page)
             message_text = MESS_QUICK_MENU
             await call.message.edit_text(text=message_text, reply_markup=reply_kb)
 
@@ -119,12 +119,12 @@ async def tasks_main(call: CallbackQuery):
         print('t6')
         message_text = MESS_QUICK_MENU_EMPTY
         reply_kb = await keyboard_builder(menu_pack=[[button_main_menu]],
-                                          buttons_add_buttons=tasks_kb_buttons,
+                                          buttons_pack=tasks_kb_buttons,
                                           buttons_base_call=CALL_QUICK_MENU,
-                                          buttons_add_cols=NUM_SHOW_TASKS_COLS,
-                                          buttons_add_rows=NUM_SHOW_TASKS_ROWS,
+                                          buttons_cols=NUM_SHOW_TASKS_COLS,
+                                          buttons_rows=NUM_SHOW_TASKS_ROWS,
                                           is_adding_confirm_button=False,
-                                          buttons_add_table_number=buttons_page)
+                                          buttons_page_number=buttons_page)
 
         await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()

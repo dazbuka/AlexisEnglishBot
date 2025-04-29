@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from config import logger
 from datetime import timedelta, datetime, time
 from aiogram.types import Message
-
+from app.database.models import UserStatus
 
 # запросы по таблице users
 
