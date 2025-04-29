@@ -13,7 +13,7 @@ class InputStateParams:
                  menu_pack : list[list[InlineKeyboardButton]],
                  call_base: str,
                  main_mess: str,
-                 # необязательные параменты клавиатуры
+                 # необязательные параметры клавиатуры
                  buttons_pack: Optional[list[InlineKeyboardButton]] = None,
                  buttons_cols: Optional[int] = None,
                  buttons_rows: Optional[int] = None,
