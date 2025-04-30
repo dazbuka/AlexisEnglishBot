@@ -10,9 +10,7 @@ from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_
 from app.utils.admin_utils import message_answer, state_text_builder
 from app.database.requests import set_group, get_groups_by_filters
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
-from app.handlers.admin_menu.states.state_params import (InputStateParams, ConfirmationStateParams,
-                                                         CaptureLevelsStateParams,
-                                                         CaptureUsersStateParams)
+from app.handlers.admin_menu.states.state_params import (InputStateParams)
 adding_group_router = Router()
 
 class AddGroup(StatesGroup):
@@ -44,29 +42,32 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                    call_base= CALL_ADD_GROUP,
                                    main_mess= MESS_INPUT_GROUP,
                                    menu_pack= menu_add_group,
-                                   is_input=True)
+                                   is_input=True,
+                                   is_only_one=True)
     await state.update_data(input_group_state=group_state)
 
-    users_state = CaptureUsersStateParams(self_state=AddGroup.capture_users_state,
+    users_state = InputStateParams(self_state=AddGroup.capture_users_state,
                                           next_state=AddGroup.capture_levels_state,
                                           call_base= CALL_ADD_GROUP,
                                           menu_pack=menu_add_group)
-    await users_state.update_state_kb(users_filter='all')
+    await users_state.update_state_for_users_capture(users_filter='all')
     await state.update_data(capture_users_state=users_state)
 
 
-    levels_state = CaptureLevelsStateParams(self_state=AddGroup.capture_levels_state,
+    levels_state = InputStateParams(self_state=AddGroup.capture_levels_state,
                                             next_state=AddGroup.confirmation_state,
                                             call_base=CALL_ADD_GROUP,
                                             menu_pack=menu_add_group,
                                             is_only_one=True)
+    await levels_state.update_state_for_level_capture()
     await state.update_data(capture_levels_state=levels_state)
 
 
-    confirmation_state = ConfirmationStateParams(self_state = AddGroup.confirmation_state,
+    confirmation_state = InputStateParams(self_state = AddGroup.confirmation_state,
                                                  menu_pack= menu_add_group_with_changing,
                                                  call_base=CALL_ADD_GROUP,
                                                  is_last_state_with_changing_mode=True)
+    await confirmation_state.update_state_for_confirmation_state()
     await state.update_data(confirmation_state=confirmation_state)
 
 
@@ -79,7 +80,7 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
-                                      is_adding_confirm_button=not first_state.is_input)
+                                      is_adding_confirm_button=not first_state.is_only_one)
 
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + first_state.main_mess

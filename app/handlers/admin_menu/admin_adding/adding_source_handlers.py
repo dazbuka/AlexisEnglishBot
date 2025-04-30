@@ -10,7 +10,7 @@ from app.utils.admin_utils import message_answer, state_text_builder
 from app.database.requests import get_users_by_filters, add_word_to_db, add_source_to_db, get_sources_by_filters
 
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
-from app.handlers.admin_menu.states.state_params import (InputStateParams, ConfirmationStateParams)
+from app.handlers.admin_menu.states.state_params import (InputStateParams, )
 adding_source_router = Router()
 
 class AddSource(StatesGroup):
@@ -43,13 +43,15 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                     call_base= CALL_ADD_SOURCE,
                                     main_mess= MESS_INPUT_SOURCE_NAME,
                                     menu_pack= menu_add_source,
-                                    is_input=True)
+                                    is_input=True,
+                                    is_only_one=True)
     await state.update_data(input_source_name_state=source_state)
 
-    confirmation_state = ConfirmationStateParams(self_state = AddSource.confirmation_state,
+    confirmation_state = InputStateParams(self_state = AddSource.confirmation_state,
                                           call_base = CALL_ADD_SOURCE,
                                           menu_pack= menu_add_source_with_changing,
                                           is_last_state_with_changing_mode=True)
+    await confirmation_state.update_state_for_confirmation_state()
     await state.update_data(confirmation_state=confirmation_state)
 
     # переход в первый стейт
@@ -61,7 +63,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
-                                      is_adding_confirm_button=not first_state.is_input)
+                                      is_adding_confirm_button=not first_state.is_only_one)
 
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + first_state.main_mess

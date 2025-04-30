@@ -1,3 +1,5 @@
+from time import sleep
+
 from config import bot, logger, ADMIN_IDS
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message, CallbackQuery
@@ -63,6 +65,7 @@ class DeletingAndLoggingMessagesMiddleware(BaseMiddleware):
         # находим последнее сообщение
         after_last_message_num = await rq.get_user_last_message_id(event.from_user.id)
         # удаляем последнее сообщение если его номер не равен предыдущегому (было новое, а не отредактированное)
+        sleep(0.5)
         if before_last_message_num != after_last_message_num:
             try:
                 await bot.delete_message(chat_id=user_id, message_id=before_last_message_num)

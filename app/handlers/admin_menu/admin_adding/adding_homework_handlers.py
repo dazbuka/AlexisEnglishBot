@@ -18,11 +18,7 @@ from app.database.requests import (get_users_by_filters, get_groups_by_filters, 
 
 
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
-from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureUsersStateParams,
-                                                         CaptureGroupsStateParams,
-                                                         CaptureDatesStateParams,
-                                                         CaptureHomeworksStateParams,
-                                                         ConfirmationStateParams)
+from app.handlers.admin_menu.states.state_params import InputStateParams
 
 adding_homework_router = Router()
 
@@ -61,48 +57,51 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                             call_base= CALL_ADD_HOMEWORK,
                                             main_mess= MESS_INPUT_HOMEWORK,
                                             menu_pack= menu_add_homework,
-                                            is_input=True)
+                                            is_input=True,
+                                            is_only_one = True)
     await state.update_data(input_homework_state=input_homework_state)
 
-    groups_state = CaptureGroupsStateParams(self_state=AddHomework.capture_groups_state,
+    groups_state = InputStateParams(self_state=AddHomework.capture_groups_state,
                                             next_state=AddHomework.capture_users_state,
                                             call_base=CALL_ADD_HOMEWORK,
                                             menu_pack=menu_add_homework,
                                             is_can_be_empty=True)
-    await groups_state.update_state_kb()
+    await groups_state.update_state_for_groups_capture()
     await state.update_data(capture_groups_state=groups_state)
 
-    users_state = CaptureUsersStateParams(self_state=AddHomework.capture_users_state,
+    users_state = InputStateParams(self_state=AddHomework.capture_users_state,
                                           next_state=AddHomework.capture_dates_state,
                                           call_base=CALL_ADD_HOMEWORK,
                                           menu_pack=menu_add_homework)
-    await users_state.update_state_kb(users_filter='all')
+    await users_state.update_state_for_users_capture(users_filter='all')
     await state.update_data(capture_users_state=users_state)
 
-    dates_state = CaptureDatesStateParams(self_state=AddHomework.capture_dates_state,
+    dates_state = InputStateParams(self_state=AddHomework.capture_dates_state,
                                           next_state=AddHomework.confirmation_state,
                                           call_base=CALL_ADD_HOMEWORK,
                                           menu_pack=menu_add_homework,
                                           is_only_one=True)
+    await dates_state.update_state_for_dates_capture()
     await state.update_data(capture_dates_state=dates_state)
 
-    confirmation_state = ConfirmationStateParams(self_state = AddHomework.confirmation_state,
+    confirmation_state = InputStateParams(self_state = AddHomework.confirmation_state,
                                                  call_base = CALL_ADD_HOMEWORK,
                                                  menu_pack= menu_add_homework_with_changing,
                                                  is_last_state_with_changing_mode=True)
+    await confirmation_state.update_state_for_confirmation_state()
     await state.update_data(confirmation_state=confirmation_state)
 
 
     # переход в первый стейт
 
     if call.data == CALL_EDIT_HOMEWORK:
-        capture_homeworks_for_edit_state = CaptureHomeworksStateParams(
+        capture_homeworks_for_edit_state = InputStateParams(
             self_state=AddHomework.capture_homeworks_for_edit_state,
             next_state=AddHomework.confirmation_state,
             call_base=CALL_EDIT_HOMEWORK,
             menu_pack=menu_add_homework,
             is_only_one=True)
-        await users_state.update_state_kb()
+        await users_state.update_state_for_homeworks_capture()
         await state.update_data(capture_homeworks_for_edit_state=capture_homeworks_for_edit_state)
         first_state = capture_homeworks_for_edit_state
     else:
@@ -115,7 +114,7 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
-                                      is_adding_confirm_button=not first_state.is_input)
+                                      is_adding_confirm_button=not first_state.is_only_one)
 
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + first_state.main_mess

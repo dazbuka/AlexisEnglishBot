@@ -17,9 +17,7 @@ from app.utils.admin_utils import (message_answer,
 from app.utils.admin_utils import state_text_builder
 from app.database.requests import set_task
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
-from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureCollsStateParams,
-                                                         CaptureGroupsStateParams, CaptureUsersStateParams,
-                                                         CaptureDatesStateParams, ConfirmationStateParams)
+from app.handlers.admin_menu.states.state_params import InputStateParams
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 
@@ -54,39 +52,46 @@ async def setting_colls_first_state(call: CallbackQuery, state: FSMContext):
     author = await get_users_by_filters(user_tg_id=call.from_user.id)
     await state.update_data(author_id=author.id)
 
-    colls_state = CaptureCollsStateParams(self_state = SetColls.capture_colls_state,
-                                          next_state = SetColls.capture_groups_state,
-                                          call_base= CALL_SET_COLL,
-                                          menu_pack= menu_set_colls)
-    await colls_state.update_state_kb(colls_filter='media')
+    colls_state = InputStateParams(self_state=SetColls.capture_colls_state,
+                                   next_state=SetColls.capture_groups_state,
+                                   call_base=CALL_SET_COLL,
+                                   menu_pack=menu_set_colls)
+    await colls_state.update_state_for_colls_capture(colls_filter='media')
+    # colls_state = CaptureCollsStateParams(self_state = SetColls.capture_colls_state,
+    #                                       next_state = SetColls.capture_groups_state,
+    #                                       call_base = CALL_SET_COLL,
+    #                                       menu_pack = menu_set_colls)
+    # await colls_state.update_state_for_input(colls_filter ='media')
     await state.update_data(capture_colls_state=colls_state)
 
-    groups_state = CaptureGroupsStateParams(self_state=SetColls.capture_groups_state,
+    groups_state = InputStateParams(self_state=SetColls.capture_groups_state,
                                             next_state=SetColls.capture_users_state,
                                             call_base=CALL_SET_COLL,
                                             menu_pack=menu_set_colls,
                                             is_can_be_empty=True)
-    await groups_state.update_state_kb()
+    await groups_state.update_state_for_groups_capture()
     await state.update_data(capture_groups_state=groups_state)
 
-    users_state = CaptureUsersStateParams(self_state=SetColls.capture_users_state,
+    users_state = InputStateParams(self_state=SetColls.capture_users_state,
                                           next_state=SetColls.capture_dates_state,
                                           call_base=CALL_SET_COLL,
                                           menu_pack=menu_set_colls)
-    await users_state.update_state_kb(users_filter='all')
+    await users_state.update_state_for_users_capture(users_filter='all')
     await state.update_data(capture_users_state=users_state)
 
-    dates_state = CaptureDatesStateParams(self_state=SetColls.capture_dates_state,
+    dates_state = InputStateParams(self_state=SetColls.capture_dates_state,
                                           next_state=SetColls.confirmation_state,
                                           call_base=CALL_SET_COLL,
                                           menu_pack=menu_set_colls,
                                           is_only_one = True)
+    await dates_state.update_state_for_dates_capture()
     await state.update_data(capture_dates_state=dates_state)
 
-    confirmation_state = ConfirmationStateParams(self_state = SetColls.confirmation_state,
+    confirmation_state = InputStateParams(self_state = SetColls.confirmation_state,
                                                  call_base = CALL_SET_COLL,
                                                  menu_pack= menu_set_colls_with_changing,
                                                  is_last_state_with_changing_mode=True)
+    await confirmation_state.update_state_for_confirmation_state()
     await state.update_data(confirmation_state=confirmation_state)
 
     first_state = colls_state
@@ -99,7 +104,7 @@ async def setting_colls_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
-                                      is_adding_confirm_button=not first_state.is_input)
+                                      is_adding_confirm_button=not first_state.is_only_one)
 
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + first_state.main_mess

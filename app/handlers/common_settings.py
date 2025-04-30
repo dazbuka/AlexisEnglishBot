@@ -159,18 +159,18 @@ MESS_REVISION_MENU = "Welcome to revision menu!"
 BTEXT_REVISION_MENU_BACK = "Exit to revision menu"
 
 CALL_REVISION_SOURCES_MENU= '@m_revision_sources_menu️'
-BTEXT_REVISION_SOURCES_MENU= '🔎Revision sources🔎'
+BTEXT_REVISION_SOURCES_MENU= '🔎Sources🔎'
 MESS_REVISION_SOURCES_MENU = "Choose source!"
 MESS_REVISION_SOURCES_MENU_EMPTY = "You have no sources!"
 BTEXT_REVISION_SOURCES_MENU_BACK = "Exit to revision source menu"
 
 CALL_REVISION_WORDS= '@m_revision_words_menu️'
-BTEXT_REVISION_WORDS_MENU= '🔎Revision words🔎'
+BTEXT_REVISION_WORDS_MENU= '🔎Words🔎'
 MESS_REVISION_WORDS_MENU = "Choose word!"
 BTEXT_REVISION_WORDS_MENU_BACK = "Exit to revision words menu"
 
 CALL_REVISION_COLLS_MENU= '@m_revision_colls_menu️'
-BTEXT_REVISION_COLLS_MENU= '🔎Revision colls🔎'
+BTEXT_REVISION_COLLS_MENU= '🔎Colls🔎'
 MESS_REVISION_COLLS_MENU = "Choose colls!"
 BTEXT_REVISION_COLLS_MENU_BACK = "Exit to revision colls menu"
 
@@ -267,11 +267,6 @@ CALL_ADD_ENDING = "add_ending_"
 
 
 
-# show colls
-CALL_SHOW_COLLS = "show_colls_"
-MESS_SHOW_COLLS = 'Выберите коллокацию'
-NUM_SHOW_COLLS_COLS = 1
-NUM_SHOW_COLLS_ROWS = 5
 
 
 
@@ -323,6 +318,14 @@ MESS_NO_COLLS = 'Список коллокаций пуст'
 NUM_CAPTURE_COLLS_COLS = 2
 NUM_CAPTURE_COLLS_ROWS = 10
 CHECK_CAPTURE_COLLS= '🟣'
+
+# show colls
+CALL_SHOW_COLLS = "show_colls_"
+MESS_SHOW_COLLS = 'Выберите коллокацию или введите ее часть'
+NUM_SHOW_COLLS_COLS = 1
+NUM_SHOW_COLLS_ROWS = 5
+CHECK_SHOW_COLLS= '🟣'
+
 
 # capturing part
 CALL_CAPTURE_PARTS = "capture_parts_"

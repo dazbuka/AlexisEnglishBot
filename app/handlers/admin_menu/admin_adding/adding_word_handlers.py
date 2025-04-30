@@ -10,9 +10,7 @@ from app.utils.admin_utils import message_answer, state_text_builder
 from app.database.requests import get_users_by_filters, add_word_to_db, get_words_by_filters
 
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
-from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureLevelsStateParams,
-                                                         CapturePartsStateParams, CaptureSourcesStateParams,
-                                                         ConfirmationStateParams)
+from app.handlers.admin_menu.states.state_params import InputStateParams
 adding_word_router = Router()
 
 class AddWord(StatesGroup):
@@ -55,30 +53,33 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                   call_base= CALL_ADD_WORD,
                                   main_mess= MESS_INPUT_WORD,
                                   menu_pack= menu_add_word,
-                                  is_input=True)
+                                  is_input=True,
+                                  is_only_one=True)
     await state.update_data(input_word_state=word_state)
 
-    parts_state = CapturePartsStateParams(self_state=AddWord.capture_parts_state,
+    parts_state = InputStateParams(self_state=AddWord.capture_parts_state,
                                           next_state=AddWord.capture_levels_state,
                                           call_base=CALL_ADD_WORD,
                                           menu_pack=menu_add_word,
                                           is_only_one=True)
+    await parts_state.update_state_for_parts_capture()
     await state.update_data(capture_parts_state=parts_state)
 
-    levels_state = CaptureLevelsStateParams(self_state=AddWord.capture_levels_state,
+    levels_state = InputStateParams(self_state=AddWord.capture_levels_state,
                                             next_state=AddWord.capture_sources_state,
                                             call_base=CALL_ADD_WORD,
                                             menu_pack=menu_add_word,
                                             is_only_one=True)
+    await levels_state.update_state_for_level_capture()
     await state.update_data(capture_levels_state=levels_state)
 
-    source_state = CaptureSourcesStateParams(self_state=AddWord.capture_sources_state,
+    source_state = InputStateParams(self_state=AddWord.capture_sources_state,
                                              next_state=AddWord.input_definition_state,
                                              call_base=CALL_ADD_WORD,
                                              menu_pack=menu_add_word,
                                              is_only_one=True,
                                              is_can_be_empty=True)
-    await source_state.update_state_kb()
+    await source_state.update_state_for_sources_capture()
     await state.update_data(capture_sources_state=source_state)
 
     definition_state = InputStateParams(self_state = AddWord.input_definition_state,
@@ -86,7 +87,8 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                         call_base= CALL_ADD_WORD,
                                         main_mess= MESS_INPUT_DEFINITION,
                                         menu_pack= menu_add_word,
-                                        is_input=True)
+                                        is_input=True,
+                                        is_only_one=True)
     await state.update_data(input_definition_state=definition_state)
 
     translation_state = InputStateParams(self_state = AddWord.input_translation_state,
@@ -94,13 +96,15 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                          call_base= CALL_ADD_WORD,
                                          main_mess= MESS_INPUT_TRANSLATION,
                                          menu_pack= menu_add_word,
-                                         is_input=True)
+                                         is_input=True,
+                                         is_only_one=True)
     await state.update_data(input_translation_state=translation_state)
 
-    confirmation_state = ConfirmationStateParams(self_state = AddWord.confirmation_state,
+    confirmation_state = InputStateParams(self_state = AddWord.confirmation_state,
                                                  call_base = CALL_ADD_WORD,
                                                  menu_pack= menu_add_word_with_changing,
                                                  is_last_state_with_changing_mode=True)
+    await confirmation_state.update_state_for_confirmation_state()
     await state.update_data(confirmation_state=confirmation_state)
 
     # переход в первый стейт
@@ -112,7 +116,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                       buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
-                                      is_adding_confirm_button=not first_state.is_input)
+                                      is_adding_confirm_button=not first_state.is_only_one)
 
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + first_state.main_mess

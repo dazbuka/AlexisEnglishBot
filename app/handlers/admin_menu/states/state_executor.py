@@ -25,7 +25,11 @@ class FSMExecutor:
         print(fsm_state_str, end=' -> ')
         next_state_str = current_state_params.next_state.state
         next_state = next_state_str.split(':', 1)[1]
-        next_state_params: InputStateParams = await fsm_state.get_value(next_state)
+        # зацикливаем для ревижен
+        if fsm_state_str == next_state_str:
+            next_state_params = current_state_params
+        else:
+            next_state_params: InputStateParams = await fsm_state.get_value(next_state)
         print(next_state_str)
         # сначала обработчик для колла, заодно проверяем чтобы не было мессаджа
         if fsm_call and not fsm_mess:
@@ -78,6 +82,7 @@ class FSMExecutor:
                     # добавляем элемент и в следующий стейт, если нужен только один элемент
                     else:
                         print('с8', end='-')
+                        print(item_call)
                         current_state_params.set_of_items = await add_item_in_only_one_aim_set(
                                                                 aim_set=current_state_params.set_of_items,
                                                                 added_item=item_call)
@@ -88,6 +93,8 @@ class FSMExecutor:
 
             abs_next_buttons_new = []
             if not absolute_next_state.is_input:
+                print('==')
+                print(absolute_next_state.set_of_items)
                 abs_next_buttons_new = update_button_list_with_check(button_list=absolute_next_state.buttons_pack,
                                                                      call_base=absolute_next_state.call_base,
                                                                      aim_set=absolute_next_state.set_of_items,
@@ -161,7 +168,7 @@ class FSMExecutor:
                                                buttons_base_call=absolute_next_state.call_base,
                                                buttons_cols=absolute_next_state.buttons_cols,
                                                buttons_rows=absolute_next_state.buttons_rows,
-                                               is_adding_confirm_button=not absolute_next_state.is_input,
+                                               is_adding_confirm_button=not absolute_next_state.is_only_one,
                                                buttons_page_number=page_num)
         # возвращаемся в тот же стейт добавления слов
         await fsm_state.set_state(absolute_next_state.self_state)
