@@ -19,7 +19,7 @@ from app.database.requests import get_medias_by_filters, set_task
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
 from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureWordsStateParams,
                                                          CaptureGroupsStateParams, CaptureUsersStateParams,
-                                                         CaptureDatesStateParams)
+                                                         CaptureDatesStateParams, ConfirmationStateParams)
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 
 setting_scheme_router = Router()
@@ -37,9 +37,9 @@ menu_set_scheme = [
 ]
 
 menu_set_scheme_with_changing = [
-    [update_button_with_call_base(button_change_words, CALL_SET_SCHEME + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_users, CALL_SET_SCHEME + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_dates, CALL_SET_SCHEME + CALL_ADD_ENDING)],
+    [update_button_with_call_base(button_change_words, CALL_SET_SCHEME),
+     update_button_with_call_base(button_change_users, CALL_SET_SCHEME),
+     update_button_with_call_base(button_change_dates, CALL_SET_SCHEME)],
     [button_setting_menu_back, button_admin_menu, button_main_menu]
 ]
 
@@ -56,8 +56,8 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     words_state = CaptureWordsStateParams(self_state = SetScheme.capture_words_state,
                                           next_state = SetScheme.capture_groups_state,
                                           call_base= CALL_SET_SCHEME,
-                                          menu_add = menu_set_scheme,
-                                          items_kb_list=(await get_word_list_for_kb_with_ids())[::-1])
+                                          menu_pack= menu_set_scheme)
+    await words_state.update_state_kb(words_filter='all')
     await state.update_data(capture_words_state=words_state)
 
     # здесь добавлен парамент из кэн би эмпти - можно проходить дальше если пустой
@@ -65,32 +65,29 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     groups_state = CaptureGroupsStateParams(self_state=SetScheme.capture_groups_state,
                                             next_state=SetScheme.capture_users_state,
                                             call_base=CALL_SET_SCHEME,
-                                            menu_add=menu_set_scheme,
-                                            items_kb_list=await get_group_list_for_kb_with_ids(),
+                                            menu_pack=menu_set_scheme,
                                             is_can_be_empty=True)
+    await groups_state.update_state_kb()
     await state.update_data(capture_groups_state=groups_state)
 
     users_state = CaptureUsersStateParams(self_state=SetScheme.capture_users_state,
                                           next_state=SetScheme.capture_dates_state,
                                           call_base=CALL_SET_SCHEME,
-                                          menu_add=menu_set_scheme,
-                                          items_kb_list=await get_user_list_for_kb_with_ids())
+                                          menu_pack=menu_set_scheme)
+    await users_state.update_state_kb(users_filter='all')
     await state.update_data(capture_users_state=users_state)
 
     dates_state = CaptureDatesStateParams(self_state=SetScheme.capture_dates_state,
                                           next_state=SetScheme.confirmation_state,
                                           call_base=CALL_SET_SCHEME,
-                                          menu_add=menu_set_scheme,
-                                          items_kb_list=await get_date_list_for_kb(),
+                                          menu_pack=menu_set_scheme,
                                           is_only_one = True)
     await state.update_data(capture_dates_state=dates_state)
 
-    confirmation_state = InputStateParams(self_state = SetScheme.confirmation_state,
-                                          call_base = CALL_SET_SCHEME,
-                                          call_add_capture= CALL_ADD_ENDING,
-                                          menu_pack= menu_set_scheme_with_changing,
-                                          main_mess=MESS_ADD_ENDING,
-                                          is_last_state_with_changing_mode=True)
+    confirmation_state = ConfirmationStateParams(self_state = SetScheme.confirmation_state,
+                                                 call_base = CALL_SET_SCHEME,
+                                                 menu_pack= menu_set_scheme_with_changing,
+                                                 is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     first_state = words_state
@@ -99,14 +96,14 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
     reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
-                                      buttons_add_list= first_state.items_kb_list,
-                                      buttons_base_call=first_state.call_base + first_state.call_add_capture,
+                                      buttons_pack=first_state.buttons_pack,
+                                      buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
-                                      is_adding_confirm_button=True)
+                                      is_adding_confirm_button=not first_state.is_input)
 
     state_text = await state_text_builder(state)
-    message_text = state_text + '\n' + first_state.state_main_mess
+    message_text = state_text + '\n' + first_state.main_mess
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
 
     # await call.message.edit_text(message_text, reply_markup=reply_kb)
@@ -115,18 +112,19 @@ async def setting_scheme_first_state(call: CallbackQuery, state: FSMContext):
 
 
 # цикличные хендлеры захвата слов, пользователей и др.
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_WORDS), SetScheme.capture_words_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_GROUPS), SetScheme.capture_groups_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_USERS), SetScheme.capture_users_state)
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_CAPTURE_DATES), SetScheme.capture_dates_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME), SetScheme.capture_words_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME), SetScheme.capture_groups_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME), SetScheme.capture_users_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME), SetScheme.capture_dates_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
+    fsm_state_str_curr = await state.get_state()
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_call=call)
 
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
-    if CALL_CAPTURE_GROUPS in call.data:
+    if fsm_state_str_curr == SetScheme.capture_groups_state.state:
         groups_state : InputStateParams  = await state.get_value('capture_groups_state')
         added_id = groups_state.set_of_items
         users_state : InputStateParams = await state.get_value('capture_users_state')
@@ -161,10 +159,10 @@ async def set_scheme_capture_words_from_message(message: Message, state: FSMCont
 
 
 # конечный обработчик всего стейта
-@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME + CALL_ADD_ENDING), SetScheme.confirmation_state)
+@setting_scheme_router.callback_query(F.data.startswith(CALL_SET_SCHEME), SetScheme.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_SET_SCHEME + CALL_ADD_ENDING, '')
+    confirm = call.data.replace(CALL_SET_SCHEME, '')
     # уходим обратно если нужно что-то изменить
 
     if confirm == CALL_CHANGING_WORDS or confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_DATES:

@@ -19,7 +19,7 @@ from app.database.requests import set_task
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
 from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureCollsStateParams,
                                                          CaptureGroupsStateParams, CaptureUsersStateParams,
-                                                         CaptureDatesStateParams)
+                                                         CaptureDatesStateParams, ConfirmationStateParams)
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 
@@ -38,9 +38,9 @@ menu_set_colls = [
 ]
 
 menu_set_colls_with_changing = [
-    [update_button_with_call_base(button_change_colls, CALL_SET_COLL + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_users, CALL_SET_COLL + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_dates, CALL_SET_COLL + CALL_ADD_ENDING)],
+    [update_button_with_call_base(button_change_colls, CALL_SET_COLL),
+     update_button_with_call_base(button_change_users, CALL_SET_COLL),
+     update_button_with_call_base(button_change_dates, CALL_SET_COLL)],
     [button_setting_menu_back, button_admin_menu, button_main_menu]
 ]
 
@@ -57,39 +57,36 @@ async def setting_colls_first_state(call: CallbackQuery, state: FSMContext):
     colls_state = CaptureCollsStateParams(self_state = SetColls.capture_colls_state,
                                           next_state = SetColls.capture_groups_state,
                                           call_base= CALL_SET_COLL,
-                                          menu_add = menu_set_colls,
-                                          items_kb_list=(await get_colls_list_for_kb_with_ids())[::-1])
+                                          menu_pack= menu_set_colls)
+    await colls_state.update_state_kb(colls_filter='media')
     await state.update_data(capture_colls_state=colls_state)
 
     groups_state = CaptureGroupsStateParams(self_state=SetColls.capture_groups_state,
                                             next_state=SetColls.capture_users_state,
                                             call_base=CALL_SET_COLL,
-                                            menu_add=menu_set_colls,
-                                            items_kb_list=await get_group_list_for_kb_with_ids(),
+                                            menu_pack=menu_set_colls,
                                             is_can_be_empty=True)
+    await groups_state.update_state_kb()
     await state.update_data(capture_groups_state=groups_state)
 
     users_state = CaptureUsersStateParams(self_state=SetColls.capture_users_state,
                                           next_state=SetColls.capture_dates_state,
                                           call_base=CALL_SET_COLL,
-                                          menu_add=menu_set_colls,
-                                          items_kb_list=await get_user_list_for_kb_with_ids())
+                                          menu_pack=menu_set_colls)
+    await users_state.update_state_kb(users_filter='all')
     await state.update_data(capture_users_state=users_state)
 
     dates_state = CaptureDatesStateParams(self_state=SetColls.capture_dates_state,
                                           next_state=SetColls.confirmation_state,
                                           call_base=CALL_SET_COLL,
-                                          menu_add=menu_set_colls,
-                                          items_kb_list=await get_date_list_for_kb(),
+                                          menu_pack=menu_set_colls,
                                           is_only_one = True)
     await state.update_data(capture_dates_state=dates_state)
 
-    confirmation_state = InputStateParams(self_state = SetColls.confirmation_state,
-                                          call_base = CALL_SET_COLL,
-                                          call_add_capture= CALL_ADD_ENDING,
-                                          menu_pack= menu_set_colls_with_changing,
-                                          main_mess=MESS_ADD_ENDING,
-                                          is_last_state_with_changing_mode=True)
+    confirmation_state = ConfirmationStateParams(self_state = SetColls.confirmation_state,
+                                                 call_base = CALL_SET_COLL,
+                                                 menu_pack= menu_set_colls_with_changing,
+                                                 is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     first_state = colls_state
@@ -98,14 +95,14 @@ async def setting_colls_first_state(call: CallbackQuery, state: FSMContext):
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
     reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
-                                      buttons_add_list= first_state.items_kb_list,
-                                      buttons_base_call=first_state.call_base + first_state.call_add_capture,
-                                      buttons_cols=first_state.items_kb_cols,
-                                      buttons_rows=first_state.items_kb_rows,
-                                      is_adding_confirm_button=True)
+                                      buttons_pack=first_state.buttons_pack,
+                                      buttons_base_call=first_state.call_base,
+                                      buttons_cols=first_state.buttons_cols,
+                                      buttons_rows=first_state.buttons_rows,
+                                      is_adding_confirm_button=not first_state.is_input)
 
     state_text = await state_text_builder(state)
-    message_text = state_text + '\n' + first_state.state_main_mess
+    message_text = state_text + '\n' + first_state.main_mess
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
 
     # await call.message.edit_text(message_text, reply_markup=reply_kb)
@@ -114,18 +111,19 @@ async def setting_colls_first_state(call: CallbackQuery, state: FSMContext):
 
 
 # цикличные хендлеры захвата слов, пользователей и др.
-@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL + CALL_CAPTURE_COLLS), SetColls.capture_colls_state)
-@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL + CALL_CAPTURE_GROUPS), SetColls.capture_groups_state)
-@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL + CALL_CAPTURE_USERS), SetColls.capture_users_state)
-@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL + CALL_CAPTURE_DATES), SetColls.capture_dates_state)
+@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL), SetColls.capture_colls_state)
+@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL), SetColls.capture_groups_state)
+@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL), SetColls.capture_users_state)
+@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL), SetColls.capture_dates_state)
 async def set_colls_capture_colls_from_call(call: CallbackQuery, state: FSMContext):
+    fsm_state_str_curr = await state.get_state()
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_call=call)
 
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
-    if CALL_CAPTURE_GROUPS in call.data:
+    if fsm_state_str_curr == SetColls.capture_groups_state.state:
         groups_state : InputStateParams  = await state.get_value('capture_groups_state')
         added_id = groups_state.set_of_items
         users_state : InputStateParams = await state.get_value('capture_users_state')
@@ -160,10 +158,10 @@ async def set_colls_capture_colls_from_message(message: Message, state: FSMConte
 
 
 # конечный обработчик всего стейта
-@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL + CALL_ADD_ENDING), SetColls.confirmation_state)
+@setting_colls_router.callback_query(F.data.startswith(CALL_SET_COLL), SetColls.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_SET_COLL + CALL_ADD_ENDING, '')
+    confirm = call.data.replace(CALL_SET_COLL, '')
     # уходим обратно если нужно что-то изменить
 
     if confirm == CALL_CHANGING_COLLS or confirm == CALL_CHANGING_USERS or confirm == CALL_CHANGING_DATES:

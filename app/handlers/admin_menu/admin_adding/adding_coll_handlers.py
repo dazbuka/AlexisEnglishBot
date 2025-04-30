@@ -19,7 +19,8 @@ from config import bot, media_dir
 
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
 from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureLevelsStateParams,
-                                                         CaptureDaysStateParams, CaptureWordsStateParams)
+                                                         CaptureDaysStateParams, CaptureWordsStateParams,
+                                                         ConfirmationStateParams)
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
 
 adding_coll_router = Router()
@@ -40,12 +41,12 @@ menu_add_coll = [
 ]
 
 menu_add_coll_with_changing = [
-    [update_button_with_call_base(button_change_words, CALL_ADD_COLL + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_collocation, CALL_ADD_COLL + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_levels, CALL_ADD_COLL + CALL_ADD_ENDING)],
-    [update_button_with_call_base(button_change_media, CALL_ADD_COLL + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_caption, CALL_ADD_COLL + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_days, CALL_ADD_COLL + CALL_ADD_ENDING)],
+    [update_button_with_call_base(button_change_words, CALL_ADD_COLL),
+     update_button_with_call_base(button_change_collocation, CALL_ADD_COLL),
+     update_button_with_call_base(button_change_levels, CALL_ADD_COLL)],
+    [update_button_with_call_base(button_change_media, CALL_ADD_COLL),
+     update_button_with_call_base(button_change_caption, CALL_ADD_COLL),
+     update_button_with_call_base(button_change_days, CALL_ADD_COLL)],
     [button_setting_menu_back, button_admin_menu, button_main_menu]
 ]
 
@@ -61,18 +62,17 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 
     words_state = CaptureWordsStateParams(self_state=AddColl.capture_words_state,
                                           next_state=AddColl.input_coll_state,
-                                          menu_add=menu_add_coll)#,
-                                          # is_only_one=True)
-    await words_state.update_state_with_all_words(call_base=CALL_ADD_COLL)
+                                          call_base=CALL_ADD_COLL,
+                                          menu_pack=menu_add_coll,
+                                          is_only_one=True)
+    await words_state.update_state_kb(words_filter='all')
     await state.update_data(capture_words_state=words_state)
 
 
     input_coll_text_state = InputStateParams(self_state = AddColl.input_coll_state,
                                              next_state = AddColl.input_media_state,
                                              call_base= CALL_ADD_COLL,
-                                             call_add_capture= CALL_INPUT_COLL,
                                              main_mess= MESS_INPUT_COLL,
-                                             but_change_text = BTEXT_CHANGE_COLL,
                                              menu_pack= menu_add_coll,
                                              is_input=True)
     await state.update_data(input_coll_state=input_coll_text_state)
@@ -81,9 +81,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     input_media_state = InputStateParams(self_state=AddColl.input_media_state,
                                          next_state=AddColl.capture_levels_state,
                                          call_base=CALL_ADD_COLL,
-                                         call_add_capture=CALL_INPUT_MEDIA,
                                          main_mess=MESS_INPUT_MEDIA,
-                                         but_change_text=BTEXT_CHANGE_MEDIA,
                                          menu_pack=menu_add_coll,
                                          is_input=True)
     await state.update_data(input_media_state=input_media_state)
@@ -91,9 +89,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     input_caption_text_state = InputStateParams(self_state=AddColl.input_caption_state,
                                                 next_state=AddColl.confirmation_state,
                                                 call_base=CALL_ADD_COLL,
-                                                call_add_capture=CALL_INPUT_CAPTION,
                                                 main_mess=MESS_INPUT_CAPTION,
-                                                but_change_text=BTEXT_CHANGE_CAPTION,
                                                 menu_pack=menu_add_coll,
                                                 is_input=True)
     await state.update_data(input_caption_state=input_caption_text_state)
@@ -102,28 +98,23 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     levels_state = CaptureLevelsStateParams(self_state=AddColl.capture_levels_state,
                                             next_state=AddColl.capture_days_state,
                                             call_base=CALL_ADD_COLL,
-                                            menu_add=menu_add_coll,
-                                            items_kb_list=LEVELS_LIST,
+                                            menu_pack=menu_add_coll,
                                             is_only_one=True)
     await state.update_data(capture_levels_state=levels_state)
 
-    days_state = CaptureDaysStateParams(self_state=AddColl.capture_days_state,
-                                          next_state=AddColl.confirmation_state,
-                                          call_base=CALL_ADD_COLL,
-                                          menu_add=menu_add_coll,
-                                          items_kb_list=await get_day_list_for_kb(),
-                                          is_only_one=True)
 
+    days_state = CaptureDaysStateParams(self_state=AddColl.capture_days_state,
+                                        next_state=AddColl.confirmation_state,
+                                        call_base=CALL_ADD_COLL,
+                                        menu_pack=menu_add_coll,
+                                        is_only_one=True)
     await state.update_data(capture_days_state=days_state)
 
 
-
-    confirmation_state = InputStateParams(self_state = AddColl.confirmation_state,
-                                          call_base = CALL_ADD_COLL,
-                                          call_add_capture= CALL_ADD_ENDING,
-                                          menu_pack= menu_add_coll_with_changing,
-                                          main_mess=MESS_ADD_ENDING,
-                                          is_last_state_with_changing_mode=True)
+    confirmation_state = ConfirmationStateParams(self_state = AddColl.confirmation_state,
+                                                 call_base = CALL_ADD_COLL,
+                                                 menu_pack= menu_add_coll_with_changing,
+                                                 is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
 
@@ -142,7 +133,7 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
                                       is_adding_confirm_button=not first_state.is_input)
 
     state_text = await state_text_builder(state)
-    message_text = state_text + '\n' + first_state.state_main_mess
+    message_text = state_text + '\n' + first_state.main_mess
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
 
     await call.answer()
@@ -183,8 +174,8 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
 
 
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.capture_words_state)
-@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_LEVELS), AddColl.capture_levels_state)
-@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_CAPTURE_DAYS), AddColl.capture_days_state)
+@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.capture_levels_state)
+@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.capture_days_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
 
     # создаем экземпляр класса для обработки текущего состояния фсм
@@ -215,10 +206,10 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
 
 # конечный обработчик всего стейта
-@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL + CALL_ADD_ENDING), AddColl.confirmation_state)
+@adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_ADD_COLL + CALL_ADD_ENDING, '')
+    confirm = call.data.replace(CALL_ADD_COLL, '')
     # уходим обратно если нужно что-то изменить
 
 
@@ -304,7 +295,6 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         collocation = input_coll.input_text
 
         input_media: InputStateParams = await state.get_value('input_media_state')
-        # media_caption = input_media.input_text
         media_type = input_media.media_type
         media_tg_id = input_media.media_id
         input_caption: InputStateParams = await state.get_value('input_caption_state')

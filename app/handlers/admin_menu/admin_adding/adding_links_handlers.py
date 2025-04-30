@@ -8,13 +8,12 @@ from app.keyboards.menu_buttons import *
 from app.handlers.common_settings import *
 
 from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_base
-from app.utils.admin_utils import (message_answer, state_text_builder, get_user_list_for_kb_with_ids,
-                                   get_group_list_for_kb_with_ids, get_date_list_for_kb, add_item_in_aim_set_plus_plus)
+from app.utils.admin_utils import (message_answer, state_text_builder, add_item_in_aim_set_plus_plus)
 from app.database.requests import get_users_by_filters, get_groups_by_filters, set_link
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
 from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureUsersStateParams,
                                                          CaptureGroupsStateParams,
-                                                         CapturePriorityStateParams)
+                                                         CapturePriorityStateParams, ConfirmationStateParams)
 adding_link_router = Router()
 
 class AddLink(StatesGroup):
@@ -30,10 +29,10 @@ menu_add_link = [
 ]
 
 menu_add_link_with_changing = [
-    [update_button_with_call_base(button_change_link_name, CALL_ADD_LINK + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_link_url, CALL_ADD_LINK + CALL_ADD_ENDING)],
-    [update_button_with_call_base(button_change_users, CALL_ADD_LINK + CALL_ADD_ENDING),
-     update_button_with_call_base(button_change_priority, CALL_ADD_LINK + CALL_ADD_ENDING)],
+    [update_button_with_call_base(button_change_link_name, CALL_ADD_LINK),
+     update_button_with_call_base(button_change_link_url, CALL_ADD_LINK)],
+    [update_button_with_call_base(button_change_users, CALL_ADD_LINK),
+     update_button_with_call_base(button_change_priority, CALL_ADD_LINK)],
     [button_adding_menu_back, button_admin_menu, button_main_menu]
 ]
 
@@ -51,9 +50,7 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     link_name_state = InputStateParams(self_state = AddLink.input_link_name_state,
                                        next_state = AddLink.input_link_url_state,
                                        call_base= CALL_ADD_LINK,
-                                       call_add_capture= CALL_INPUT_LINK_NAME,
                                        main_mess= MESS_INPUT_LINK_NAME,
-                                       but_change_text = BTEXT_CHANGE_LINK_NAME,
                                        menu_pack= menu_add_link,
                                        is_input=True)
     await state.update_data(input_link_name_state=link_name_state)
@@ -61,9 +58,7 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     link_url_state = InputStateParams(self_state=AddLink.input_link_url_state,
                                       next_state=AddLink.capture_groups_state,
                                       call_base=CALL_ADD_LINK,
-                                      call_add_capture=CALL_INPUT_LINK_URL,
                                       main_mess=MESS_INPUT_LINK_URL,
-                                      but_change_text=BTEXT_CHANGE_LINK_URL,
                                       menu_pack=menu_add_link,
                                       is_input=True)
     await state.update_data(input_link_url_state=link_url_state)
@@ -71,32 +66,29 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     groups_state = CaptureGroupsStateParams(self_state=AddLink.capture_groups_state,
                                             next_state=AddLink.capture_users_state,
                                             call_base=CALL_ADD_LINK,
-                                            menu_add=menu_add_link,
-                                            items_kb_list=await get_group_list_for_kb_with_ids(),
+                                            menu_pack=menu_add_link,
                                             is_can_be_empty=True)
+    await groups_state.update_state_kb()
     await state.update_data(capture_groups_state=groups_state)
 
     users_state = CaptureUsersStateParams(self_state=AddLink.capture_users_state,
                                           next_state=AddLink.capture_priority_state,
                                           call_base=CALL_ADD_LINK,
-                                          menu_add=menu_add_link,
-                                          items_kb_list=await get_user_list_for_kb_with_ids())
+                                          menu_pack=menu_add_link)
+    await users_state.update_state_kb(users_filter='all')
     await state.update_data(capture_users_state=users_state)
 
     priority_state = CapturePriorityStateParams(self_state=AddLink.capture_priority_state,
                                                 next_state=AddLink.confirmation_state,
                                                 call_base=CALL_ADD_LINK,
-                                                menu_add=menu_add_link,
-                                                items_kb_list=['1','2','3','4','5'],
+                                                menu_pack=menu_add_link,
                                                 is_only_one=True)
     await state.update_data(capture_priority_state=priority_state)
 
-    confirmation_state = InputStateParams(self_state = AddLink.confirmation_state,
-                                          call_base = CALL_ADD_LINK,
-                                          call_add_capture= CALL_ADD_ENDING,
-                                          menu_pack= menu_add_link_with_changing,
-                                          main_mess=MESS_ADD_ENDING,
-                                          is_last_state_with_changing_mode=True)
+    confirmation_state = ConfirmationStateParams(self_state = AddLink.confirmation_state,
+                                                 call_base = CALL_ADD_LINK,
+                                                 menu_pack= menu_add_link_with_changing,
+                                                 is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
     # переход в первый стейт
@@ -104,8 +96,8 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
     reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
-                                      buttons_add_list= first_state.items_kb_list,
-                                      buttons_base_call=first_state.call_base + first_state.call_add_capture,
+                                      buttons_pack=first_state.buttons_pack,
+                                      buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
                                       is_adding_confirm_button=not first_state.is_input)
@@ -134,25 +126,26 @@ async def admin_adding_link_capture(message: Message, state: FSMContext):
                          disable_web_page_preview=True)
 
 
-@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK + CALL_CAPTURE_GROUPS), AddLink.capture_groups_state)
-@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK + CALL_CAPTURE_USERS), AddLink.capture_users_state)
-@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK + CALL_CAPTURE_PRIRITY), AddLink.capture_priority_state)
+@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK), AddLink.capture_groups_state)
+@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK), AddLink.capture_users_state)
+@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK), AddLink.capture_priority_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
+    fsm_state_str = await state.get_state()
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_call=call)
     # отвечаем заменой сообщения
 
+
     # специальный местный обработчик, который при работе с группами, добавляет сразу пользователей в стейт
-    if CALL_CAPTURE_GROUPS in call.data:
+    if fsm_state_str == AddLink.capture_groups_state.state:
         groups_state: InputStateParams = await state.get_value('capture_groups_state')
         added_id = groups_state.set_of_items
         users_state: InputStateParams = await state.get_value('capture_users_state')
         new_user_set = set()
         for group_id in added_id:
             added_items = (await get_groups_by_filters(group_id=group_id)).users
-
             new_user_set = await add_item_in_aim_set_plus_plus(aim_set=new_user_set, added_item=added_items)
         users_state.set_of_items = new_user_set
         await state.update_data(capture_users_state=users_state)
@@ -164,10 +157,10 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
 
 # конечный обработчик всего стейта
-@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK + CALL_ADD_ENDING), AddLink.confirmation_state)
+@adding_link_router.callback_query(F.data.startswith(CALL_ADD_LINK), AddLink.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_ADD_LINK + CALL_ADD_ENDING, '')
+    confirm = call.data.replace(CALL_ADD_LINK, '')
 
     # уходим обратно если нужно что-то изменить
     if (confirm == CALL_CHANGING_LINK_NAME or confirm == CALL_CHANGING_LINK_URL or confirm == CALL_CHANGING_USERS

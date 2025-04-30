@@ -2,9 +2,11 @@ from typing import Optional
 from aiogram.types import InlineKeyboardButton
 from aiogram.fsm.state import State
 from app.handlers.common_settings import *
-from app.database.requests import get_users_by_filters, get_words_by_filters
+from app.database.requests import get_users_by_filters, get_words_by_filters, get_sources_by_filters, \
+    get_groups_by_filters, get_medias_by_filters
 from config import logger
 from app.database.models import UserStatus
+from datetime import datetime, date, timedelta
 
 
 class InputStateParams:
@@ -74,7 +76,6 @@ class InputStateParams:
             f"is_input={self.is_input})"
         )
 
-
 class CaptureUsersStateParams(InputStateParams):
     # Расширение родительского класса настройками для выбора слов
 
@@ -86,19 +87,19 @@ class CaptureUsersStateParams(InputStateParams):
         kwargs['buttons_check'] = CHECK_CAPTURE_USERS
         super().__init__(**kwargs)
 
-    async def update_state_kb(self, user_filter: str = 'all') -> None:
+    async def update_state_kb(self, users_filter: str = 'all') -> None:
         """
         Обновляет пакет кнопок и базовый callback для выбора пользователей.
         Args:
-            user_filter (str): Определяет фильтр для выбора пользователей.
+            users_filter (str): Определяет фильтр для выбора пользователей.
         """
         # добавляет пакет кнопок и базовый колл для выбора пользователей
         try:
-            if user_filter == 'active':
+            if users_filter == 'active':
                 users_list = await get_users_by_filters(status=UserStatus.ACTIVE)
-            elif user_filter == 'all':
+            elif users_filter == 'all':
                 users_list = await get_users_by_filters()
-            elif user_filter == 'test':
+            elif users_filter == 'test':
                 users_list = await get_users_by_filters(user_tg_id=1)
             else:
                 logger.warning('Некорректный фильтр пользователей.')
@@ -118,7 +119,6 @@ class CaptureUsersStateParams(InputStateParams):
         except Exception as e:
             logger.error(f'Произошла ошибка при получении пользователей при обновлении класса CaptureUsersStateParams: {e}')
 
-
 class ShowWordsStateParams(InputStateParams):
     def __init__(self, **kwargs):
 
@@ -131,116 +131,220 @@ class ShowWordsStateParams(InputStateParams):
 
 class CaptureWordsStateParams(InputStateParams):
     # Расширение родительского класса настройками для выбора слов
-    state_main_mess = MESS_CAPTURE_WORDS
-    buttons_cols = NUM_CAPTURE_WORDS_COLS
-    buttons_rows = NUM_CAPTURE_WORDS_ROWS
-    buttons_check = CHECK_CAPTURE_WORDS
-
-    def __init__(self, **kwargs):
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_WORDS
+        kwargs['buttons_cols'] = NUM_CAPTURE_WORDS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_WORDS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_WORDS
         super().__init__(**kwargs)
 
-    async def update_state_with_all_words(self, call_base: str) -> None:
-        # добавляет пакет кнопок и базовый колл для выбора слов
-        self.call_base = call_base
+    async def update_state_kb(self, words_filter: str = 'all') -> None:
+        """
+        Обновляет пакет кнопок и базовый callback для выбора слов.
+        Args:
+            words_filter (str): Определяет фильтр для выбора слов.
+        """
         try:
-            words_list = await get_words_by_filters()
-            if not words_list:
+            if words_filter == 'all':
+                words_list = await get_words_by_filters()
+            else:
+                logger.warning('Некорректный фильтр слов.')
                 return
-            words_kb = [InlineKeyboardButton(text=f'{word.word}', callback_data=f'{call_base}{word.id}')
-                        for word in words_list]
-            # Переворачиваем список кнопок
-            reversed_words_kb = words_kb[::-1]
-            # Устанавливаем обновленные значения
-            self.buttons_pack = reversed_words_kb
+
+            if not words_list:
+                self.main_mess = MESS_NO_WORDS
+                logger.warning('Список слов пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            words_kb = [
+                InlineKeyboardButton(text=f'{word.word}', callback_data=f'{self.call_base}{word.id}')
+                for word in words_list]
+
+            words_kb_reversed = words_kb[::-1]
+            # Устанавливаем значение
+            self.buttons_pack = words_kb_reversed
         except Exception as e:
-            logger.info(f'Произошла ошибка при получении слов при обновлении класса CaptureWordsStateParams: {e}')
-    
+            logger.error(
+                f'Произошла ошибка при получении слов при обновлении класса CaptureWordsStateParams: {e}')
 
 class CaptureCollsStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора колокаций
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_COLLS
+        kwargs['buttons_cols'] = NUM_CAPTURE_COLLS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_COLLS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_COLLS
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_COLLS
-        self.state_main_mess : str = MESS_CAPTURE_COLLS
-        self.but_change_text : str  = BTEXT_CHANGE_COLLS
-        self.items_kb_cols : int = NUM_CAPTURE_COLLS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_COLLS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_COLLS
 
+    async def update_state_kb(self, colls_filter: str = 'all') -> None:
+        """
+        Обновляет пакет кнопок и базовый callback для выбора коллокаций.
+        Args:
+            colls_filter (str): Определяет фильтр для выбора коллокаций.
+        """
+        try:
+            if colls_filter == 'all':
+                colls_list = await get_medias_by_filters()
+            elif colls_filter == 'media':
+                colls_list = await get_medias_by_filters(media_only=True)
+            else:
+                logger.warning('Некорректный фильтр коллокаций.')
+                return
+
+            if not colls_list:
+                self.main_mess = MESS_NO_COLLS
+                logger.warning('Список коллокаций пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            colls_kb = [
+                InlineKeyboardButton(text=f'{coll.collocation}', callback_data=f'{self.call_base}{coll.id}')
+                for coll in colls_list]
+
+            colls_kb_reversed = colls_kb[::-1]
+
+            # Устанавливаем значение
+            self.buttons_pack = colls_kb_reversed
+        except Exception as e:
+            logger.error(
+                f'Произошла ошибка при получении коллокаций при обновлении класса CaptureCollsStateParams: {e}')
 
 class CaptureGroupsStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора групп
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_GROUPS
+        kwargs['buttons_cols'] = NUM_CAPTURE_GROUPS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_GROUPS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_GROUPS
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_GROUPS
-        self.state_main_mess : str = MESS_CAPTURE_GROUPS
-        self.but_change_text : str  = BTEXT_CHANGE_GROUPS
-        self.items_kb_cols : int = NUM_CAPTURE_GROUPS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_GROUPS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_GROUPS
+
+    async def update_state_kb(self, groups_filter: str = 'all') -> None:
+        """
+        Обновляет пакет кнопок и базовый callback для выбора групп.
+        Args:
+            groups_filter (str): Определяет фильтр для выбора групп.
+        """
+        try:
+            if groups_filter == 'all':
+                groups_list = await get_groups_by_filters()
+            else:
+                logger.warning('Некорректный фильтр групп.')
+                return
+
+            if not groups_list:
+                self.main_mess = MESS_NO_WORDS
+                logger.warning('Список групп пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            groups_kb = [
+                InlineKeyboardButton(text=f'{group.name}', callback_data=f'{self.call_base}{group.id}')
+                for group in groups_list]
+
+            # Устанавливаем значение
+            self.buttons_pack = groups_kb
+        except Exception as e:
+            logger.error(
+                f'Произошла ошибка при получении групп при обновлении класса CaptureGroupsStateParams: {e}')
 
 class CaptureHomeworksStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора домашнего задания
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_HOMEWORKS
+        kwargs['buttons_cols'] = NUM_CAPTURE_HOMEWORKS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_HOMEWORKS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_HOMEWORKS
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_HOMEWORKS
-        self.state_main_mess : str = MESS_CAPTURE_HOMEWORKS
-        self.but_change_text : str  = BTEXT_CHANGE_HOMEWORKS
-        self.items_kb_cols : int = NUM_CAPTURE_HOMEWORKS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_HOMEWORKS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_HOMEWORKS
 
-    async def update_state_kb_with_all_users(self, call_base):
-        users_list = await get_users_by_filters()
-        users_kb = []
-        for user in users_list:
-            curr_button = InlineKeyboardButton(text=f'{user.ident_name}',
-                                               callback_data=f'{call_base}{user.id}')
-            users_kb.append(curr_button)
-        self.buttons_kb_list = users_kb
+    async def update_state_kb(self, homeworks_filter: str = 'all') -> None:
+        """
+        Обновляет пакет кнопок и базовый callback для выбора домашних заданий.
+        Args:
+            homeworks_filter (str): Определяет фильтр для выбора домашних заданий.
+        """
+        try:
+            if homeworks_filter == 'all':
+                homeworks_list = await get_groups_by_filters()
+            elif homeworks_filter == 'actual':
+                homeworks_list = await get_groups_by_filters()
+            else:
+                logger.warning('Некорректный фильтр домашних заданий.')
+                return
 
+            if not homeworks_list:
+                self.main_mess = MESS_NO_HOMEWORKS
+                logger.warning('Список домашних заданий пуст. Кнопки не обновлены.')
+                return
 
+            # Формируем клавиатуру
+            homeworks_kb = [
+                InlineKeyboardButton(text=f'{homework.hometask}', callback_data=f'{self.call_base}{homework.id}')
+                for homework in homeworks_list]
 
-
-
+            # Устанавливаем значение
+            self.buttons_pack = homeworks_kb
+        except Exception as e:
+            logger.error(
+                f'Произошла ошибка при получении групп при обновлении класса CaptureHomeworksStateParams: {e}')
 
 class CaptureDatesStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора даты
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_DATES
+        kwargs['buttons_cols'] = NUM_CAPTURE_DATES_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_DATES_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_DATES
+        kwargs['buttons_pack'] = [
+            InlineKeyboardButton(
+            text=f'{(date.today() + timedelta(days=i)).strftime("%d.%m.%Y")}',
+            callback_data=f'{call_base}{(date.today() + timedelta(days=i)).strftime("%d.%m.%Y")}'
+                                )
+                                  for i in range(1, 150)
+                                 ]
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_DATES
-        self.state_main_mess : str = MESS_CAPTURE_DATES
-        self.but_change_text : str  = BTEXT_CHANGE_DATES
-        self.items_kb_cols : int = NUM_CAPTURE_DATES_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_DATES_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_DATES
 
 class CapturePriorityStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора приоритета
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_PRIRITY
+        kwargs['buttons_cols'] = NUM_CAPTURE_PRIRITY_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_PRIRITY_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_PRIRITY
+        kwargs['buttons_pack'] = [InlineKeyboardButton(text=f'{priority}', callback_data=f'{call_base}{priority}')
+                                  for priority in range(1,11)]
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_PRIRITY
-        self.state_main_mess : str = MESS_CAPTURE_PRIRITY
-        self.but_change_text : str  = BTEXT_CHANGE_PRIRITY
-        self.items_kb_cols : int = NUM_CAPTURE_PRIRITY_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_PRIRITY_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_PRIRITY
 
 class CaptureDaysStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора дня
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_DAYS
+        kwargs['buttons_cols'] = NUM_CAPTURE_DAYS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_DAYS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_DAYS
+        kwargs['buttons_pack'] = [InlineKeyboardButton(text=f'{day}', callback_data=f'{call_base}{day}')
+                                  for day in range(150)]
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_DAYS
-        self.state_main_mess : str = MESS_CAPTURE_DAYS
-        self.but_change_text : str  = BTEXT_CHANGE_DAYS
-        self.items_kb_cols : int = NUM_CAPTURE_DAYS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_DAYS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_DAYS
 
 class CapturePartsStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора части речи
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_PARTS
+        kwargs['buttons_cols'] = NUM_CAPTURE_PARTS_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_PARTS_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_PARTS
+        parts_kb = [InlineKeyboardButton(text=f'{part}', callback_data=f'{call_base}{part}')
+                     for part in PARTS_LIST]
+        kwargs['buttons_pack'] = parts_kb
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_PARTS
-        self.state_main_mess : str = MESS_CAPTURE_PARTS
-        self.but_change_text : str  = BTEXT_CHANGE_PARTS
-        self.items_kb_cols : int = NUM_CAPTURE_PARTS_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_PARTS_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_PARTS
-
 
 class CaptureLevelsStateParams(InputStateParams):
     # Расширение родительского класса настройками для выбора уровня
@@ -255,21 +359,48 @@ class CaptureLevelsStateParams(InputStateParams):
         kwargs['buttons_pack'] = levels_kb
         super().__init__(**kwargs)
 
-
-
 class ConfirmationStateParams(InputStateParams):
+    # Расширение родительского класса настройками для стейта подтверждения ввода
     def __init__(self, call_base: str, **kwargs):
         kwargs['call_base'] = call_base
         kwargs['main_mess'] = MESS_ADD_ENDING
         super().__init__(**kwargs)
 
-
 class CaptureSourcesStateParams(InputStateParams):
-    def __init__(self, **kwargs):
+    # Расширение родительского класса настройками для выбора источников
+    def __init__(self, call_base: str, **kwargs):
+        kwargs['call_base'] = call_base
+        kwargs['main_mess'] = MESS_CAPTURE_SOURCES
+        kwargs['buttons_cols'] = NUM_CAPTURE_SOURCES_COLS
+        kwargs['buttons_rows'] = NUM_CAPTURE_SOURCES_ROWS
+        kwargs['buttons_check'] = CHECK_CAPTURE_SOURCES
         super().__init__(**kwargs)
-        self.call_add_capture : str = CALL_CAPTURE_SOURCES
-        self.state_main_mess : str = MESS_CAPTURE_SOURCES
-        self.but_change_text : str  = BTEXT_CHANGE_SOURCES
-        self.items_kb_cols : int = NUM_CAPTURE_SOURCES_COLS
-        self.items_kb_rows : int = NUM_CAPTURE_SOURCES_ROWS
-        self.items_kb_check : str = CHECK_CAPTURE_SOURCES
+
+    async def update_state_kb(self, sources_filter: str = 'all') -> None:
+        """
+        Обновляет пакет кнопок и базовый callback для выбора источника.
+        Args:
+            sources_filter (str): Определяет фильтр для выбора источников.
+        """
+        # добавляет пакет кнопок и базовый колл для выбора пользователей
+        try:
+            if sources_filter == 'all':
+                sources_list = await get_sources_by_filters()
+            else:
+                logger.warning('Некорректный фильтр источника.')
+                return
+
+            if not sources_list:
+                self.main_mess = MESS_NO_SOURCES
+                logger.warning('Список источников пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            sources_kb = [InlineKeyboardButton(text=f'{source.source_name}', callback_data=f'{self.call_base}{source.id}')
+                        for source in sources_list]
+
+            # Устанавливаем значение
+            self.buttons_pack = sources_kb
+        except Exception as e:
+            logger.error(f'Произошла ошибка при получении источников при обновлении класса CaptureSourcesStateParams: {e}')
+

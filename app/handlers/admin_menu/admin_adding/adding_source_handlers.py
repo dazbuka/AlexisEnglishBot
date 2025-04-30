@@ -10,7 +10,7 @@ from app.utils.admin_utils import message_answer, state_text_builder
 from app.database.requests import get_users_by_filters, add_word_to_db, add_source_to_db, get_sources_by_filters
 
 from app.handlers.admin_menu.states.state_executor import FSMExecutor
-from app.handlers.admin_menu.states.state_params import (InputStateParams, CaptureLevelsStateParams, CapturePartsStateParams)
+from app.handlers.admin_menu.states.state_params import (InputStateParams, ConfirmationStateParams)
 adding_source_router = Router()
 
 class AddSource(StatesGroup):
@@ -23,7 +23,7 @@ menu_add_source = [
 ]
 
 menu_add_source_with_changing = [
-    [update_button_with_call_base(button_change_source_name, CALL_ADD_SOURCE + CALL_ADD_ENDING)],
+    [update_button_with_call_base(button_change_source_name, CALL_ADD_SOURCE)],
     [button_adding_menu_back, button_admin_menu, button_main_menu]
 ]
 
@@ -41,18 +41,14 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     source_state = InputStateParams(self_state = AddSource.input_source_name_state,
                                     next_state = AddSource.confirmation_state,
                                     call_base= CALL_ADD_SOURCE,
-                                    call_add_capture= CALL_INPUT_SOURCE_NAME,
                                     main_mess= MESS_INPUT_SOURCE_NAME,
-                                    but_change_text = BTEXT_CHANGE_SOURCE_NAME,
                                     menu_pack= menu_add_source,
                                     is_input=True)
     await state.update_data(input_source_name_state=source_state)
 
-    confirmation_state = InputStateParams(self_state = AddSource.confirmation_state,
+    confirmation_state = ConfirmationStateParams(self_state = AddSource.confirmation_state,
                                           call_base = CALL_ADD_SOURCE,
-                                          call_add_capture= CALL_ADD_ENDING,
                                           menu_pack= menu_add_source_with_changing,
-                                          main_mess=MESS_ADD_ENDING,
                                           is_last_state_with_changing_mode=True)
     await state.update_data(confirmation_state=confirmation_state)
 
@@ -61,8 +57,8 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     await state.set_state(first_state.self_state)
     # формируем сообщение, меню, клавиатуру и выводим их
     reply_kb = await keyboard_builder(menu_pack=first_state.menu_pack,
-                                      buttons_add_list= first_state.items_kb_list,
-                                      buttons_base_call=first_state.call_base + first_state.call_add_capture,
+                                      buttons_pack=first_state.buttons_pack,
+                                      buttons_base_call=first_state.call_base,
                                       buttons_cols=first_state.buttons_cols,
                                       buttons_rows=first_state.buttons_rows,
                                       is_adding_confirm_button=not first_state.is_input)
@@ -104,10 +100,10 @@ async def admin_adding_source(message: Message, state: FSMContext):
 
 
 # конечный обработчик всего стейта
-@adding_source_router.callback_query(F.data.startswith(CALL_ADD_SOURCE + CALL_ADD_ENDING), AddSource.confirmation_state)
+@adding_source_router.callback_query(F.data.startswith(CALL_ADD_SOURCE), AddSource.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_ADD_SOURCE + CALL_ADD_ENDING, '')
+    confirm = call.data.replace(CALL_ADD_SOURCE, '')
 
     # уходим обратно если нужно что-то изменить
     if confirm == CALL_CHANGING_SOURCE_NAME:

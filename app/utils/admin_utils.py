@@ -262,6 +262,16 @@ async def state_text_builder(state):
         if text:
             message_text += f'Выбраны слова:\n<b>{text}</b>\n'
 
+    if 'capture_colls_state' in st_data:
+        colls = (st_data.get("capture_colls_state")).set_of_items
+        colls_list = []
+        for coll_id in colls:
+            coll = (await rq.get_medias_by_filters(media_id_new=coll_id)).collocation
+            colls_list.append(coll)
+        text = ', '.join(colls_list)
+        if text:
+            message_text += f'Выбраны коллокации:\n<b>{text}</b>\n'
+
     if 'input_coll_state' in st_data:
         word = (st_data.get("input_coll_state")).input_text
         text = word
@@ -465,7 +475,7 @@ async def get_date_list_for_kb():
         date_list.append(date_item)
     return date_list
 
-async def get_day_list_for_kb():
+def get_day_list_for_kb():
     day_list = []
     # 150 дней выводим в список
     for i in range(150):

@@ -51,7 +51,7 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
                                           next_state=AddGroup.capture_levels_state,
                                           call_base= CALL_ADD_GROUP,
                                           menu_pack=menu_add_group)
-    await users_state.update_state_kb(user_filter='test')
+    await users_state.update_state_kb(users_filter='all')
     await state.update_data(capture_users_state=users_state)
 
 
