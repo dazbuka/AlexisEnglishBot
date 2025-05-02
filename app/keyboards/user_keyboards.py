@@ -29,7 +29,7 @@ async def common_main_kb(user_tg_id):
         # добавка к тексту кнопки фразы, что заданий нет
         task_message = HAVE_NO_TASKS
     # общая часть клавиатуры
-    inline_keyboard = [[button_study_menu_old],
+    inline_keyboard = [[button_quick_menu],
                        [button_revision_menu],
                        [button_homework_menu],
                        [button_config_menu]]
@@ -121,7 +121,7 @@ async def inline_revision_tasks_menu(previous_task_id: int = 0,
             InlineKeyboardButton(text=USER_REVISION_BUTTON_NEXT_TASK,
                                  callback_data=USER_REVISION_BUTTON_SHOW_LAST_TASKS + str(next_task_id))
         ],
-        [button_revision_menu, button_main_menu]
+        [button_revision_menu, button_main_menu_back]
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 

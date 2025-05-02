@@ -101,7 +101,7 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
             call_base=CALL_EDIT_HOMEWORK,
             menu_pack=menu_add_homework,
             is_only_one=True)
-        await users_state.update_state_for_homeworks_capture()
+        await capture_homeworks_for_edit_state.update_state_for_homeworks_capture()
         await state.update_data(capture_homeworks_for_edit_state=capture_homeworks_for_edit_state)
         first_state = capture_homeworks_for_edit_state
     else:
@@ -121,7 +121,7 @@ async def adding_first_state(call: CallbackQuery, state: FSMContext):
     await call.message.edit_text(text=message_text, reply_markup=reply_kb)
     await call.answer()
 
-
+@adding_homework_router.message(F.text, AddHomework.capture_homeworks_for_edit_state)
 @adding_homework_router.message(F.text, AddHomework.input_homework_state)
 @adding_homework_router.message(F.text, AddHomework.capture_groups_state)
 @adding_homework_router.message(F.text, AddHomework.capture_users_state)
@@ -194,7 +194,7 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
         confirmation_state: InputStateParams = await state.get_value('confirmation_state')
         confirmation_state.call_base = CALL_EDIT_HOMEWORK
-        confirmation_state.main_mess = 'menyaite'
+        confirmation_state.main_mess = MESS_CHANGING
         await state.update_data(confirmation_state=confirmation_state)
 
 

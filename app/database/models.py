@@ -54,7 +54,7 @@ class Group(Base):
 
     name: Mapped[str] = mapped_column(unique=True)
     users: Mapped[str]
-    level: Mapped[int]
+    level: Mapped[str]
 
     def __repr__(self):
         return f"<Group (group={self.name}, users={self.users}, level={self.level})>"
@@ -87,7 +87,7 @@ class Task(Base):
     media: Mapped["Media"] = relationship("Media", back_populates="tasks")
 
     def __repr__(self):
-        return f"<Task(id={self.id}, user_id={self.user_id}, media_id={self.media_id}, sent={self.sent})>"
+        return f"<Task(id={self.id}, user_id={self.user_id}, media_id={self.media_id}, time={self.time}, sent={self.sent})>"
 
 
 

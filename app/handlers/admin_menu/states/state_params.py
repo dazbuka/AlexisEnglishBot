@@ -5,7 +5,7 @@ from alembic.script.revision import is_revision
 
 from app.handlers.common_settings import *
 from app.database.requests import get_users_by_filters, get_words_by_filters, get_sources_by_filters, \
-    get_groups_by_filters, get_medias_by_filters
+    get_groups_by_filters, get_medias_by_filters, get_homeworks_by_filters, get_links_by_filters
 from config import logger
 from app.database.models import UserStatus
 from datetime import datetime, date, timedelta
@@ -29,7 +29,8 @@ class InputStateParams:
                  is_can_be_empty: bool = False,
                  is_only_one : bool = False,
                  is_last_state_with_changing_mode: bool = False,
-                 is_input: bool = False
+                 is_input: bool = False,
+                 is_media_revision_mode: bool = False
                  ) -> None:
 
         # Вводимые значения
@@ -58,6 +59,7 @@ class InputStateParams:
         self.is_only_one = is_only_one  # выбор только одного элемента
         self.is_last_state_with_changing_mode = is_last_state_with_changing_mode  #
         self.is_input = is_input
+        self.is_media_revision_mode = is_media_revision_mode
 
 
     def __repr__(self) -> str:
@@ -119,20 +121,24 @@ class InputStateParams:
             logger.error(
                 f'Произошла ошибка при получении коллокаций при обновлении класса CaptureCollsStateParams: {e}')
 
-    async def update_state_for_colls_revision(self, colls_filter: str = 'all') -> None:
+    async def update_state_for_colls_revision(self, colls_set = None, word_id = None, colls_filter: str = 'all') -> None:
         """
         Обновляет пакет кнопок и базовый callback для выбора коллокаций.
         Args:
             colls_filter (str): Определяет фильтр для выбора коллокаций.
         """
 
-        self.main_mess = MESS_SHOW_COLLS
-        self.buttons_cols = NUM_SHOW_COLLS_COLS
-        self.buttons_rows = NUM_SHOW_COLLS_ROWS
-        self.buttons_check = CHECK_SHOW_COLLS
+        self.main_mess = MESS_REVISION_COLLS
+        self.buttons_cols = NUM_REVISION_COLLS_COLS
+        self.buttons_rows = NUM_REVISION_COLLS_ROWS
+        self.buttons_check = CHECK_REVISION_COLLS
 
         try:
-            if colls_filter == 'all':
+            if colls_set:
+                colls_list = await get_medias_by_filters(media_id_set=colls_set)
+            elif word_id:
+                colls_list = await get_medias_by_filters(media_id_new=word_id)
+            elif colls_filter == 'all':
                 colls_list = await get_medias_by_filters()
             elif colls_filter == 'media':
                 colls_list = await get_medias_by_filters(media_only=True)
@@ -142,6 +148,50 @@ class InputStateParams:
 
             if not colls_list:
                 self.main_mess = MESS_NO_COLLS
+                self.buttons_pack = []
+                logger.warning('Список коллокаций пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            colls_kb = [
+                InlineKeyboardButton(text=f'{coll.collocation}', callback_data=f'{self.call_base}{coll.id}')
+                for coll in colls_list]
+
+            colls_kb_reversed = colls_kb[::-1]
+
+            # Устанавливаем значение
+            self.buttons_pack = colls_kb_reversed
+        except Exception as e:
+            logger.error(
+                f'Произошла ошибка при получении коллокаций при обновлении класса CaptureCollsStateParams: {e}')
+
+    async def update_state_for_quick_tasks(self, colls_set = None, colls_filter: str = 'all') -> None:
+        """
+        Обновляет пакет кнопок и базовый callback для выбора коллокаций.
+        Args:
+            colls_filter (str): Определяет фильтр для выбора коллокаций.
+        """
+
+        self.main_mess = MESS_QUICK_TASKS
+        self.buttons_cols = NUM_QUICK_TASK_COLS
+        self.buttons_rows = NUM_QUICK_TASK_ROWS
+        self.buttons_check = CHECK_QUICK_TASK
+
+        try:
+            if colls_set:
+                colls_list = await get_medias_by_filters(media_id_set=colls_set)
+            elif colls_filter == 'all':
+                colls_list = await get_medias_by_filters()
+            elif colls_filter == 'media':
+                print('here3')
+                colls_list = await get_medias_by_filters(media_only=True)
+            else:
+                logger.warning('Некорректный фильтр коллокаций.')
+                return
+
+            if not colls_list:
+                self.main_mess = MESS_NO_COLLS
+                self.buttons_pack = []
                 logger.warning('Список коллокаций пуст. Кнопки не обновлены.')
                 return
 
@@ -219,6 +269,39 @@ class InputStateParams:
             logger.error(
                 f'Произошла ошибка при получении слов при обновлении класса CaptureWordsStateParams: {e}')
 
+    async def update_state_for_words_revision(self, words_set = None, source_id = None, words_filter: str = 'all') -> None:
+        self.main_mess = MESS_REVISION_WORDS_MENU
+        self.buttons_cols = NUM_REVISION_WORDS_COLS
+        self.buttons_rows = NUM_REVISION_WORDS_ROWS
+        self.buttons_check = CHECK_REVISION_WORDS
+        try:
+            if words_set:
+                words_list = await get_words_by_filters(word_id_set=words_set)
+            elif source_id:
+                words_list = await get_words_by_filters(source_id=source_id)
+            elif words_filter == 'all':
+                words_list = await get_words_by_filters()
+            else:
+                logger.warning('Некорректный фильтр слов.')
+                return
+
+            if not words_list:
+                self.main_mess = MESS_NO_WORDS
+                logger.warning('Список слов пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            words_kb = [
+                InlineKeyboardButton(text=f'{word.word}', callback_data=f'{self.call_base}{word.id}')
+                for word in words_list]
+
+            words_kb_reversed = words_kb[::-1]
+            # Устанавливаем значение
+            self.buttons_pack = words_kb_reversed
+        except Exception as e:
+            logger.error(
+                f'Произошла ошибка при получении слов при обновлении класса CaptureWordsStateParams: {e}')
+
     async def update_state_for_groups_capture(self, groups_filter: str = 'all') -> None:
         self.main_mess = MESS_CAPTURE_GROUPS
         self.buttons_cols = NUM_CAPTURE_GROUPS_COLS
@@ -254,9 +337,9 @@ class InputStateParams:
         self.buttons_check = CHECK_CAPTURE_HOMEWORKS
         try:
             if homeworks_filter == 'all':
-                homeworks_list = await get_groups_by_filters()
+                homeworks_list = await get_homeworks_by_filters()
             elif homeworks_filter == 'actual':
-                homeworks_list = await get_groups_by_filters()
+                homeworks_list = await get_homeworks_by_filters()
             else:
                 logger.warning('Некорректный фильтр домашних заданий.')
                 return
@@ -277,6 +360,37 @@ class InputStateParams:
             logger.error(
                 f'Произошла ошибка при получении групп при обновлении класса CaptureHomeworksStateParams: {e}')
 
+    async def update_state_for_links_capture(self, user_id = None, links_filter: str = 'all') -> None:
+        self.main_mess = MESS_CAPTURE_LINKS
+        self.buttons_cols = NUM_CAPTURE_LINKS_COLS
+        self.buttons_rows = NUM_CAPTURE_LINKS_ROWS
+        self.buttons_check = CHECK_CAPTURE_LINKS
+
+        try:
+            if user_id:
+                links_list = await get_links_by_filters(user_id=user_id)
+            elif links_filter == 'all':
+                links_list = await get_links_by_filters()
+            else:
+                logger.warning('Некорректный фильтр домашних заданий.')
+                return
+
+            if not links_list:
+                self.main_mess = MESS_NO_LINKS
+                logger.warning('Список домашних заданий пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            links_kb = [
+                InlineKeyboardButton(text=f'{link.name}', callback_data=f'{self.call_base}{link.id}')
+                for link in links_list]
+
+            # Устанавливаем значение
+            self.buttons_pack = links_kb
+        except Exception as e:
+            logger.error(
+                f'Произошла ошибка при получении ссылок при обновлении класса CaptureLinksStateParams: {e}')
+
     async def update_state_for_sources_capture(self, sources_filter: str = 'all') -> None:
         self.main_mess = MESS_CAPTURE_SOURCES
         self.buttons_cols = NUM_CAPTURE_SOURCES_COLS
@@ -286,6 +400,39 @@ class InputStateParams:
             if sources_filter == 'all':
                 sources_list = await get_sources_by_filters()
             else:
+                logger.warning('Некорректный фильтр источника.')
+                return
+
+            if not sources_list:
+                self.main_mess = MESS_NO_SOURCES
+                logger.warning('Список источников пуст. Кнопки не обновлены.')
+                return
+
+            # Формируем клавиатуру
+            sources_kb = [
+                InlineKeyboardButton(text=f'{source.source_name}', callback_data=f'{self.call_base}{source.id}')
+                for source in sources_list]
+
+            # Устанавливаем значение
+            self.buttons_pack = sources_kb
+        except Exception as e:
+            logger.error(
+                f'Произошла ошибка при получении источников при обновлении класса CaptureSourcesStateParams: {e}')
+
+    async def update_state_for_sources_revision(self, sources_set = None, sources_filter: str = 'all') -> None:
+        self.main_mess = MESS_REVISION_SOURCES
+        self.buttons_cols = NUM_REVISION_SOURCES_COLS
+        self.buttons_rows = NUM_REVISION_SOURCES_ROWS
+        self.buttons_check = CHECK_REVISION_SOURCES
+        try:
+            if sources_set:
+                print(sources_set)
+                sources_list = await get_sources_by_filters(source_id_set=sources_set)
+                print(sources_list)
+            elif sources_filter == 'one':
+                sources_list = await get_sources_by_filters(source_id=1)
+            else:
+
                 logger.warning('Некорректный фильтр источника.')
                 return
 

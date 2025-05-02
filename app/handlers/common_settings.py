@@ -1,4 +1,4 @@
-# v🔁⬆️🛠️♟️🧑‍🏫🖊️🗓️📑📬🧰🗃️⚙️📲🕹🔎📚👇📌📖➡️⬅️🗄⚙️
+# v🔁⬆️🛠️♟️🧑‍🏫🖊️🗓️📑📬🧰🗃️⚙️📲🕹🔎📚👇📌📖➡️⬅️🗄⚙️🌏
 
 from enum import Enum
 
@@ -29,8 +29,10 @@ BTEXT_DEFINITION= "🪄Definition"
 CALL_DEFINITION= "@definition_"
 BTEXT_TRANSLATION= "📗Translation"
 CALL_TRANSLATION= "@translation_"
-BTEXT_REPEAT_TODAY= "🔁Repeat today"
-CALL_REPEAT_TODAY= "@repeat_today_"
+BTEXT_REPEAT="🔁Repeat later"
+CALL_REPEAT= "@repeat_today_"
+BTEXT_NEXT_TASK= "➡️Next"
+CALL_NEXT_TASK= "@next_"
 BTEXT_REPEAT_TOMORROW= "🔄Repeat tomorrow"
 CALL_REPEAT_TOMORROW= "@repeat_tomorrow_"
 
@@ -119,96 +121,84 @@ MESS_DONT_UNDERSTAND= "Can't understand you, press any button:"
 
 
 CALL_MAIN_MENU= '@m_main_menu️'
-BTEXT_MAIN_MENU= '-Main menu-️'
-MESS_MAIN_MENU = "🧑‍🏫Hi, I'm AlexisEnglishBot! Welcome to main menu.\n🕹Press any button👇"
+MESS_MAIN_MENU = "🧑‍🏫Hi, I'm AlexisEnglishBot! Welcome to main menu."
 BTEXT_MAIN_MENU_BACK = "⬆️Back to main menu⬆️"
 
-CALL_QUICK_MENU= '@m_quick_menu️'
-BTEXT_QUICK_MENU= 'Quick tasks'
-MESS_QUICK_MENU = "Welcome to quick tasks menu!"
-MESS_QUICK_MENU_EMPTY = "You have no tasks!"
-BTEXT_QUICK_MENU_BACK = "Exit to tasks menu"
-
-CALL_TASKS_MENU= '@m_tasks_menu️'
-BTEXT_TASKS_MENU= 'FULL Tasks menu'
-MESS_TASKS_MENU = "Welcome to full tasks menu!"
+CALL_TASKS_MENU= '@m_quick_menu️'
 MESS_TASKS_MENU_EMPTY = "You have no tasks!"
-BTEXT_TASKS_MENU_BACK = "Exit to full tasks menu"
+BTEXT_TASKS_MENU= '🗓️My tasks'
 
-CALL_TASKS_DAILY_MENU= '@m_tasks_daily_menu️'
-BTEXT_TASKS_DAILY_MENU= 'Daily tasks'
-MESS_TASKS_DAILY_MENU = "Welcome to daily tasks!"
-MESS_TASKS_DAILY_MENU_EMPTY = "You have no daily tasks!"
-BTEXT_TASKS_DAILY_MENU_BACK = "Exit to daily tasks menu"
-
-CALL_TASKS_MISSED_MENU= '@m_tasks_missed_menu️'
-BTEXT_TASKS_MISSED_MENU= 'Missed tasks'
-MESS_TASKS_MISSED_MENU = "Welcome to missed tasks!"
-MESS_TASKS_MISSED_MENU_EMPTY = "You have no missed tasks!"
-BTEXT_TASKS_MISSED_MENU_BACK = "Exit to missed tasks menu"
-
-CALL_STUDY_MENU_OLD= '@m_old_study_menu️'
-BTEXT_STUDY_MENU_OLD= '🗓️Check my tasks'
-MESS_STUDY_MENU_OLD = "Welcome to study menu!"
-BTEXT_STUDY_MENU_BACK_OLD = "Exit to study menu"
-
-CALL_REVISION_MENU_NEW= '@m_new_revision_menu️'
 CALL_REVISION_MENU= '@m_revision_menu️'
-BTEXT_REVISION_MENU= '🔎Revision🔎'
 MESS_REVISION_MENU = "Welcome to revision menu!"
-BTEXT_REVISION_MENU_BACK = "Exit to revision menu"
-
-CALL_REVISION_SOURCES_MENU= '@m_revision_sources_menu️'
-BTEXT_REVISION_SOURCES_MENU= '🔎Sources🔎'
-MESS_REVISION_SOURCES_MENU = "Choose source!"
-MESS_REVISION_SOURCES_MENU_EMPTY = "You have no sources!"
-BTEXT_REVISION_SOURCES_MENU_BACK = "Exit to revision source menu"
-
-CALL_REVISION_WORDS= '@m_revision_words_menu️'
-BTEXT_REVISION_WORDS_MENU= '🔎Words🔎'
-MESS_REVISION_WORDS_MENU = "Choose word!"
-BTEXT_REVISION_WORDS_MENU_BACK = "Exit to revision words menu"
-
-CALL_REVISION_COLLS_MENU= '@m_revision_colls_menu️'
-BTEXT_REVISION_COLLS_MENU= '🔎Colls🔎'
-MESS_REVISION_COLLS_MENU = "Choose colls!"
-BTEXT_REVISION_COLLS_MENU_BACK = "Exit to revision colls menu"
-
+BTEXT_REVISION_MENU= '🔎Revision'
+BTEXT_REVISION_MENU_BACK = "🔎Revision"
 
 CALL_LINKS_MENU= '@m_links_menu️'
-BTEXT_LINKS_MENU= '🕸Links🕸'
 MESS_LINKS_MENU = "Welcome to links menu!"
 MESS_LINKS_MENU_EMPTY = "You have no links!"
+BTEXT_LINKS_MENU= '🌏Links'
 BTEXT_LINKS_MENU_BACK = "Exit to links menu"
+NUM_SHOW_LINKS_COLS = 1
+NUM_SHOW_LINKS_ROWS = 7
 
 
 
-CALL_HOMEWORK_MENU= '@m_homework_menu️'
-BTEXT_HOMEWORK_MENU= '🏠Homework🏠'
+CALL_SHOW_HOMEWORK= '@m_homework_menu️'
 MESS_HOMEWORK_MENU = "Welcome to homework menu!"
-BTEXT_HOMEWORK_MENU_BACK = "Exit to homework menu"
+BTEXT_HOMEWORK_MENU= '🏠Homework'
+BTEXT_HOMEWORK_MENU_BACK = "🏠Homework"
 
 CALL_CONFIG_MENU= '@m_config_menu️'
-BTEXT_CONFIG_MENU= '⚙️Settings⚙️'
 MESS_CONFIG_MENU = "Welcome to config menu!"
-BTEXT_CONFIG_MENU_BACK = "Exit to config menu"
+BTEXT_CONFIG_MENU= '⚙️Settings'
+BTEXT_CONFIG_MENU_BACK = "⚙️Settings"
 
 CALL_ADMIN_MENU= '@m_admin_menu️'
+MESS_ADMIN_MENU = "Welcome to main admin menu!"
 BTEXT_ADMIN_MENU= '🛠️---Admin menu NEW---🛠️'
-MESS_ADMIN_MENU = "!Welcome to main admin menu"
 BTEXT_ADMIN_MENU_BACK = "🛠️Admin menu"
+
+CALL_REVISION_SOURCES= '@m_revision_sources_menu️'
+MESS_REVISION_SOURCES = 'Выберите источник'
+MESS_REVISION_SOURCES_MENU_EMPTY = "You have no sources!"
+BTEXT_REVISION_SOURCES_MENU= '🎬Sources'
+BTEXT_REVISION_SOURCES_MENU_BACK = "🎬Sources"
+
+NUM_REVISION_SOURCES_COLS = 1
+NUM_REVISION_SOURCES_ROWS = 5
+CHECK_REVISION_SOURCES= '🟣'
+
+
+CALL_REVISION_WORDS= '@m_revision_words_️'
+MESS_REVISION_WORDS_MENU = "Choose word!"
+BTEXT_REVISION_WORDS_MENU= '📚Revision words'
+BTEXT_REVISION_WORDS_MENU_BACK = "📚Words"
+NUM_REVISION_WORDS_COLS = 1
+NUM_REVISION_WORDS_ROWS = 5
+CHECK_REVISION_WORDS = '🟣'
+
+
+CALL_REVISION_COLLS= '@m_revision_colls_menu️'
+BTEXT_REVISION_COLLS_MENU= '📜Revision collocations'
+MESS_REVISION_COLLS_MENU = "Choose colls!"
+BTEXT_REVISION_COLLS_MENU_BACK = "📜Collocations"
+# show links
+CALL_SHOW_TASKS = "show_links_"
+MESS_SHOW_TASKS = 'Выберите коллокацию'
+NUM_SHOW_TASKS_COLS = 1
+NUM_SHOW_TASKS_ROWS = 5
+CHECK_REVISION_TASKS= '🟣'
+
 
 CALL_ADDING_MENU = "@c_adm_menu_add"
 MESS_ADDING_MENU = "Choose what do you want to add"
 BTEXT_ADDING_MENU = "📌Add words, collocation and other📌"
-BTEXT_ADDING_MENU_BACK = "🛠️Adding menu"
-
-
+BTEXT_ADDING_MENU_BACK = "🛠️Adding"
 
 CALL_EDITING_MENU = "c_adm_menu_edit"
 MESS_EDITING_MENU = "Choose what do you want to edit"
 BTEXT_EDITING_MENU = "Editing"
-BTEXT_EDITING_MENU_BACK = "🛠️Editing menu"
+BTEXT_EDITING_MENU_BACK = "🛠️Editing"
 
 CALL_SETTING_MENU = "@c_adm_menu_set"
 MESS_SETTING_MENU = "Choose what do you want to set or assign"
@@ -217,27 +207,37 @@ BTEXT_SETTING_MENU_BACK = "🛠️Set menu-"
 
 CALL_ADD_SOURCE= 'c_add_source_'
 BTEXT_ADD_SOURCE = "📌Add source📌"
+CALL_EDIT_SOURCE= 'c_edit_source_'
+BTEXT_EDIT_SOURCE = "📌Edit source📌"
 
 CALL_ADD_WORD= 'c_add_word_'
 BTEXT_ADD_WORD = "📌Add word📌"
+CALL_EDIT_WORD= 'c_edit_word_'
+BTEXT_EDIT_WORD = "📌Edit word📌"
 
 CALL_ADD_COLL= 'c_add_coll_'
 BTEXT_ADD_COLL = "📌Add collocation📌"
+CALL_EDIT_COLL= 'c_edit_coll_'
+BTEXT_EDIT_COLL = "📌Edit collocation📌"
 
 CALL_ADD_TEST = "c_add_test_"
 BTEXT_ADD_TEST = "📌Add test📌"
 
+CALL_ADD_LINK = "c_add_link_"
+BTEXT_ADD_LINK = "📌Add link📌"
+CALL_EDIT_LINK = "c_edit_link_"
+BTEXT_EDIT_LINK = "📌Edit link📌"
+
 CALL_ADD_GROUP = "c_add_group_"
 BTEXT_ADD_GROUP = "📌Add group📌"
+CALL_EDIT_GROUP = "c_edit_group_"
+BTEXT_EDIT_GROUP = "📌Edit group📌"
 
 CALL_ADD_HOMEWORK = "c_add_homework_"
 BTEXT_ADD_HOMEWORK = "📌Add homework📌"
-
 CALL_EDIT_HOMEWORK = "c_edit_homework_"
 BTEXT_EDIT_HOMEWORK = "📌Edit homework📌"
 
-CALL_ADD_LINK = "c_add_link_"
-BTEXT_ADD_LINK = "📌Add link📌"
 
 CALL_SET_SCHEME= 'c_set_scheme_'
 BTEXT_SET_SCHEME = "📌Set task by scheme📌"
@@ -248,54 +248,21 @@ BTEXT_SET_COLL = "Set task with some collocation"
 
 
 
-
-
-
 # common
+MESS_CHANGING = 'Внесите изменения!'
 MESS_MORE_CHOOSING = 'Можете выбрать еще или нажмите подтверждение'
 MESS_NULL_CHOOSING = 'Нельзя продолжить пока ничего не выбрано'
 MESS_ADDED_TO_DB = 'Информация добавлена в базу данных!'
 MESS_ERROR_ADDED_TO_DB = 'Ошибка при записи в базу данных, обратитесь к администратору'
 CALL_CONFIRM= "@confirm_"
 BTEXT_CONFIRM= "✅CONFIRM✅"
-
+NUM_MAX_CALL_ALARM_LENGTH = 192
+MESS_TOO_LONG = "Длина введенного текста превышает максимально допустимую на {} символов. Попробуйте еще раз."
 
 
 MESS_ADD_ENDING = 'Поверьте все и подтвердите'
 CALL_ADD_ENDING = "add_ending_"
 
-
-
-
-
-
-
-# show sources
-CALL_SHOW_WORDS = "show_words_"
-MESS_SHOW_WORDS = 'Выберите слово'
-NUM_SHOW_WORDS_COLS = 1
-NUM_SHOW_WORDS_ROWS = 5
-
-
-
-# show sources
-CALL_SHOW_SOURCES = "show_sources_"
-MESS_SHOW_SOURCES = 'Выберите источник'
-NUM_SHOW_SOURCES_COLS = 1
-NUM_SHOW_SOURCES_ROWS = 5
-
-# show links
-CALL_SHOW_TASKS = "show_links_"
-MESS_SHOW_TASKS = 'Выберите коллокацию'
-NUM_SHOW_TASKS_COLS = 1
-NUM_SHOW_TASKS_ROWS = 5
-
-
-# show links
-CALL_SHOW_LINKS = "show_links_"
-MESS_SHOW_LINKS = 'Выберите ссылку'
-NUM_SHOW_LINKS_COLS = 1
-NUM_SHOW_LINKS_ROWS = 1
 
 
 
@@ -320,11 +287,16 @@ NUM_CAPTURE_COLLS_ROWS = 10
 CHECK_CAPTURE_COLLS= '🟣'
 
 # show colls
-CALL_SHOW_COLLS = "show_colls_"
-MESS_SHOW_COLLS = 'Выберите коллокацию или введите ее часть'
-NUM_SHOW_COLLS_COLS = 1
-NUM_SHOW_COLLS_ROWS = 5
-CHECK_SHOW_COLLS= '🟣'
+MESS_REVISION_COLLS = 'Выберите коллокацию или введите ее часть'
+NUM_REVISION_COLLS_COLS = 2
+NUM_REVISION_COLLS_ROWS = 5
+CHECK_REVISION_COLLS= '🟣'
+
+# show colls
+MESS_QUICK_TASKS = 'Выберите коллокацию'
+NUM_QUICK_TASK_COLS = 1
+NUM_QUICK_TASK_ROWS = 1
+CHECK_QUICK_TASK = '🟣'
 
 
 # capturing part
@@ -416,6 +388,16 @@ NUM_CAPTURE_HOMEWORKS_ROWS = 5
 CHECK_CAPTURE_HOMEWORKS= '🟣'
 
 
+CALL_CAPTURE_LINKS = "capture_links_"
+CALL_CHANGING_LINKS = "changing_links_"
+MESS_CAPTURE_LINKS = 'Выберите ссылку'
+BTEXT_CHANGE_LINKS = "Изменить ссылку"
+MESS_NO_LINKS = 'Список ссылок заданий пуст'
+NUM_CAPTURE_LINKS_COLS = 1
+NUM_CAPTURE_LINKS_ROWS = 5
+CHECK_CAPTURE_LINKS= '🟣'
+
+
 # input source
 CALL_INPUT_SOURCE_NAME = "input_source_"
 CALL_CHANGING_SOURCE_NAME = "changing_source_name_"
@@ -474,3 +456,4 @@ CALL_INPUT_TRANSLATION = "input_translation_"
 CALL_CHANGING_TRANSLATION = "changing_translation_"
 MESS_INPUT_TRANSLATION = "Введите русский перевод"
 BTEXT_CHANGE_TRANSLATION = "Изменить перевод"
+

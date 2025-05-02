@@ -32,14 +32,14 @@ class SetColls(StatesGroup):
     confirmation_state = State() # стейт обрабатывающий конечное подтверждение ввода
 
 menu_set_colls = [
-    [button_setting_menu_back, button_admin_menu, button_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu_back]
 ]
 
 menu_set_colls_with_changing = [
     [update_button_with_call_base(button_change_colls, CALL_SET_COLL),
      update_button_with_call_base(button_change_users, CALL_SET_COLL),
      update_button_with_call_base(button_change_dates, CALL_SET_COLL)],
-    [button_setting_menu_back, button_admin_menu, button_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu_back]
 ]
 
 # переход в меню добавления задания по схеме

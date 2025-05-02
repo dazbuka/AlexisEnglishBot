@@ -10,7 +10,7 @@ from app.keyboards.menu_buttons import *
 async def main_admin_menu_kb():
     inline_keyboard = [
         [button_adding_menu],
-        [button_main_menu]
+        [button_main_menu_back]
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
@@ -36,7 +36,7 @@ async def admin_adding_menu_kb():
                        [button_add_homework],
                        [button_add_group],
                        [button_setting_menu],
-                       [button_admin_menu, button_main_menu]]
+                       [button_admin_menu, button_main_menu_back]]
     return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
 
 

@@ -7,16 +7,25 @@ from aiogram.types import (
     InlineKeyboardButton
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from app.keyboards.menu_buttons import button_confirm
+from app.keyboards.menu_buttons import button_confirm, button_translation, button_definition, button_repeat_today
 from data.admin_messages import *
 from app.handlers.common_settings import *
 
-def update_button_with_call_base(button : InlineKeyboardButton, call_base : str):
+def update_button_with_call_base(button : InlineKeyboardButton, call_base : str) -> InlineKeyboardButton:
     button_with_call_base = InlineKeyboardButton(text=button.text,
                                                  callback_data=call_base + button.callback_data)
     return button_with_call_base
 
-def update_button_with_call_item(button : InlineKeyboardButton, call_item : str):
+def update_button_with_tasks_num(button : InlineKeyboardButton, tasks_num : int) -> InlineKeyboardButton:
+    if tasks_num > 0:
+        button_with_call_base = InlineKeyboardButton(text=f'{button.text} ({tasks_num})',
+                                                     callback_data=button.callback_data)
+    else:
+        button_with_call_base = InlineKeyboardButton(text=f'{button.text} (no tasks)',
+                                                     callback_data=button.callback_data)
+    return button_with_call_base
+
+def update_button_with_call_item(button : InlineKeyboardButton, call_item : str) -> InlineKeyboardButton:
     button_with_call_base = InlineKeyboardButton(text=button.text,
                                                  callback_data=button.callback_data + call_item)
     return button_with_call_base
@@ -28,7 +37,7 @@ async def keyboard_builder(menu_pack : list[list[InlineKeyboardButton]],
                            buttons_cols: int | None = None,
                            buttons_rows: int | None = None,
                            is_adding_confirm_button : bool = False,
-                           buttons_page_number: int | None = 0):
+                           buttons_page_number: int | None = 0) -> InlineKeyboardMarkup:
 
     # билдер и массив аджастинга для начала пустой
     builder = InlineKeyboardBuilder()
@@ -70,9 +79,9 @@ async def keyboard_builder(menu_pack : list[list[InlineKeyboardButton]],
 
     # если нужно добавить кнопку подтверждения ввода
     if is_adding_confirm_button:
-        but = update_button_with_call_base(button_confirm, buttons_base_call)
-        builder.add(but)
+        builder.add(update_button_with_call_base(button_confirm, buttons_base_call))
         adjusting.append(1)
+
 
     # добавляем меню
     for menu_line in menu_pack:

@@ -5,49 +5,39 @@ from data.admin_messages import *
 from app.handlers.common_settings import *
 from app.handlers.common_settings import *
 
-button_repeat_today = InlineKeyboardButton(text=BTEXT_REPEAT_TODAY, callback_data=CALL_REPEAT_TODAY)
+
+
+button_next_task = InlineKeyboardButton(text=BTEXT_NEXT_TASK, callback_data=CALL_NEXT_TASK)
+button_repeat_today = InlineKeyboardButton(text=BTEXT_REPEAT, callback_data=CALL_REPEAT)
 button_repeat_tomorrow = InlineKeyboardButton(text=BTEXT_REPEAT_TOMORROW, callback_data=CALL_REPEAT_TOMORROW)
 button_translation = InlineKeyboardButton(text=BTEXT_TRANSLATION, callback_data=CALL_TRANSLATION)
 button_definition = InlineKeyboardButton(text=BTEXT_DEFINITION, callback_data=CALL_DEFINITION)
 button_confirm = InlineKeyboardButton(text=BTEXT_CONFIRM, callback_data=CALL_CONFIRM)
+
+
 # button to go to main menu
-button_main_menu = InlineKeyboardButton(text=BTEXT_MAIN_MENU, callback_data=CALL_MAIN_MENU)
 button_main_menu_back = InlineKeyboardButton(text=BTEXT_MAIN_MENU_BACK, callback_data=CALL_MAIN_MENU)
 
 # main menu
-button_quick_menu = InlineKeyboardButton(text=BTEXT_QUICK_MENU, callback_data=CALL_QUICK_MENU)
-button_quick_menu_back = InlineKeyboardButton(text=BTEXT_QUICK_MENU_BACK, callback_data=CALL_QUICK_MENU)
-
-button_tasks_menu = InlineKeyboardButton(text=BTEXT_TASKS_MENU, callback_data=CALL_TASKS_MENU)
-button_tasks_menu_back = InlineKeyboardButton(text=BTEXT_TASKS_MENU_BACK, callback_data=CALL_TASKS_MENU)
-
-button_tasks_daily_menu = InlineKeyboardButton(text=BTEXT_TASKS_DAILY_MENU, callback_data=CALL_TASKS_DAILY_MENU)
-button_tasks_daily_menu_back = InlineKeyboardButton(text=BTEXT_TASKS_DAILY_MENU_BACK, callback_data=CALL_TASKS_DAILY_MENU)
-
-button_tasks_missed_menu = InlineKeyboardButton(text=BTEXT_TASKS_MISSED_MENU, callback_data=CALL_TASKS_MISSED_MENU)
-button_tasks_missed_menu_back = InlineKeyboardButton(text=BTEXT_TASKS_MISSED_MENU_BACK, callback_data=CALL_TASKS_MISSED_MENU)
-
-button_study_menu_old = InlineKeyboardButton(text=BTEXT_STUDY_MENU_OLD, callback_data=CALL_STUDY_MENU_OLD)
-button_study_menu_back_old = InlineKeyboardButton(text=BTEXT_STUDY_MENU_BACK_OLD, callback_data=CALL_STUDY_MENU_OLD)
+button_quick_menu = InlineKeyboardButton(text=BTEXT_TASKS_MENU, callback_data=CALL_TASKS_MENU)
 
 button_revision_menu = InlineKeyboardButton(text=BTEXT_REVISION_MENU, callback_data=CALL_REVISION_MENU)
 button_revision_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_MENU_BACK, callback_data=CALL_REVISION_MENU)
 
-button_revision_sources_menu = InlineKeyboardButton(text=BTEXT_REVISION_SOURCES_MENU, callback_data=CALL_REVISION_SOURCES_MENU)
-button_revision_source_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_SOURCES_MENU_BACK, callback_data=CALL_REVISION_SOURCES_MENU)
+button_revision_sources = InlineKeyboardButton(text=BTEXT_REVISION_SOURCES_MENU, callback_data=CALL_REVISION_SOURCES)
 
 button_revision_words_menu = InlineKeyboardButton(text=BTEXT_REVISION_WORDS_MENU, callback_data=CALL_REVISION_WORDS)
 button_revision_words_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_WORDS_MENU_BACK, callback_data=CALL_REVISION_WORDS)
 
-button_revision_colls_menu = InlineKeyboardButton(text=BTEXT_REVISION_COLLS_MENU, callback_data=CALL_REVISION_COLLS_MENU)
-button_revision_colls_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_COLLS_MENU_BACK, callback_data=CALL_REVISION_COLLS_MENU)
+button_revision_colls_menu = InlineKeyboardButton(text=BTEXT_REVISION_COLLS_MENU, callback_data=CALL_REVISION_COLLS)
+button_revision_colls_menu_back = InlineKeyboardButton(text=BTEXT_REVISION_COLLS_MENU_BACK, callback_data=CALL_REVISION_COLLS)
 
 
 button_links_menu = InlineKeyboardButton(text=BTEXT_LINKS_MENU, callback_data=CALL_LINKS_MENU)
 button_links_menu_back = InlineKeyboardButton(text=BTEXT_LINKS_MENU_BACK, callback_data=CALL_LINKS_MENU)
 
-button_homework_menu = InlineKeyboardButton(text=BTEXT_HOMEWORK_MENU, callback_data=CALL_HOMEWORK_MENU)
-button_homework_menu_back = InlineKeyboardButton(text=BTEXT_HOMEWORK_MENU_BACK, callback_data=CALL_HOMEWORK_MENU)
+button_homework_menu = InlineKeyboardButton(text=BTEXT_HOMEWORK_MENU, callback_data=CALL_SHOW_HOMEWORK)
+button_homework_menu_back = InlineKeyboardButton(text=BTEXT_HOMEWORK_MENU_BACK, callback_data=CALL_SHOW_HOMEWORK)
 
 button_config_menu = InlineKeyboardButton(text=BTEXT_CONFIG_MENU, callback_data=CALL_CONFIG_MENU)
 button_config_menu_back = InlineKeyboardButton(text=BTEXT_CONFIG_MENU_BACK, callback_data=CALL_CONFIG_MENU)
@@ -77,6 +67,11 @@ button_set_coll = InlineKeyboardButton(text=BTEXT_SET_COLL, callback_data=CALL_S
 button_editing_menu = InlineKeyboardButton(text=BTEXT_EDITING_MENU, callback_data=CALL_EDITING_MENU)
 button_editing_menu_back = InlineKeyboardButton(text=BTEXT_EDITING_MENU_BACK, callback_data=CALL_EDITING_MENU)
 
+button_edit_source = InlineKeyboardButton(text=BTEXT_EDIT_SOURCE, callback_data=CALL_EDIT_SOURCE)
+button_edit_word = InlineKeyboardButton(text=BTEXT_EDIT_WORD, callback_data=CALL_EDIT_WORD)
+button_edit_coll = InlineKeyboardButton(text=BTEXT_EDIT_COLL, callback_data=CALL_EDIT_COLL)
+button_edit_link = InlineKeyboardButton(text=BTEXT_EDIT_LINK, callback_data=CALL_EDIT_LINK)
+button_edit_group = InlineKeyboardButton(text=BTEXT_EDIT_GROUP, callback_data=CALL_EDIT_GROUP)
 button_edit_homework = InlineKeyboardButton(text=BTEXT_EDIT_HOMEWORK, callback_data=CALL_EDIT_HOMEWORK)
 
 

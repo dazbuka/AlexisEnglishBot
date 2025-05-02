@@ -4,11 +4,11 @@ from aiogram.types import Message, CallbackQuery, ContentType
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from datetime import datetime
-
+from app.database.models import Media, Source, Task, Word, Group
 from app.keyboards.menu_buttons import *
 from app.handlers.common_settings import *
 
-from app.database.requests import get_users_by_filters, add_media_to_db, get_medias_by_filters
+from app.database.requests import get_users_by_filters, add_media_to_db, get_medias_by_filters, update_media_changing
 from app.utils.admin_utils import (state_text_builder, mess_answer,
                                    get_word_list_for_kb_with_ids,
                                    get_day_list_for_kb,
@@ -27,6 +27,7 @@ class AddColl(StatesGroup):
     author_id = State()
     capture_words_state = State()
     input_coll_state = State()
+    capture_coll_changing = State()
     input_media_state = State()
     input_caption_state = State()
     capture_levels_state = State()
@@ -35,7 +36,7 @@ class AddColl(StatesGroup):
 
 
 menu_add_coll = [
-    [button_adding_menu_back, button_admin_menu, button_main_menu]
+    [button_adding_menu_back, button_editing_menu_back, button_admin_menu, button_main_menu_back]
 ]
 
 menu_add_coll_with_changing = [
@@ -45,10 +46,11 @@ menu_add_coll_with_changing = [
     [update_button_with_call_base(button_change_media, CALL_ADD_COLL),
      update_button_with_call_base(button_change_caption, CALL_ADD_COLL),
      update_button_with_call_base(button_change_days, CALL_ADD_COLL)],
-    [button_setting_menu_back, button_admin_menu, button_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu_back]
 ]
 
 # переход в меню добавления задания по схеме
+@adding_coll_router.callback_query(F.data == CALL_EDIT_COLL)
 @adding_coll_router.callback_query(F.data == CALL_ADD_COLL)
 async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     # очистка стейта
@@ -121,8 +123,20 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
     await confirmation_state.update_state_for_confirmation_state()
     await state.update_data(confirmation_state=confirmation_state)
 
+    if call.data == CALL_EDIT_COLL:
+        capture_coll_changing = InputStateParams(
+            self_state=AddColl.capture_coll_changing,
+            next_state=AddColl.confirmation_state,
+            call_base=CALL_EDIT_COLL,
+            menu_pack=menu_add_coll,
+            is_only_one=True)
+        await capture_coll_changing.update_state_for_colls_capture()
+        await state.update_data(capture_coll_changing=capture_coll_changing)
+        first_state = capture_coll_changing
+    else:
+        first_state = words_state
 
-    first_state = words_state
+
 
     # переход в первый стейт
     await state.set_state(first_state.self_state)
@@ -142,6 +156,8 @@ async def adding_word_first_state(call: CallbackQuery, state: FSMContext):
 
     await call.answer()
 
+
+@adding_coll_router.message(F.text, AddColl.capture_coll_changing)
 @adding_coll_router.message(F.text, AddColl.capture_words_state)
 @adding_coll_router.message(F.text, AddColl.input_coll_state)
 @adding_coll_router.message(F.photo | F.video | F.text, AddColl.input_media_state)
@@ -176,26 +192,65 @@ async def admin_adding_word_capture_word(message: Message, state: FSMContext):
                       reply_markup=current_fsm.reply_kb)
 
 
-
+@adding_coll_router.callback_query(F.data.startswith(CALL_EDIT_COLL), AddColl.capture_coll_changing)
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.capture_words_state)
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.capture_levels_state)
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.capture_days_state)
 async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMContext):
-
+    fsm_state_str_curr = await state.get_state()
     # создаем экземпляр класса для обработки текущего состояния фсм
     current_fsm = FSMExecutor()
     # обрабатываем экземпляра класса, который анализирует наш колл и выдает сообщение и клавиатуру
     await current_fsm.execute(fsm_state=state, fsm_call=call)
     # отвечаем заменой сообщения
 
-    fsm_state_str = await state.get_state()
+    fsm_state_str_next = await state.get_state()
+
+    if (fsm_state_str_curr == AddColl.capture_coll_changing.state and
+            fsm_state_str_next == AddColl.confirmation_state.state):
+        capture_coll_changing: InputStateParams = await state.get_value('capture_coll_changing')
+        coll_id = int(list(capture_coll_changing.set_of_items)[0])
+        coll: Media = await get_medias_by_filters(media_id_new=coll_id)
+
+        await state.update_data(author_id=coll.author_id)
+
+        capture_words_state: InputStateParams = await state.get_value('capture_words_state')
+        capture_words_state.set_of_items = {coll.word_id}
+        await state.update_data(capture_words_state=capture_words_state)
+
+        input_coll_state: InputStateParams = await state.get_value('input_coll_state')
+        input_coll_state.input_text = coll.collocation
+        await state.update_data(input_coll_state=input_coll_state)
+
+        input_media_state: InputStateParams = await state.get_value('input_media_state')
+        input_media_state.media_id = coll.telegram_id
+        input_media_state.media_type = coll.media_type
+        input_media_state.input_text = coll.caption
+        await state.update_data(input_media_state=input_media_state)
+
+        input_caption_state: InputStateParams = await state.get_value('input_caption_state')
+        input_caption_state.input_text = coll.caption
+        await state.update_data(input_caption_state=input_caption_state)
+
+        levels_state: InputStateParams = await state.get_value('capture_levels_state')
+        levels_state.set_of_items = {coll.level}
+        await state.update_data(capture_levels_state=levels_state)
+
+        capture_days_state: InputStateParams = await state.get_value('capture_days_state')
+        capture_days_state.set_of_items = {coll.study_day}
+        await state.update_data(capture_days_state=capture_days_state)
+
+        confirmation_state: InputStateParams = await state.get_value('confirmation_state')
+        confirmation_state.call_base = CALL_EDIT_COLL
+        # confirmation_state.main_mess = MESS_ADD_ENDING
+        await state.update_data(confirmation_state=confirmation_state)
 
     media_state: InputStateParams = await state.get_value('input_media_state')
 
     state_text = await state_text_builder(state)
     message_text = state_text + '\n' + current_fsm.message_text
 
-    if fsm_state_str == AddColl.capture_days_state.state:
+    if fsm_state_str_next == AddColl.capture_days_state.state:
         word_state: InputStateParams = await state.get_value('capture_words_state')
         word_id = list(word_state.set_of_items)[0]
         scheme = await get_shema_text_by_word_id(word_id=word_id)
@@ -210,12 +265,15 @@ async def set_scheme_capture_words_from_call(call: CallbackQuery, state: FSMCont
 
 
 # конечный обработчик всего стейта
+@adding_coll_router.callback_query(F.data.startswith(CALL_EDIT_COLL), AddColl.confirmation_state)
 @adding_coll_router.callback_query(F.data.startswith(CALL_ADD_COLL), AddColl.confirmation_state)
 async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, state: FSMContext):
     # вытаскиваем из колбека уровень
-    confirm = call.data.replace(CALL_ADD_COLL, '')
-    # уходим обратно если нужно что-то изменить
-
+    confirm = call.data
+    if call.data.startswith(CALL_ADD_COLL):
+        confirm = confirm.replace(CALL_ADD_COLL, '')
+    if call.data.startswith(CALL_EDIT_COLL):
+        confirm = confirm.replace(CALL_EDIT_COLL, '')
 
 
     if (confirm == CALL_CHANGING_WORDS or confirm == CALL_CHANGING_COLL or confirm == CALL_CHANGING_LEVELS
@@ -316,14 +374,29 @@ async def admin_adding_task_capture_confirmation_from_call(call: CallbackQuery, 
         for word_id in words_set:
             for level in levels_set:
                 for study_day in days_set:
-                    res = res and await add_media_to_db(media_type=media_type,
-                                                        word_id=word_id,
-                                                        collocation=collocation,
-                                                        caption=caption,
-                                                        telegram_id=media_tg_id,
-                                                        study_day=study_day,
-                                                        author_id=author_id,
-                                                        level=level)
+                    if call.data.startswith(CALL_ADD_COLL):
+                        res = res and await add_media_to_db(media_type=media_type,
+                                                            word_id=word_id,
+                                                            collocation=collocation,
+                                                            caption=caption,
+                                                            telegram_id=media_tg_id,
+                                                            study_day=study_day,
+                                                            author_id=author_id,
+                                                            level=level)
+
+                    if call.data.startswith(CALL_EDIT_COLL):
+                        capture_coll_changing: InputStateParams = await state.get_value('capture_coll_changing')
+                        coll_id = int(list(capture_coll_changing.set_of_items)[0])
+                        res = res and await update_media_changing(media_id=coll_id,
+                                                                  media_type=media_type,
+                                                                  word_id=word_id,
+                                                                  collocation=collocation,
+                                                                  caption=caption,
+                                                                  telegram_id=media_tg_id,
+                                                                  study_day=study_day,
+                                                                  author_id=author_id,
+                                                                  level=level)
+
         message_text = f'----- ----- -----\n{state_text}----- ----- -----\n'
         if res:
             message_text += MESS_ADDED_TO_DB

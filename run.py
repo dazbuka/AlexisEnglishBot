@@ -10,9 +10,8 @@ from app.handlers.common_handler import common_router
 
 from app.handlers.need_revision_adding_test_handlers import admin_adding_test_router
 from app.handlers.need_revision_user_handlers import user_router
-from app.handlers.common_menu.studing_handlers import user_studying_router
 from app.handlers.common_menu.revision_handlers_old import user_revision_router
-from app.handlers.common_menu.show_homework_handlers import user_homework_router
+from app.handlers.common_menu.homework_handlers import user_homework_router
 from app.handlers.common_menu.config_handlers import user_settings_router
 
 from app.handlers.menu_handlers import admin_menu_router
@@ -57,7 +56,6 @@ async def main():
 
 
     dp.include_routers(admin_menu_router,
-                       user_studying_router,
                        user_revision_router,
                        user_settings_router,
                        user_homework_router,

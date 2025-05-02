@@ -26,14 +26,14 @@ class SetScheme(StatesGroup):
     confirmation_state = State() # стейт обрабатывающий конечное подтверждение ввода
 
 menu_set_scheme = [
-    [button_setting_menu_back, button_admin_menu, button_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu_back]
 ]
 
 menu_set_scheme_with_changing = [
     [update_button_with_call_base(button_change_words, CALL_SET_SCHEME),
      update_button_with_call_base(button_change_users, CALL_SET_SCHEME),
      update_button_with_call_base(button_change_dates, CALL_SET_SCHEME)],
-    [button_setting_menu_back, button_admin_menu, button_main_menu]
+    [button_setting_menu_back, button_admin_menu, button_main_menu_back]
 ]
 
 # переход в меню добавления задания по схеме

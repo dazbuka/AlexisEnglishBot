@@ -4,12 +4,16 @@ from typing import Any
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, ContentType
 from aiogram.fsm.state import State, StatesGroup
+
+from app.database.requests import get_medias_by_filters
 # import app.utils.admin_utils as aut
-from app.keyboards.keyboard_builder import keyboard_builder
+from app.keyboards.keyboard_builder import keyboard_builder, update_button_with_call_item
 from app.handlers.common_settings import *
 from app.utils.admin_utils import (update_button_list_with_check, add_item_in_aim_set_plus_minus,
                                    add_item_in_only_one_aim_set, get_new_page_num)
 from app.handlers.admin_menu.states.state_params import InputStateParams
+from app.keyboards.menu_buttons import button_translation, button_definition, button_repeat_today
+
 
 class FSMExecutor:
     def __init__(self):
@@ -82,7 +86,6 @@ class FSMExecutor:
                     # добавляем элемент и в следующий стейт, если нужен только один элемент
                     else:
                         print('с8', end='-')
-                        print(item_call)
                         current_state_params.set_of_items = await add_item_in_only_one_aim_set(
                                                                 aim_set=current_state_params.set_of_items,
                                                                 added_item=item_call)
@@ -93,8 +96,6 @@ class FSMExecutor:
 
             abs_next_buttons_new = []
             if not absolute_next_state.is_input:
-                print('==')
-                print(absolute_next_state.set_of_items)
                 abs_next_buttons_new = update_button_list_with_check(button_list=absolute_next_state.buttons_pack,
                                                                      call_base=absolute_next_state.call_base,
                                                                      aim_set=absolute_next_state.set_of_items,
@@ -157,13 +158,24 @@ class FSMExecutor:
                                     cols=absolute_next_state.buttons_cols,
                                     rows=absolute_next_state.buttons_rows)
 
+        if absolute_next_state.is_media_revision_mode and absolute_next_state.set_of_items:
+            media_id = list(absolute_next_state.set_of_items)[0]
+            media = await get_medias_by_filters(media_id_new=media_id)
+            revision_menu = [[update_button_with_call_item(button_translation, str(media.word_id)),
+                              update_button_with_call_item(button_definition, str(media.word_id)),
+                              update_button_with_call_item(button_repeat_today, str(media.id))]]
+
+            absolute_next_menu_pack = revision_menu + absolute_next_state.menu_pack
+        else:
+            absolute_next_menu_pack = absolute_next_state.menu_pack
+
         print('cm end')
 
         self.media_type = absolute_next_state.media_type
         self.media_id = absolute_next_state.media_id
 
         self.message_text = absolute_next_state.main_mess
-        self.reply_kb = await keyboard_builder(menu_pack=absolute_next_state.menu_pack,
+        self.reply_kb = await keyboard_builder(menu_pack=absolute_next_menu_pack,
                                                buttons_pack=abs_next_buttons_new,
                                                buttons_base_call=absolute_next_state.call_base,
                                                buttons_cols=absolute_next_state.buttons_cols,

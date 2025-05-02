@@ -27,7 +27,7 @@ async def adding_word_first_state(call: CallbackQuery):
         message_text = MESS_LINKS_MENU
     else:
         message_text = MESS_LINKS_MENU_EMPTY
-    reply_kb = await keyboard_builder(menu_pack=[[button_main_menu]],
+    reply_kb = await keyboard_builder(menu_pack=[[button_main_menu_back]],
                                       buttons_pack=link_kb_buttons,
                                       buttons_base_call=CALL_LINKS_MENU,
                                       buttons_cols=NUM_SHOW_LINKS_COLS,
